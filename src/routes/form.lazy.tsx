@@ -3,6 +3,8 @@ import { useForm } from '@tanstack/react-form'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
+import { Button } from '@/components/ui/button'
+
 export const Route = createLazyFileRoute('/form')({
   component: Form,
 })
@@ -51,9 +53,9 @@ function Form() {
             )}
           />
         </div>
-        <button type="submit" className="mt-6">
+        <Button type="submit" className="mt-6" variant="destructive">
           Submit
-        </button>
+        </Button>
       </form>
     </div>
   )

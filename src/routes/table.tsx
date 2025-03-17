@@ -7,6 +7,8 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
+import { Button } from '@/components/ui/button'
+
 import { useReducer, useState } from 'react'
 import '@/table.css'
 
@@ -103,9 +105,9 @@ function Table() {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                 </th>
               ))}
             </tr>
@@ -130,9 +132,9 @@ function Table() {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.footer,
-                        header.getContext(),
-                      )}
+                      header.column.columnDef.footer,
+                      header.getContext(),
+                    )}
                 </th>
               ))}
             </tr>
@@ -140,9 +142,9 @@ function Table() {
         </tfoot>
       </table>
       <div className="h-4" />
-      <button onClick={() => rerender()} className="border p-2">
+      <Button onClick={() => rerender()} className="border p-2">
         Rerender
-      </button>
+      </Button>
     </div>
   )
 }

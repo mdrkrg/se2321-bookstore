@@ -9,24 +9,29 @@ import {
   transformerVariantGroup,
 } from 'unocss'
 import presetAnimations from 'unocss-preset-animations'
+import { presetShadcn } from 'unocss-preset-shadcn'
 
 export default defineConfig({
   shortcuts: [],
   presets: [
     presetAttributify(),
     presetWind3(),
+    presetAnimations(),
     presetIcons({
       scale: 1.2,
     }),
-    presetAnimations(),
     presetTypography(),
-    presetWebFonts({
-      fonts: {
-        sans: 'DM Sans',
-        serif: 'DM Serif Display',
-        mono: 'DM Mono',
-      },
+    presetShadcn({
+      color: 'neutral',
+      // darkSelector: '[data-kb-theme="dark"]', // If using a dark mode selector
     }),
+    // presetWebFonts({
+    //   fonts: {
+    //     sans: 'DM Sans',
+    //     serif: 'DM Serif Display',
+    //     mono: 'DM Mono',
+    //   },
+    // }),
   ],
   transformers: [
     transformerDirectives(),

@@ -1,5 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 
 import reactLogo from '../assets/react.svg'
 
@@ -35,11 +36,11 @@ function App() {
         React + Vite + TypeScript + TanStack + Tailwind
       </p>
       <div className="card">
-        <button onClick={() => setCount(count => count + 1)} className="mb-6">
+        <Button onClick={() => setCount(count => count + 1)} className="mb-6">
           count is
           {' '}
           {count}
-        </button>
+        </Button>
         <p>
           Edit
           {' '}

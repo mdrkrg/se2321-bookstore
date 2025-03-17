@@ -5,6 +5,9 @@ import ReactDOM from 'react-dom/client'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
+import '@/index.css'
+import '@/App.css'
+import '@unocss/reset/tailwind-compat.css'
 import 'virtual:uno.css'
 
 // Create a new router instance
