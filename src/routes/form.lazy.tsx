@@ -1,9 +1,9 @@
-import { useForm } from '@tanstack/react-form'
-
-import { createLazyFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-
 import { Button } from '@/components/ui/button'
+
+import { useForm } from '@tanstack/react-form'
+import { createLazyFileRoute } from '@tanstack/react-router'
+
+import { useState } from 'react'
 
 export const Route = createLazyFileRoute('/form')({
   component: Form,

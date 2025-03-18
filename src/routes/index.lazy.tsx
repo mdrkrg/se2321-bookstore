@@ -1,6 +1,6 @@
+import { Button } from '@/components/ui/button'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 
 import reactLogo from '../assets/react.svg'
 

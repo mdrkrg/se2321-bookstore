@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button'
+
 import { createFileRoute } from '@tanstack/react-router'
 
 import {
@@ -6,8 +8,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-
-import { Button } from '@/components/ui/button'
 
 import { useReducer, useState } from 'react'
 import '@/table.css'
@@ -105,9 +105,9 @@ function Table() {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </th>
               ))}
             </tr>
@@ -132,9 +132,9 @@ function Table() {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.footer,
-                      header.getContext(),
-                    )}
+                        header.column.columnDef.footer,
+                        header.getContext(),
+                      )}
                 </th>
               ))}
             </tr>
