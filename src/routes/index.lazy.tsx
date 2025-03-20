@@ -1,38 +1,32 @@
-import { Button } from '@/components/ui/button'
+import type { Book } from '@/lib/models/user'
+import CardsWaterfall from '@/components/user/main/cards-waterfall'
+
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 
 export const Route = createLazyFileRoute('/')({
   component: App,
 })
 
 function App() {
-  const [count, setCount] = useState(0)
+  const testbook: Book = {
+    id: 0,
+    title: 'Test',
+    description: 'test test',
+    cover: 'https://img3m4.ddimg.cn/96/20/25215594-2_u_11.jpg',
+    author: 'me',
+    sales: 100,
+    price: 0,
+    tags: [
+      { id: 0, name: 'test' },
+    ],
+  }
 
   return (
-    <>
-      <h1>React Tanning 🌴</h1>
-      <p className="font-bold mt-2">
-        React + Vite + TypeScript + TanStack + Tailwind
-      </p>
-      <div className="card">
-        <Button onClick={() => setCount(count => count + 1)} className="mb-6">
-          count is
-          {' '}
-          {count}
-        </Button>
-        <p>
-          Edit
-          {' '}
-          <code>src/routes/index.lazy.tsx</code>
-          {' '}
-          and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="grid grid-rows-[0px_1fr_0px] items-center justify-items-center min-h-screen gap-2 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+        <CardsWaterfall bookList={Array.from({ length: 100 }, () => testbook)} />
+      </main>
+    </div>
   )
 }
 

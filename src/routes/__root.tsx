@@ -21,11 +21,14 @@ export const Route = createRootRoute({
       <>
         <UserHeader />
         <QueryClientProvider client={queryClient}>
-          <div className="mt-32">
+          <main>
             <Outlet />
-          </div>
+          </main>
         </QueryClientProvider>
         <TanStackRouterDevtools />
+        <footer className="w-full text-center py-4em">
+          Create with ❤️ by Crvena.
+        </footer>
       </>
     )
   },
