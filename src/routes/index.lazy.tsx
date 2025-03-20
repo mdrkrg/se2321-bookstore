@@ -2,12 +2,6 @@ import { Button } from '@/components/ui/button'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import reactLogo from '../assets/react.svg'
-
-import tailwindLogo from '../assets/tailwind.svg'
-import tanstackLogo from '../assets/tanstack.png'
-import viteLogo from '/vite.svg'
-
 export const Route = createLazyFileRoute('/')({
   component: App,
 })
@@ -17,20 +11,6 @@ function App() {
 
   return (
     <>
-      <div className="flex items-center justify-center gap-x-6">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-        <a href="https://tanstack.com" target="_blank">
-          <img src={tanstackLogo} className="logo" alt="TanStack logo" />
-        </a>
-        <a href="https://tailwind.com" target="_blank">
-          <img src={tailwindLogo} className="logo" alt="Tailwind logo" />
-        </a>
-      </div>
       <h1>React Tanning 🌴</h1>
       <p className="font-bold mt-2">
         React + Vite + TypeScript + TanStack + Tailwind

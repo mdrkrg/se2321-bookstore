@@ -8,5 +8,6 @@ export default antfu({
   },
   ignores: [
     '**/*.gen.ts',
-  ],
+    'src/components/ui/*.tsx',
+  ] as string[],
 })
