@@ -18,9 +18,13 @@ interface FetchOptions {
 
 export function $fetch<T>(
   url: string,
+  query?: Record<string, string>,
   options: FetchOptions = {},
 ): Promise<T> {
-  return fetch(url, options)
+  const urlWithParams = query
+    ? `${url}?${new URLSearchParams(query).toString()}`
+    : url
+  return fetch(urlWithParams, options)
     .then((res) => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`)
