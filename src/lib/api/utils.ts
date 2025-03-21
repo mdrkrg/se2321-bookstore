@@ -1,113 +1,93 @@
-import type { QueryKey, UseMutationOptions } from '@tanstack/react-query'
+import type { QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-interface FetchOptions {
-  method?: string
-  headers?: { [key: string]: string }
-  body?: BodyInit | null
-  mode?: RequestMode
-  credentials?: RequestCredentials
-  cache?: RequestCache
-  redirect?: RequestRedirect
-  referrerPolicy?: ReferrerPolicy
-  integrity?: string
-  keepalive?: boolean
-  signal?: AbortSignal | null
-  [key: string]: any
-}
-
-export function $fetch<T>(
+export async function $fetch<T>(
   url: string,
-  query?: Record<string, string>,
-  options: FetchOptions = {},
+  options: RequestInit = {},
 ): Promise<T> {
-  const urlWithParams = query
-    ? `${url}?${new URLSearchParams(query).toString()}`
-    : url
-  return fetch(urlWithParams, options)
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`)
-      }
-      return res.json() as Promise<T>
-    })
-    .catch((error) => {
-      console.error('Fetch error:', error)
-      throw error
-    })
+  try {
+    const res = await fetch(url, options)
+    if (res.ok) {
+      return await (res.json() as Promise<T>)
+    }
+    throw res
+  }
+  catch (res) {
+    console.error('Fetch error:', res as Response)
+    throw res
+  }
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-interface UseQueryProps<TData, TQuery> {
+interface UseFetchProps<TData, TQuery> {
   url: string
   key?: QueryKey
   query?: TQuery
-  // onSuccess?: (data: TData) => void
-  // onError?: (error: any) => void
+  fetchOptions?: RequestInit
+  queryOptions?: Omit<UseQueryOptions<TData, any, TData, QueryKey>, 'queryKey' | 'queryFn'>
 }
 
-export function useFetch<TData = any, TQuery = any>({
+export function $query<TData = any, TQuery = any>({
   url,
   key,
   query,
-  // onSuccess,
-  // onError,
-}: UseQueryProps<TData, TQuery>) {
+  fetchOptions = {},
+  queryOptions = {},
+}: UseFetchProps<TData, TQuery>) {
   const urlWithParams = query
     ? `${url}?${new URLSearchParams(query).toString()}`
     : url
 
   return useQuery<TData, any>({
-    queryFn: async () => {
-      return await $fetch<TData>(urlWithParams)
-    },
     queryKey: key ?? [url],
+    queryFn: async () => {
+      return await $fetch<TData>(urlWithParams, fetchOptions)
+    },
+    ...queryOptions,
   })
 }
+
+export type _$MutateOptions<TData, TVariables> = Omit<
+  UseMutationOptions<TData, any, TVariables>,
+  'mutationFn'
+>
+
+export type $MutateOptions<TVariables> = _$MutateOptions<ApiResponseBase, TVariables>
 
 interface UseMutateProps<TData, TVariables, TQuery> {
   url: string
   method: 'POST' | 'PUT' | 'DELETE'
   query?: TQuery
-  onSuccess?: (data: TData) => void
-  onError?: (error: any) => void
-  options?: UseMutationOptions<TData, any, TVariables>
+  fetchOptions?: Omit<Omit<RequestInit, 'method'>, 'body'>
+  mutateOptions?: _$MutateOptions<TData, TVariables>
 }
 
-export function $mutate<TData = any, TVariables = any, TQuery = any>(
-  { url, method, query, onSuccess, onError, options }: UseMutateProps<TData, TVariables, TQuery>,
-) {
+export function $mutate<TData = any, TVariables = any, TQuery = undefined>({
+  url,
+  method,
+  query,
+  fetchOptions = {},
+  mutateOptions = {},
+}: UseMutateProps<TData, TVariables, TQuery>) {
   const urlWithParams = query
     ? `${url}?${new URLSearchParams(query).toString()}`
     : url
 
+  const { headers: fetchHeaders, ...fetchOptionsRest } = fetchOptions
   return useMutation<TData, any, TVariables>({
     mutationFn: async (data: TVariables) => {
-      const response = await fetch(urlWithParams, {
-        method,
+      const _fetchOptions: RequestInit = {
         headers: {
           'Content-Type': 'application/json',
+          ...fetchHeaders,
         },
+        method,
         body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        ...fetchOptionsRest,
       }
-
-      return await response.json() as TData
+      const responseData = await $fetch(urlWithParams, _fetchOptions)
+      return responseData as TData
     },
-    onSuccess: (data: TData) => {
-      if (onSuccess) {
-        onSuccess(data)
-      }
-    },
-    onError: (error: any) => {
-      if (onError) {
-        onError(error)
-      }
-    },
-    ...options,
+    ...mutateOptions,
   })
 }
 

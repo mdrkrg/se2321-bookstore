@@ -2,7 +2,7 @@
  * Comments
  */
 
-import type { ApiResponseBase } from './utils'
+import type { $MutateOptions, ApiResponseBase } from './utils'
 import { endpoints } from '../models/endpoints'
 import { $mutate } from './utils'
 
@@ -10,41 +10,38 @@ export interface CommentRequest {
   content: string
 }
 
-export function usePostComment(
-  id: number,
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, CommentRequest>({
-    url: endpoints.comment.index(id),
-    method: 'POST',
-    onSuccess,
-    onError,
-  })
-}
+export function useComment(id: number) {
+  function post<T extends CommentRequest = CommentRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.comment.index(id),
+      method: 'POST',
+      ...options,
+    })
+  }
+  function like(
+    options?: $MutateOptions<undefined>,
+  ) {
+    return $mutate<ApiResponseBase, undefined>({
+      url: endpoints.comment.like(id),
+      method: 'PUT',
+      ...options,
+    })
+  }
+  function unlike(
+    options?: $MutateOptions<undefined>,
+  ) {
+    return $mutate<ApiResponseBase, undefined>({
+      url: endpoints.comment.unlike(id),
+      method: 'PUT',
+      ...options,
+    })
+  }
 
-export function useLikeComment(
-  id: number,
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase>({
-    url: endpoints.comment.like(id),
-    method: 'PUT',
-    onSuccess,
-    onError,
-  })
-}
-
-export function useUnlikeComment(
-  id: number,
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase>({
-    url: endpoints.comment.unlike(id),
-    method: 'PUT',
-    onSuccess,
-    onError,
-  })
+  return {
+    post,
+    like,
+    unlike,
+  }
 }

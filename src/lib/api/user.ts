@@ -1,8 +1,9 @@
 /*
- * Personal information
+ * Personal information,
+ * login and logout
  */
 
-import type { ApiResponseBase } from './utils'
+import type { $MutateOptions, ApiResponseBase } from './utils'
 import { endpoints } from '../models/endpoints'
 import { $mutate } from './utils'
 
@@ -10,48 +11,12 @@ export interface ChangeAvatarRequest {
   file: Blob
 }
 
-export function useChangeAvatar(
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, ChangeAvatarRequest>({
-    url: endpoints.user.me.avatar,
-    method: 'POST',
-    onSuccess,
-    onError,
-  })
-}
-
 export interface ChangePasswordRequest {
   password: string
 }
 
-export function useChangePassword(
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, ChangePasswordRequest>({
-    url: endpoints.user.me.passwd,
-    method: 'PUT',
-    onSuccess,
-    onError,
-  })
-}
-
 export interface ChangeIntroductionRequest {
   introduction: string
-}
-
-export function useChangeIntroduction(
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, ChangeIntroductionRequest>({
-    url: endpoints.user.me.intro,
-    method: 'PUT',
-    onSuccess,
-    onError,
-  })
 }
 
 export interface AddAddressRequest {
@@ -60,60 +25,90 @@ export interface AddAddressRequest {
   tel: string
 }
 
-export function useAddAddress(
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, AddAddressRequest>({
-    url: endpoints.user.me.addrs.index,
-    method: 'POST',
-    onSuccess,
-    onError,
-  })
-}
-
-export function useDeleteAddress(
-  id: number,
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, AddAddressRequest>({
-    url: endpoints.user.me.addrs.delete(id),
-    method: 'DELETE',
-    onSuccess,
-    onError,
-  })
-}
-
-/*
- * Login and logout
- */
-
 export interface LoginRequest {
   username: string
   password: string
 }
 
-export function useLogin(
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase, LoginRequest>({
-    url: endpoints.view.login,
-    method: 'POST',
-    onSuccess,
-    onError,
-  })
-}
+export function useUser() {
+  function changeAvatar<T extends ChangeAvatarRequest = ChangeAvatarRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.user.me.avatar,
+      method: 'POST',
+      ...options,
+    })
+  }
 
-export function useLogout(
-  onSuccess?: (data: ApiResponseBase) => void,
-  onError?: (error: any) => void,
-) {
-  return $mutate<ApiResponseBase>({
-    url: endpoints.view.logout,
-    method: 'PUT',
-    onSuccess,
-    onError,
-  })
+  function changePassword<T extends ChangePasswordRequest = ChangePasswordRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.user.me.passwd,
+      method: 'PUT',
+      ...options,
+    })
+  }
+
+  function changeIntroduction<T extends ChangeIntroductionRequest = ChangeIntroductionRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.user.me.intro,
+      method: 'PUT',
+      ...options,
+    })
+  }
+
+  function addAddress<T extends AddAddressRequest = AddAddressRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.user.me.addrs.index,
+      method: 'POST',
+      ...options,
+    })
+  }
+
+  function deleteAddress<T extends AddAddressRequest = AddAddressRequest>(
+    id: number,
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.user.me.addrs.delete(id),
+      method: 'DELETE',
+      ...options,
+    })
+  }
+
+  function login<T extends LoginRequest = LoginRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.view.login,
+      method: 'POST',
+      ...options,
+    })
+  }
+
+  function logout(
+    options?: $MutateOptions<undefined>,
+  ) {
+    return $mutate<ApiResponseBase>({
+      url: endpoints.view.logout,
+      method: 'PUT',
+      ...options,
+    })
+  }
+
+  return {
+    changeAvatar,
+    changePassword,
+    changeIntroduction,
+    addAddress,
+    deleteAddress,
+    login,
+    logout,
+  }
 }
