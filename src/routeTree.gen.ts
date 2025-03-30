@@ -14,6 +14,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as TableImport } from './routes/table'
+import { Route as BookIndexImport } from './routes/book/index'
+import { Route as BookBookIdImport } from './routes/book/$bookId'
 
 // Create Virtual Routes
 
@@ -47,6 +49,18 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
+const BookIndexRoute = BookIndexImport.update({
+  id: '/book/',
+  path: '/book/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BookBookIdRoute = BookBookIdImport.update({
+  id: '/book/$bookId',
+  path: '/book/$bookId',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -79,6 +93,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueryLazyImport
       parentRoute: typeof rootRoute
     }
+    '/book/$bookId': {
+      id: '/book/$bookId'
+      path: '/book/$bookId'
+      fullPath: '/book/$bookId'
+      preLoaderRoute: typeof BookBookIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/book/': {
+      id: '/book/'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -89,6 +117,8 @@ export interface FileRoutesByFullPath {
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
+  '/book/$bookId': typeof BookBookIdRoute
+  '/book': typeof BookIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -96,6 +126,8 @@ export interface FileRoutesByTo {
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
+  '/book/$bookId': typeof BookBookIdRoute
+  '/book': typeof BookIndexRoute
 }
 
 export interface FileRoutesById {
@@ -104,14 +136,23 @@ export interface FileRoutesById {
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
+  '/book/$bookId': typeof BookBookIdRoute
+  '/book/': typeof BookIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/table' | '/form' | '/query'
+  fullPaths: '/' | '/table' | '/form' | '/query' | '/book/$bookId' | '/book'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/table' | '/form' | '/query'
-  id: '__root__' | '/' | '/table' | '/form' | '/query'
+  to: '/' | '/table' | '/form' | '/query' | '/book/$bookId' | '/book'
+  id:
+    | '__root__'
+    | '/'
+    | '/table'
+    | '/form'
+    | '/query'
+    | '/book/$bookId'
+    | '/book/'
   fileRoutesById: FileRoutesById
 }
 
@@ -120,6 +161,8 @@ export interface RootRouteChildren {
   TableRoute: typeof TableRoute
   FormLazyRoute: typeof FormLazyRoute
   QueryLazyRoute: typeof QueryLazyRoute
+  BookBookIdRoute: typeof BookBookIdRoute
+  BookIndexRoute: typeof BookIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -127,6 +170,8 @@ const rootRouteChildren: RootRouteChildren = {
   TableRoute: TableRoute,
   FormLazyRoute: FormLazyRoute,
   QueryLazyRoute: QueryLazyRoute,
+  BookBookIdRoute: BookBookIdRoute,
+  BookIndexRoute: BookIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -142,7 +187,9 @@ export const routeTree = rootRoute
         "/",
         "/table",
         "/form",
-        "/query"
+        "/query",
+        "/book/$bookId",
+        "/book/"
       ]
     },
     "/": {
@@ -156,6 +203,12 @@ export const routeTree = rootRoute
     },
     "/query": {
       "filePath": "query.lazy.tsx"
+    },
+    "/book/$bookId": {
+      "filePath": "book/$bookId.tsx"
+    },
+    "/book/": {
+      "filePath": "book/index.tsx"
     }
   }
 }

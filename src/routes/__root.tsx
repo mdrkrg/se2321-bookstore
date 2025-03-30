@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner'
 import UserHeader from '@/components/user/header/view'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
@@ -29,6 +30,7 @@ export const Route = createRootRoute({
         <footer className="w-full text-center py-4em">
           Create with ❤️ by Crvena.
         </footer>
+        <Toaster />
       </>
     )
   },
