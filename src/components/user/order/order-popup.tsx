@@ -1,5 +1,4 @@
 import type { OrderItem } from '@/lib/models/user'
-
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,6 +18,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import React, { useEffect, useState } from 'react'
 import { useMediaQuery } from 'usehooks-ts'
 import { ConfirmOrder } from './confirm-order'
@@ -43,19 +43,24 @@ export function OrderPopup({ children, orderList }: OrderPopupProps) {
     }
   }, [open])
 
+  if (orderList.length === 0)
+    return children
+
   const dialog = (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="md:max-w-[75vw] lg:max-w-[50vw]">
         <DialogHeader>
           <DialogTitle>{meta.title}</DialogTitle>
           <DialogDescription>
             {meta.description}
           </DialogDescription>
         </DialogHeader>
-        <ConfirmOrder orderList={orderList} />
+        <ScrollArea className="max-h-[80vh] pr-4">
+          <ConfirmOrder orderList={orderList} />
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
@@ -72,7 +77,12 @@ export function OrderPopup({ children, orderList }: OrderPopupProps) {
             {meta.description}
           </DrawerDescription>
         </DrawerHeader>
-        <ConfirmOrder className="px-4" orderList={orderList} />
+        <ScrollArea>
+          <ConfirmOrder
+            className="px-4 text-sm max-h-[75vh]"
+            orderList={orderList}
+          />
+        </ScrollArea>
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">取消</Button>

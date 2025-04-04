@@ -14,6 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as TableImport } from './routes/table'
+import { Route as CartImport } from './routes/cart'
 import { Route as BookIndexImport } from './routes/book/index'
 import { Route as BookBookIdImport } from './routes/book/$bookId'
 
@@ -40,6 +41,12 @@ const FormLazyRoute = FormLazyImport.update({
 const TableRoute = TableImport.update({
   id: '/table',
   path: '/table',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CartRoute = CartImport.update({
+  id: '/cart',
+  path: '/cart',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -70,6 +77,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartImport
       parentRoute: typeof rootRoute
     }
     '/table': {
@@ -114,6 +128,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
+  '/cart': typeof CartRoute
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
@@ -123,6 +138,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
+  '/cart': typeof CartRoute
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
@@ -133,6 +149,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
+  '/cart': typeof CartRoute
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
@@ -142,12 +159,20 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/table' | '/form' | '/query' | '/book/$bookId' | '/book'
+  fullPaths:
+    | '/'
+    | '/cart'
+    | '/table'
+    | '/form'
+    | '/query'
+    | '/book/$bookId'
+    | '/book'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/table' | '/form' | '/query' | '/book/$bookId' | '/book'
+  to: '/' | '/cart' | '/table' | '/form' | '/query' | '/book/$bookId' | '/book'
   id:
     | '__root__'
     | '/'
+    | '/cart'
     | '/table'
     | '/form'
     | '/query'
@@ -158,6 +183,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
+  CartRoute: typeof CartRoute
   TableRoute: typeof TableRoute
   FormLazyRoute: typeof FormLazyRoute
   QueryLazyRoute: typeof QueryLazyRoute
@@ -167,6 +193,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
+  CartRoute: CartRoute,
   TableRoute: TableRoute,
   FormLazyRoute: FormLazyRoute,
   QueryLazyRoute: QueryLazyRoute,
@@ -185,6 +212,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/cart",
         "/table",
         "/form",
         "/query",
@@ -194,6 +222,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.lazy.tsx"
+    },
+    "/cart": {
+      "filePath": "cart.tsx"
     },
     "/table": {
       "filePath": "table.tsx"

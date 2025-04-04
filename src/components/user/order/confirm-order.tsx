@@ -10,8 +10,9 @@ import {
 } from '@/components/ui/form'
 import { NumberInput } from '@/components/ui/number-input'
 import { cn } from '@/lib/utils/cn'
+import { fetchFakeAddress } from '@/lib/utils/dummy'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -24,38 +25,18 @@ interface ConfirmOrderProps extends React.ComponentProps<'form'> {
 const FormSchema = z.object({
   addressId: z
     .string({
-      required_error: 'Please select an address to display.',
+      required_error: '请选择收货地址',
     }),
   itemIds: z.array(
     z.object({
       id: z.number(),
-      number: z.number().min(1, 'Quantity must be at least 1'),
+      number: z.number().min(1, '商品数量至少为 1'),
     }),
   ),
 })
 
-const fakeAddressList: Address[] = [
-  {
-    id: 0,
-    receiver: 'Brandy DuBuque',
-    address: 'North Carolina Hickory 2250 N Center St',
-    tel: '(828) 328-6080',
-  },
-  {
-    id: 1,
-    receiver: 'Brandy DuBuque',
-    address: 'Alaska Fairbanks 3260 College Rd',
-    tel: '(828) 328-6080',
-  },
-  {
-    id: 2,
-    receiver: 'Mr. Kris Beatty IV',
-    address: 'Pennsylvania Mechanicsburg 5250 Simpson Ferry Rd',
-    tel: '(717) 458-0430',
-  },
-]
-
 export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
+  const addressList = fetchFakeAddress()
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     // initialize orderList
@@ -63,9 +44,10 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
       itemIds: orderList.map(item => ({ id: item.id, number: item.number })),
     },
   })
+  const router = useRouter()
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    const address = fakeAddressList.find(addr =>
+    const address = addressList.find(addr =>
       String(addr.id) === data.addressId) as Address
     const { id: _, ...addressData } = address
     const submittedData = {
@@ -83,6 +65,9 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
       className: 'w-max!',
       duration: 5000,
     })
+    setTimeout(() => {
+      router.navigate({ to: '/order' })
+    }, 200)
   }
 
   function updateQuantity(orderItemId: number, newQuantity: number) {
@@ -115,6 +100,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
                       onQuantityChange={(newQuantity) => {
                         updateQuantity(bookId, newQuantity)
                       }}
+                      key={index}
                     />
                   )
                 })}
@@ -130,7 +116,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
           control={form.control}
           name="addressId"
           render={({ field }) => {
-            const selectedAddress = fakeAddressList.find(address =>
+            const selectedAddress = addressList.find(address =>
               String(address.id) === field.value,
             )
 
@@ -140,7 +126,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
                 <AddressSelectFormItem
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  addressList={fakeAddressList}
+                  addressList={addressList}
                   selectedAddress={selectedAddress}
                 />
                 <FormMessage />

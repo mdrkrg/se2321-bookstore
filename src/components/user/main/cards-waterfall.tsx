@@ -253,7 +253,11 @@ export default function CardsWaterfall({ bookList }: { bookList: Array<Book> }) 
                   {
                     bookList.map((book, index) => {
                       return (
-                        <Link to={`/book/${book.id}`} key={index}>
+                        <Link
+                          to="/book/$bookId"
+                          params={{ bookId: book.id.toString() }}
+                          key={index}
+                        >
                           <GoodCard book={book} />
                         </Link>
                       )

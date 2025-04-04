@@ -10,9 +10,13 @@ import {
 } from '@/components/ui/card'
 import { toCNYString } from '@/lib/utils/price'
 
-export default function GoodCard({ book }: { book: Book }) {
+interface GoodCardProps extends React.ComponentProps<'div'> {
+  book: Book
+}
+
+export default function GoodCard({ book, className }: GoodCardProps) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardDescription className="flex justify-center">
           <img

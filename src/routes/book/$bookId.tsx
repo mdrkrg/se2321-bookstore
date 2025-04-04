@@ -4,31 +4,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { NumberInput } from '@/components/ui/number-input'
 import { OrderPopup } from '@/components/user/order/order-popup'
+import { testBookList } from '@/lib/utils/dummy'
 import { toCNYString } from '@/lib/utils/price'
 import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useCountdown } from 'usehooks-ts'
 
-const testbook: Book = {
-  id: 0,
-  title: 'Test',
-  description: `
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris quis nibh et mi fringilla ullamcorper id non erat. Sed vestibulum cursus accumsan. Quisque fringilla risus diam, a egestas enim accumsan ut. Maecenas imperdiet sed lorem vel pulvinar. Integer quis fermentum ligula. Nunc aliquam tempor lectus a vestibulum. Donec commodo, tortor in sagittis vehicula, lectus dui rhoncus libero, nec tincidunt mauris magna et velit. Quisque non ipsum ut sapien placerat consequat. Curabitur imperdiet dolor in sapien posuere imperdiet. Etiam vel blandit quam.
-  Morbi eros lorem, aliquet tempor metus vel, cursus sollicitudin ante. Nam in augue et lectus lobortis fringilla. Proin aliquet elementum mollis. Vivamus placerat, nulla vitae venenatis dapibus, ex nunc vestibulum mauris, non aliquet justo enim id nisl. Ut molestie tortor quis dolor dignissim malesuada. Donec volutpat pharetra posuere. Phasellus elementum elit non massa convallis, rutrum fermentum nibh fermentum. Vivamus accumsan commodo libero ultricies imperdiet. Praesent consectetur, odio in posuere pellentesque, enim neque finibus sapien, sit amet malesuada dolor magna a dui. Nulla auctor neque vitae interdum aliquam. Praesent euismod diam lorem, et eleifend ex semper eu. Fusce lectus nibh, tincidunt eu eleifend et, malesuada eget odio. Donec iaculis neque ut neque efficitur, ut malesuada augue volutpat. Praesent mattis lectus orci, ut aliquet neque mattis non. Aenean porta enim tortor, nec tempor ex blandit sed. Morbi mi ligula, molestie ut ante quis, luctus maximus neque. `,
-  cover: 'https://img3m4.ddimg.cn/96/20/25215594-2_u_11.jpg',
-  author: 'me',
-  sales: 100,
-  price: 0,
-  tags: [
-    { id: 0, name: 'test' },
-  ],
-}
-
 function fetchBookFake(id: number): Book | null {
-  if (id === 0)
-    return testbook
-  return null
+  return testBookList.find(book => book.id === id) ?? null
 }
 
 export const Route = createFileRoute('/book/$bookId')({

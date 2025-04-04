@@ -38,6 +38,7 @@ const navigationLinkStyle = `group inline-flex w-max
 items-center justify-center rounded-md
 font-medium max-sm:text-sm text-md
 px-[1em] py-[0.7em] font-medium leading-none ${focusTransitionStyle}
+[&.active]:text-pink-700 hover:text-pink-700 focus:text-pink-700
 `
 
 const iconStyle = `
@@ -54,17 +55,17 @@ export default function UserHeader() {
       <NavigationMenu className="z-10 w-full">
         <NavigationMenuList className="center m-0 flex list-none">
           <NavigationMenuItem className="px-[1.5em]" key="icon">
-            <Icon path={mdiStore} size={1.5} className="text-pink-800" />
+            <Icon path={mdiStore} size={1.5} className="text-pink-700" />
           </NavigationMenuItem>
           {
             Object.entries(routes).map(([link, prop]) => {
               return (
                 <NavigationMenuItem key={link}>
-                  <Link to={link} className="[&.active]:text-pink-800">
-                    <NavigationMenuLink className={navigationLinkStyle}>
+                  <NavigationMenuLink className={navigationLinkStyle} asChild>
+                    <Link to={link}>
                       {prop.display}
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               )
             })
