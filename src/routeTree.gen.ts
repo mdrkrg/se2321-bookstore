@@ -15,10 +15,15 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as TableImport } from './routes/table'
 import { Route as OrderImport } from './routes/order'
+import { Route as MeImport } from './routes/me'
 import { Route as CartImport } from './routes/cart'
-import { Route as ProfileIndexImport } from './routes/profile/index'
+import { Route as MeIndexImport } from './routes/me/index'
 import { Route as BookIndexImport } from './routes/book/index'
-import { Route as ProfileAddressImport } from './routes/profile/address'
+import { Route as MeStarsImport } from './routes/me/stars'
+import { Route as MeProfileImport } from './routes/me/profile'
+import { Route as MePasswordImport } from './routes/me/password'
+import { Route as MeCommentsImport } from './routes/me/comments'
+import { Route as MeAddressImport } from './routes/me/address'
 import { Route as BookBookIdImport } from './routes/book/$bookId'
 
 // Create Virtual Routes
@@ -53,6 +58,12 @@ const OrderRoute = OrderImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const MeRoute = MeImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const CartRoute = CartImport.update({
   id: '/cart',
   path: '/cart',
@@ -65,10 +76,10 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
-const ProfileIndexRoute = ProfileIndexImport.update({
-  id: '/profile/',
-  path: '/profile/',
-  getParentRoute: () => rootRoute,
+const MeIndexRoute = MeIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MeRoute,
 } as any)
 
 const BookIndexRoute = BookIndexImport.update({
@@ -77,10 +88,34 @@ const BookIndexRoute = BookIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProfileAddressRoute = ProfileAddressImport.update({
-  id: '/profile/address',
-  path: '/profile/address',
-  getParentRoute: () => rootRoute,
+const MeStarsRoute = MeStarsImport.update({
+  id: '/stars',
+  path: '/stars',
+  getParentRoute: () => MeRoute,
+} as any)
+
+const MeProfileRoute = MeProfileImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => MeRoute,
+} as any)
+
+const MePasswordRoute = MePasswordImport.update({
+  id: '/password',
+  path: '/password',
+  getParentRoute: () => MeRoute,
+} as any)
+
+const MeCommentsRoute = MeCommentsImport.update({
+  id: '/comments',
+  path: '/comments',
+  getParentRoute: () => MeRoute,
+} as any)
+
+const MeAddressRoute = MeAddressImport.update({
+  id: '/address',
+  path: '/address',
+  getParentRoute: () => MeRoute,
 } as any)
 
 const BookBookIdRoute = BookBookIdImport.update({
@@ -105,6 +140,13 @@ declare module '@tanstack/react-router' {
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartImport
+      parentRoute: typeof rootRoute
+    }
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeImport
       parentRoute: typeof rootRoute
     }
     '/order': {
@@ -142,12 +184,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookBookIdImport
       parentRoute: typeof rootRoute
     }
-    '/profile/address': {
-      id: '/profile/address'
-      path: '/profile/address'
-      fullPath: '/profile/address'
-      preLoaderRoute: typeof ProfileAddressImport
-      parentRoute: typeof rootRoute
+    '/me/address': {
+      id: '/me/address'
+      path: '/address'
+      fullPath: '/me/address'
+      preLoaderRoute: typeof MeAddressImport
+      parentRoute: typeof MeImport
+    }
+    '/me/comments': {
+      id: '/me/comments'
+      path: '/comments'
+      fullPath: '/me/comments'
+      preLoaderRoute: typeof MeCommentsImport
+      parentRoute: typeof MeImport
+    }
+    '/me/password': {
+      id: '/me/password'
+      path: '/password'
+      fullPath: '/me/password'
+      preLoaderRoute: typeof MePasswordImport
+      parentRoute: typeof MeImport
+    }
+    '/me/profile': {
+      id: '/me/profile'
+      path: '/profile'
+      fullPath: '/me/profile'
+      preLoaderRoute: typeof MeProfileImport
+      parentRoute: typeof MeImport
+    }
+    '/me/stars': {
+      id: '/me/stars'
+      path: '/stars'
+      fullPath: '/me/stars'
+      preLoaderRoute: typeof MeStarsImport
+      parentRoute: typeof MeImport
     }
     '/book/': {
       id: '/book/'
@@ -156,29 +226,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookIndexImport
       parentRoute: typeof rootRoute
     }
-    '/profile/': {
-      id: '/profile/'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileIndexImport
-      parentRoute: typeof rootRoute
+    '/me/': {
+      id: '/me/'
+      path: '/'
+      fullPath: '/me/'
+      preLoaderRoute: typeof MeIndexImport
+      parentRoute: typeof MeImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface MeRouteChildren {
+  MeAddressRoute: typeof MeAddressRoute
+  MeCommentsRoute: typeof MeCommentsRoute
+  MePasswordRoute: typeof MePasswordRoute
+  MeProfileRoute: typeof MeProfileRoute
+  MeStarsRoute: typeof MeStarsRoute
+  MeIndexRoute: typeof MeIndexRoute
+}
+
+const MeRouteChildren: MeRouteChildren = {
+  MeAddressRoute: MeAddressRoute,
+  MeCommentsRoute: MeCommentsRoute,
+  MePasswordRoute: MePasswordRoute,
+  MeProfileRoute: MeProfileRoute,
+  MeStarsRoute: MeStarsRoute,
+  MeIndexRoute: MeIndexRoute,
+}
+
+const MeRouteWithChildren = MeRoute._addFileChildren(MeRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/cart': typeof CartRoute
+  '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
-  '/profile/address': typeof ProfileAddressRoute
+  '/me/address': typeof MeAddressRoute
+  '/me/comments': typeof MeCommentsRoute
+  '/me/password': typeof MePasswordRoute
+  '/me/profile': typeof MeProfileRoute
+  '/me/stars': typeof MeStarsRoute
   '/book': typeof BookIndexRoute
-  '/profile': typeof ProfileIndexRoute
+  '/me/': typeof MeIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -189,23 +284,32 @@ export interface FileRoutesByTo {
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
-  '/profile/address': typeof ProfileAddressRoute
+  '/me/address': typeof MeAddressRoute
+  '/me/comments': typeof MeCommentsRoute
+  '/me/password': typeof MePasswordRoute
+  '/me/profile': typeof MeProfileRoute
+  '/me/stars': typeof MeStarsRoute
   '/book': typeof BookIndexRoute
-  '/profile': typeof ProfileIndexRoute
+  '/me': typeof MeIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/cart': typeof CartRoute
+  '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/table': typeof TableRoute
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
-  '/profile/address': typeof ProfileAddressRoute
+  '/me/address': typeof MeAddressRoute
+  '/me/comments': typeof MeCommentsRoute
+  '/me/password': typeof MePasswordRoute
+  '/me/profile': typeof MeProfileRoute
+  '/me/stars': typeof MeStarsRoute
   '/book/': typeof BookIndexRoute
-  '/profile/': typeof ProfileIndexRoute
+  '/me/': typeof MeIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -213,14 +317,19 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cart'
+    | '/me'
     | '/order'
     | '/table'
     | '/form'
     | '/query'
     | '/book/$bookId'
-    | '/profile/address'
+    | '/me/address'
+    | '/me/comments'
+    | '/me/password'
+    | '/me/profile'
+    | '/me/stars'
     | '/book'
-    | '/profile'
+    | '/me/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -230,48 +339,55 @@ export interface FileRouteTypes {
     | '/form'
     | '/query'
     | '/book/$bookId'
-    | '/profile/address'
+    | '/me/address'
+    | '/me/comments'
+    | '/me/password'
+    | '/me/profile'
+    | '/me/stars'
     | '/book'
-    | '/profile'
+    | '/me'
   id:
     | '__root__'
     | '/'
     | '/cart'
+    | '/me'
     | '/order'
     | '/table'
     | '/form'
     | '/query'
     | '/book/$bookId'
-    | '/profile/address'
+    | '/me/address'
+    | '/me/comments'
+    | '/me/password'
+    | '/me/profile'
+    | '/me/stars'
     | '/book/'
-    | '/profile/'
+    | '/me/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   CartRoute: typeof CartRoute
+  MeRoute: typeof MeRouteWithChildren
   OrderRoute: typeof OrderRoute
   TableRoute: typeof TableRoute
   FormLazyRoute: typeof FormLazyRoute
   QueryLazyRoute: typeof QueryLazyRoute
   BookBookIdRoute: typeof BookBookIdRoute
-  ProfileAddressRoute: typeof ProfileAddressRoute
   BookIndexRoute: typeof BookIndexRoute
-  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   CartRoute: CartRoute,
+  MeRoute: MeRouteWithChildren,
   OrderRoute: OrderRoute,
   TableRoute: TableRoute,
   FormLazyRoute: FormLazyRoute,
   QueryLazyRoute: QueryLazyRoute,
   BookBookIdRoute: BookBookIdRoute,
-  ProfileAddressRoute: ProfileAddressRoute,
   BookIndexRoute: BookIndexRoute,
-  ProfileIndexRoute: ProfileIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -286,14 +402,13 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/cart",
+        "/me",
         "/order",
         "/table",
         "/form",
         "/query",
         "/book/$bookId",
-        "/profile/address",
-        "/book/",
-        "/profile/"
+        "/book/"
       ]
     },
     "/": {
@@ -301,6 +416,17 @@ export const routeTree = rootRoute
     },
     "/cart": {
       "filePath": "cart.tsx"
+    },
+    "/me": {
+      "filePath": "me.tsx",
+      "children": [
+        "/me/address",
+        "/me/comments",
+        "/me/password",
+        "/me/profile",
+        "/me/stars",
+        "/me/"
+      ]
     },
     "/order": {
       "filePath": "order.tsx"
@@ -317,14 +443,32 @@ export const routeTree = rootRoute
     "/book/$bookId": {
       "filePath": "book/$bookId.tsx"
     },
-    "/profile/address": {
-      "filePath": "profile/address.tsx"
+    "/me/address": {
+      "filePath": "me/address.tsx",
+      "parent": "/me"
+    },
+    "/me/comments": {
+      "filePath": "me/comments.tsx",
+      "parent": "/me"
+    },
+    "/me/password": {
+      "filePath": "me/password.tsx",
+      "parent": "/me"
+    },
+    "/me/profile": {
+      "filePath": "me/profile.tsx",
+      "parent": "/me"
+    },
+    "/me/stars": {
+      "filePath": "me/stars.tsx",
+      "parent": "/me"
     },
     "/book/": {
       "filePath": "book/index.tsx"
     },
-    "/profile/": {
-      "filePath": "profile/index.tsx"
+    "/me/": {
+      "filePath": "me/index.tsx",
+      "parent": "/me"
     }
   }
 }

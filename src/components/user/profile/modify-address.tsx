@@ -9,11 +9,13 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-
 import { cn } from '@/lib/utils/cn'
 import { fetchFakeAddress } from '@/lib/utils/dummy'
+
 import { ADDRESS_VALIDATOR, getNameValidator, PHONE_VALIDATOR } from '@/lib/utils/validate'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { mdiInformationOutline } from '@mdi/js'
+import Icon from '@mdi/react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -48,6 +50,9 @@ const formItems = {
 export function ProfileForm({
   className,
 }: React.ComponentProps<'form'>) {
+  // is newly create or modify existing?
+  const [isModify, setIsModify] = useState(false)
+
   const addressList = fetchFakeAddress()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -106,9 +111,6 @@ export function ProfileForm({
     }
   }, [form.watch('selectedAddressId')])
 
-  // is newly create or modify existing?
-  const [isModify, setIsModify] = useState(false)
-
   return (
     <Form {...form}>
       <form
@@ -142,32 +144,37 @@ export function ProfileForm({
             )
           }}
         />
-        <fieldset className="flex p-2 rounded-md bg-gray-100">
-          <span className="mr-4 my-auto">
-            您正在
-            {isModify ? '修改' : '创建新的'}
-            收货地址
-          </span>
-          <Button
-            type="reset"
-            size="sm"
-            variant="ghost"
-            onClick={handleResetSelect}
-            disabled={!isModify}
-            className="ml-auto"
-          >
-            重置选择
-          </Button>
-          <Button
-            className="ml-2"
-            type="button"
-            size="sm"
-            variant="destructive"
-            disabled={!isModify}
-            onClick={handleDeleteSelect}
-          >
-            删除
-          </Button>
+        <fieldset className="md:flex p-2 rounded-md bg-gray-100">
+          <div className="flex max-sm:mx-auto">
+            <Icon path={mdiInformationOutline} size={1} className="my-auto" />
+            <span className="mx-2 my-auto text-sm font-medium">
+              您正在
+              {isModify ? '修改' : '创建新的'}
+              收货地址
+            </span>
+          </div>
+          <div className="flex ml-auto max-sm:mt-2">
+            <Button
+              type="reset"
+              size="sm"
+              variant="ghost"
+              onClick={handleResetSelect}
+              disabled={!isModify}
+              className="max-sm:w-full"
+            >
+              重置选择
+            </Button>
+            <Button
+              className="ml-2 max-sm:w-full"
+              type="button"
+              size="sm"
+              variant="destructive"
+              disabled={!isModify}
+              onClick={handleDeleteSelect}
+            >
+              删除
+            </Button>
+          </div>
         </fieldset>
         {Object.entries(formItems).map(([
           name,

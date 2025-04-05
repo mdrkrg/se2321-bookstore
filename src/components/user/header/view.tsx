@@ -14,7 +14,7 @@ const routes = {
   '/': {
     display: '首页',
   },
-  '/profile': {
+  '/me': {
     display: '个人主页',
   },
   '/rank': {
@@ -28,22 +28,9 @@ const routes = {
   },
 }
 
-const focusTransitionStyle = `transition-colors bg-background
-hover:bg-accent hover:text-accent-foreground focus:bg-accent
-focus:text-accent-foreground focus:outline-none disabled:pointer-events-none
-disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50
-`
-
-const navigationLinkStyle = `group inline-flex w-max
-items-center justify-center rounded-md
-font-medium max-sm:text-sm text-md
-px-[1em] py-[0.7em] font-medium leading-none ${focusTransitionStyle}
-[&.active]:text-pink-700 hover:text-pink-700 focus:text-pink-700
-`
-
 const iconStyle = `
 ml-auto mx-[2em] mt-[.3em] border-5 border-transparent h-max w-max
-rounded-full ${focusTransitionStyle}
+rounded-full nav-transition
 `
 
 // TODO: responsive design:
@@ -61,7 +48,10 @@ export default function UserHeader() {
             Object.entries(routes).map(([link, prop]) => {
               return (
                 <NavigationMenuItem key={link}>
-                  <NavigationMenuLink className={navigationLinkStyle} asChild>
+                  <NavigationMenuLink
+                    className="nav-link text-md max-sm:text-sm"
+                    asChild
+                  >
                     <Link to={link}>
                       {prop.display}
                     </Link>

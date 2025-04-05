@@ -13,7 +13,7 @@ export const ADDRESS_VALIDATOR = z.string({
 }).min(MIN_ADDRESS, {
   message: '请输入详细的收货地址',
 }).max(MAX_ADDRESS, {
-  message: '收货地址过长'
+  message: '收货地址过长',
 })
 
 export const PHONE_VALIDATOR = z.string({
@@ -27,8 +27,8 @@ export function getNameValidator(calling?: string) {
   return z.string({
     required_error: `请输入${name}`,
   }).min(MIN_NAME, {
-    message: `请输入正确的${name}`
+    message: `请输入正确的${name}`,
   }).max(MAX_NAME, {
-    message: `请输入正确的${name}`
+    message: `请输入正确的${name}`,
   })
 }

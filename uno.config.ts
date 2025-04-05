@@ -12,7 +12,19 @@ import presetAnimations from 'unocss-preset-animations'
 import { presetShadcn } from 'unocss-preset-shadcn'
 
 export default defineConfig({
-  shortcuts: [],
+  shortcuts: [
+    {
+      'nav-transition': `transition-colors bg-background
+hover:bg-accent hover:text-accent-foreground focus:bg-accent
+focus:text-accent-foreground focus:outline-none disabled:pointer-events-none
+disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50`,
+    },
+    {
+      'nav-link': `group inline-flex w-max items-center justify-center rounded-md
+font-medium leading-none px-[1em] py-[0.7em] nav-transition
+[&.active]:text-pink-700 hover:text-pink-700 focus:text-pink-700`,
+    },
+  ],
   presets: [
     presetAttributify(),
     presetWind3(),
