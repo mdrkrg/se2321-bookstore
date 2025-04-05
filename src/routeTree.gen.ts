@@ -16,7 +16,9 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as TableImport } from './routes/table'
 import { Route as OrderImport } from './routes/order'
 import { Route as CartImport } from './routes/cart'
+import { Route as ProfileIndexImport } from './routes/profile/index'
 import { Route as BookIndexImport } from './routes/book/index'
+import { Route as ProfileAddressImport } from './routes/profile/address'
 import { Route as BookBookIdImport } from './routes/book/$bookId'
 
 // Create Virtual Routes
@@ -63,9 +65,21 @@ const IndexLazyRoute = IndexLazyImport.update({
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
+const ProfileIndexRoute = ProfileIndexImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const BookIndexRoute = BookIndexImport.update({
   id: '/book/',
   path: '/book/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProfileAddressRoute = ProfileAddressImport.update({
+  id: '/profile/address',
+  path: '/profile/address',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -128,11 +142,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookBookIdImport
       parentRoute: typeof rootRoute
     }
+    '/profile/address': {
+      id: '/profile/address'
+      path: '/profile/address'
+      fullPath: '/profile/address'
+      preLoaderRoute: typeof ProfileAddressImport
+      parentRoute: typeof rootRoute
+    }
     '/book/': {
       id: '/book/'
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -148,7 +176,9 @@ export interface FileRoutesByFullPath {
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
+  '/profile/address': typeof ProfileAddressRoute
   '/book': typeof BookIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -159,7 +189,9 @@ export interface FileRoutesByTo {
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
+  '/profile/address': typeof ProfileAddressRoute
   '/book': typeof BookIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 
 export interface FileRoutesById {
@@ -171,7 +203,9 @@ export interface FileRoutesById {
   '/form': typeof FormLazyRoute
   '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
+  '/profile/address': typeof ProfileAddressRoute
   '/book/': typeof BookIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -184,7 +218,9 @@ export interface FileRouteTypes {
     | '/form'
     | '/query'
     | '/book/$bookId'
+    | '/profile/address'
     | '/book'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -194,7 +230,9 @@ export interface FileRouteTypes {
     | '/form'
     | '/query'
     | '/book/$bookId'
+    | '/profile/address'
     | '/book'
+    | '/profile'
   id:
     | '__root__'
     | '/'
@@ -204,7 +242,9 @@ export interface FileRouteTypes {
     | '/form'
     | '/query'
     | '/book/$bookId'
+    | '/profile/address'
     | '/book/'
+    | '/profile/'
   fileRoutesById: FileRoutesById
 }
 
@@ -216,7 +256,9 @@ export interface RootRouteChildren {
   FormLazyRoute: typeof FormLazyRoute
   QueryLazyRoute: typeof QueryLazyRoute
   BookBookIdRoute: typeof BookBookIdRoute
+  ProfileAddressRoute: typeof ProfileAddressRoute
   BookIndexRoute: typeof BookIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -227,7 +269,9 @@ const rootRouteChildren: RootRouteChildren = {
   FormLazyRoute: FormLazyRoute,
   QueryLazyRoute: QueryLazyRoute,
   BookBookIdRoute: BookBookIdRoute,
+  ProfileAddressRoute: ProfileAddressRoute,
   BookIndexRoute: BookIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -247,7 +291,9 @@ export const routeTree = rootRoute
         "/form",
         "/query",
         "/book/$bookId",
-        "/book/"
+        "/profile/address",
+        "/book/",
+        "/profile/"
       ]
     },
     "/": {
@@ -271,8 +317,14 @@ export const routeTree = rootRoute
     "/book/$bookId": {
       "filePath": "book/$bookId.tsx"
     },
+    "/profile/address": {
+      "filePath": "profile/address.tsx"
+    },
     "/book/": {
       "filePath": "book/index.tsx"
+    },
+    "/profile/": {
+      "filePath": "profile/index.tsx"
     }
   }
 }

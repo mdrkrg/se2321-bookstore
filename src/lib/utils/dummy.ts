@@ -7,23 +7,35 @@ export const testBookList: Book[] = booklist.items
 
 const fakeAddressList: Address[] = [
   {
-    id: 0,
-    receiver: 'Brandy DuBuque',
-    address: 'North Carolina Hickory 2250 N Center St',
-    tel: '(828) 328-6080',
+    id: 1000000001,
+    address: "北京市朝阳区建国路88号SOHO现代城D座1002室",
+    tel: "13988881234",
+    receiver: "王强"
   },
   {
-    id: 1,
-    receiver: 'Brandy DuBuque',
-    address: 'Alaska Fairbanks 3260 College Rd',
-    tel: '(828) 328-6080',
+    id: 1000000002,
+    address: "上海市浦东新区世纪大道2000号金茂大厦30层",
+    tel: "13899992345",
+    receiver: "李娜"
   },
   {
-    id: 2,
-    receiver: 'Mr. Kris Beatty IV',
-    address: 'Pennsylvania Mechanicsburg 5250 Simpson Ferry Rd',
-    tel: '(717) 458-0430',
+    id: 1000000003,
+    address: "广东省广州市天河区体育东路123号中信广场8楼",
+    tel: "13777773456",
+    receiver: "陈伟"
   },
+  {
+    id: 1000000004,
+    address: "四川省成都市武侯区人民南路四段56号华西大厦2单元301",
+    tel: "13666664567",
+    receiver: "赵静"
+  },
+  {
+    id: 1000000005,
+    address: "浙江省杭州市西湖区文三路500号银泰中心A座1508",
+    tel: "13555555678",
+    receiver: "周杰"
+  }
 ]
 
 export function fetchFakeAddress() {
