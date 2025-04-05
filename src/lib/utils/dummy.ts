@@ -1,4 +1,6 @@
-import type { Address, Book } from '@/lib/models/user'
+import type { Address, Book, Order } from '@/lib/models/user'
+import dayjs from 'dayjs'
+import _, { random, range, sample, sampleSize } from 'lodash'
 import booklist from './booklist.json'
 
 export const testBookList: Book[] = booklist.items
@@ -26,4 +28,28 @@ const fakeAddressList: Address[] = [
 
 export function fetchFakeAddress() {
   return fakeAddressList
+}
+
+export function getRandomTimestamp() {
+  return random(_.now())
+}
+
+export function fetchFakeOrderList(): Order[] {
+  return range(random(testBookList.length)).map((i) => {
+    const address = sample(fakeAddressList) as Address
+    return {
+      id: i,
+      receiver: address.receiver,
+      address: address.address,
+      tel: address.tel,
+      createdAt: dayjs(getRandomTimestamp()).format(),
+      items: sampleSize(testBookList, random(1, 5)).map((book) => {
+        return {
+          id: book.id,
+          book,
+          number: random(1, 5),
+        }
+      }),
+    }
+  })
 }

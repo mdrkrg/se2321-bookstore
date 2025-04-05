@@ -103,6 +103,7 @@ const columns: ColumnDef<CartItemProps>[] = [
       return (
         <Button
           variant="ghost"
+          className="bg-transparent hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           名称
@@ -121,7 +122,10 @@ const columns: ColumnDef<CartItemProps>[] = [
     accessorKey: 'number',
     header: () => {
       return (
-        <Button variant="ghost">
+        <Button
+          variant="ghost"
+          className="bg-transparent hover:bg-transparent"
+        >
           数量
         </Button>
       )
@@ -153,6 +157,7 @@ const columns: ColumnDef<CartItemProps>[] = [
       return (
         <Button
           variant="ghost"
+          className="bg-transparent hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           价格
@@ -303,8 +308,8 @@ export default function MyCart() {
 
   return (
     <div className="w-full">
-      <h1 className="font-bold text-2xl pl-[0.5em]">订单</h1>
-      <div className="flex items-center py-4">
+      <h1 className="font-bold text-2xl pl-[0.5em] pb-4">购物车</h1>
+      <div className="flex items-center pb-4">
         <Input
           placeholder="搜索书标题"
           value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
@@ -370,11 +375,11 @@ export default function MyCart() {
         <div className="flex-1 text-sm text-muted-foreground">
           共
           {' '}
-          {table.getFilteredSelectedRowModel().rows.length}
+          {table.getFilteredRowModel().rows.length}
           {' '}
           件商品，选中
           {' '}
-          {table.getFilteredRowModel().rows.length}
+          {table.getFilteredSelectedRowModel().rows.length}
           {' '}
           件商品。
         </div>
