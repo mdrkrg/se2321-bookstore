@@ -1,4 +1,4 @@
-import type { Address, Book, Order, PartialUserDTO } from '@/lib/models/user'
+import type { Address, Book, Order, UserDTO } from '@/lib/models/user'
 import dayjs from 'dayjs'
 import _, { random, range, sample, sampleSize } from 'lodash'
 import booklist from './booklist.json'
@@ -66,11 +66,12 @@ export function fetchFakeOrderList(): Order[] {
   })
 }
 
-export function fetchFakeUser(): PartialUserDTO {
+export function fetchFakeUser(): UserDTO {
   return {
     username: 'Lorem Ipsum',
     nickname: 'lorem',
     avatar: 'https://ui.shadcn.com/avatars/01.png',
     introduction: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent pulvinar libero sagittis, suscipit leo quis, venenatis ante. Etiam nulla mauris, sodales vitae ultricies eu, fringilla in libero. Mauris volutpat molestie rhoncus. Donec sit amet ante in nulla vehicula imperdiet et eget mi. Proin finibus tortor ut placerat luctus. Nullam condimentum leo eu nunc sagittis consequat. Praesent mi dolor, accumsan quis tortor eu, varius vulputate lectus. Quisque quis vulputate urna. Curabitur venenatis vestibulum quam, ut sodales eros posuere eget.',
+    balance: 1000,
   }
 }

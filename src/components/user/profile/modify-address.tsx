@@ -9,7 +9,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils/cn'
 import { fetchFakeAddress } from '@/lib/utils/dummy'
 
 import { ADDRESS_VALIDATOR, getNameValidator, PHONE_VALIDATOR } from '@/lib/utils/validate'
@@ -47,7 +46,7 @@ const formItems = {
   },
 }
 
-export function ProfileForm({
+export function ModifyAddressForm({
   className,
 }: React.ComponentProps<'form'>) {
   // is newly create or modify existing?
@@ -115,10 +114,7 @@ export function ProfileForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn(
-          'space-y-8 w-1/2',
-          className,
-        )}
+        className={className}
       >
         <FormField
           control={form.control}

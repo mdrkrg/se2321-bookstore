@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { ProfileNotImplemented } from '../me'
 
-export const Route = createFileRoute('/me/stars')({
+export const Route = createFileRoute('/me/rebalance')({
   loader() {
     throw notFound()
   },

@@ -88,6 +88,13 @@ function ProfileNavigation() {
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink className="nav-link text-sm" asChild>
+            <Link to="/me/rebalance">
+              账户充值
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   )
@@ -113,10 +120,18 @@ function ProfileComponent() {
   )
 }
 
+export function ProfileNotImplemented() {
+  return (
+    <ProfileLayout>
+      <div className="text-center p-4">施工中</div>
+    </ProfileLayout>
+  )
+}
+
 export function ProfileNotFound() {
   return (
     <ProfileLayout>
-      <div className="text-center">施工中</div>
+      <div className="text-center p-4">未找到页面</div>
     </ProfileLayout>
   )
 }

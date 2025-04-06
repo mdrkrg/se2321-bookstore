@@ -1,9 +1,9 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { ProfileNotFound } from '../me'
+import { ProfileNotImplemented } from '../me'
 
 export const Route = createFileRoute('/me/comments')({
   loader() {
     throw notFound()
   },
-  notFoundComponent: ProfileNotFound,
+  notFoundComponent: ProfileNotImplemented,
 })

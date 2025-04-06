@@ -5,14 +5,15 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { toCNYString } from '@/lib/utils/price'
+import { Route as RootRoute } from '@/routes/__root'
 import { mdiAccount } from '@mdi/js'
 import Icon from '@mdi/react'
-
-const balance = 100000
-
-const username = 'test'
+import { Link } from '@tanstack/react-router'
 
 export default function UserIcon() {
+  const { user } = RootRoute.useLoaderData()
+
   const itemStyle = `group relative flex h-[25px] select-none items-center rounded-[3px]
   pl-[25px] pr-[5px] text-[13px] leading-none text-violet11 outline-none
   data-[disabled]:pointer-events-none data-[highlighted]:bg-violet9
@@ -37,17 +38,19 @@ export default function UserIcon() {
           <DropdownMenuItem className={itemStyle}>
             用户
             {' '}
-            {username}
+            {user.username}
           </DropdownMenuItem>
           <DropdownMenuItem className={itemStyle}>
             账户余额
             {' '}
             <div className="ml-auto pl-5">
-              {balance}
+              {toCNYString(user.balance)}
             </div>
           </DropdownMenuItem>
-          <DropdownMenuItem className={itemStyle}>
-            修改密码
+          <DropdownMenuItem className={itemStyle} asChild>
+            <Link to="/me/password">
+              修改密码
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className={itemStyle}>
             登出

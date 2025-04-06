@@ -20,6 +20,7 @@ import { Route as CartImport } from './routes/cart'
 import { Route as MeIndexImport } from './routes/me/index'
 import { Route as BookIndexImport } from './routes/book/index'
 import { Route as MeStarsImport } from './routes/me/stars'
+import { Route as MeRebalanceImport } from './routes/me/rebalance'
 import { Route as MeProfileImport } from './routes/me/profile'
 import { Route as MePasswordImport } from './routes/me/password'
 import { Route as MeCommentsImport } from './routes/me/comments'
@@ -91,6 +92,12 @@ const BookIndexRoute = BookIndexImport.update({
 const MeStarsRoute = MeStarsImport.update({
   id: '/stars',
   path: '/stars',
+  getParentRoute: () => MeRoute,
+} as any)
+
+const MeRebalanceRoute = MeRebalanceImport.update({
+  id: '/rebalance',
+  path: '/rebalance',
   getParentRoute: () => MeRoute,
 } as any)
 
@@ -212,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeProfileImport
       parentRoute: typeof MeImport
     }
+    '/me/rebalance': {
+      id: '/me/rebalance'
+      path: '/rebalance'
+      fullPath: '/me/rebalance'
+      preLoaderRoute: typeof MeRebalanceImport
+      parentRoute: typeof MeImport
+    }
     '/me/stars': {
       id: '/me/stars'
       path: '/stars'
@@ -243,6 +257,7 @@ interface MeRouteChildren {
   MeCommentsRoute: typeof MeCommentsRoute
   MePasswordRoute: typeof MePasswordRoute
   MeProfileRoute: typeof MeProfileRoute
+  MeRebalanceRoute: typeof MeRebalanceRoute
   MeStarsRoute: typeof MeStarsRoute
   MeIndexRoute: typeof MeIndexRoute
 }
@@ -252,6 +267,7 @@ const MeRouteChildren: MeRouteChildren = {
   MeCommentsRoute: MeCommentsRoute,
   MePasswordRoute: MePasswordRoute,
   MeProfileRoute: MeProfileRoute,
+  MeRebalanceRoute: MeRebalanceRoute,
   MeStarsRoute: MeStarsRoute,
   MeIndexRoute: MeIndexRoute,
 }
@@ -271,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/me/comments': typeof MeCommentsRoute
   '/me/password': typeof MePasswordRoute
   '/me/profile': typeof MeProfileRoute
+  '/me/rebalance': typeof MeRebalanceRoute
   '/me/stars': typeof MeStarsRoute
   '/book': typeof BookIndexRoute
   '/me/': typeof MeIndexRoute
@@ -288,6 +305,7 @@ export interface FileRoutesByTo {
   '/me/comments': typeof MeCommentsRoute
   '/me/password': typeof MePasswordRoute
   '/me/profile': typeof MeProfileRoute
+  '/me/rebalance': typeof MeRebalanceRoute
   '/me/stars': typeof MeStarsRoute
   '/book': typeof BookIndexRoute
   '/me': typeof MeIndexRoute
@@ -307,6 +325,7 @@ export interface FileRoutesById {
   '/me/comments': typeof MeCommentsRoute
   '/me/password': typeof MePasswordRoute
   '/me/profile': typeof MeProfileRoute
+  '/me/rebalance': typeof MeRebalanceRoute
   '/me/stars': typeof MeStarsRoute
   '/book/': typeof BookIndexRoute
   '/me/': typeof MeIndexRoute
@@ -327,6 +346,7 @@ export interface FileRouteTypes {
     | '/me/comments'
     | '/me/password'
     | '/me/profile'
+    | '/me/rebalance'
     | '/me/stars'
     | '/book'
     | '/me/'
@@ -343,6 +363,7 @@ export interface FileRouteTypes {
     | '/me/comments'
     | '/me/password'
     | '/me/profile'
+    | '/me/rebalance'
     | '/me/stars'
     | '/book'
     | '/me'
@@ -360,6 +381,7 @@ export interface FileRouteTypes {
     | '/me/comments'
     | '/me/password'
     | '/me/profile'
+    | '/me/rebalance'
     | '/me/stars'
     | '/book/'
     | '/me/'
@@ -424,6 +446,7 @@ export const routeTree = rootRoute
         "/me/comments",
         "/me/password",
         "/me/profile",
+        "/me/rebalance",
         "/me/stars",
         "/me/"
       ]
@@ -457,6 +480,10 @@ export const routeTree = rootRoute
     },
     "/me/profile": {
       "filePath": "me/profile.tsx",
+      "parent": "/me"
+    },
+    "/me/rebalance": {
+      "filePath": "me/rebalance.tsx",
       "parent": "/me"
     },
     "/me/stars": {
