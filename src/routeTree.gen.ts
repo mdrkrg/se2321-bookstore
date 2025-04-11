@@ -13,7 +13,6 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as TableImport } from './routes/table'
 import { Route as OrderImport } from './routes/order'
 import { Route as MeImport } from './routes/me'
 import { Route as CartImport } from './routes/cart'
@@ -29,29 +28,9 @@ import { Route as BookBookIdImport } from './routes/book/$bookId'
 
 // Create Virtual Routes
 
-const QueryLazyImport = createFileRoute('/query')()
-const FormLazyImport = createFileRoute('/form')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
-
-const QueryLazyRoute = QueryLazyImport.update({
-  id: '/query',
-  path: '/query',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/query.lazy').then((d) => d.Route))
-
-const FormLazyRoute = FormLazyImport.update({
-  id: '/form',
-  path: '/form',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/form.lazy').then((d) => d.Route))
-
-const TableRoute = TableImport.update({
-  id: '/table',
-  path: '/table',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const OrderRoute = OrderImport.update({
   id: '/order',
@@ -163,27 +142,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderImport
       parentRoute: typeof rootRoute
     }
-    '/table': {
-      id: '/table'
-      path: '/table'
-      fullPath: '/table'
-      preLoaderRoute: typeof TableImport
-      parentRoute: typeof rootRoute
-    }
-    '/form': {
-      id: '/form'
-      path: '/form'
-      fullPath: '/form'
-      preLoaderRoute: typeof FormLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/query': {
-      id: '/query'
-      path: '/query'
-      fullPath: '/query'
-      preLoaderRoute: typeof QueryLazyImport
-      parentRoute: typeof rootRoute
-    }
     '/book/$bookId': {
       id: '/book/$bookId'
       path: '/book/$bookId'
@@ -279,9 +237,6 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
-  '/table': typeof TableRoute
-  '/form': typeof FormLazyRoute
-  '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
   '/me/comments': typeof MeCommentsRoute
@@ -297,9 +252,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/cart': typeof CartRoute
   '/order': typeof OrderRoute
-  '/table': typeof TableRoute
-  '/form': typeof FormLazyRoute
-  '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
   '/me/comments': typeof MeCommentsRoute
@@ -317,9 +269,6 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
-  '/table': typeof TableRoute
-  '/form': typeof FormLazyRoute
-  '/query': typeof QueryLazyRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
   '/me/comments': typeof MeCommentsRoute
@@ -338,9 +287,6 @@ export interface FileRouteTypes {
     | '/cart'
     | '/me'
     | '/order'
-    | '/table'
-    | '/form'
-    | '/query'
     | '/book/$bookId'
     | '/me/address'
     | '/me/comments'
@@ -355,9 +301,6 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/order'
-    | '/table'
-    | '/form'
-    | '/query'
     | '/book/$bookId'
     | '/me/address'
     | '/me/comments'
@@ -373,9 +316,6 @@ export interface FileRouteTypes {
     | '/cart'
     | '/me'
     | '/order'
-    | '/table'
-    | '/form'
-    | '/query'
     | '/book/$bookId'
     | '/me/address'
     | '/me/comments'
@@ -393,9 +333,6 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   MeRoute: typeof MeRouteWithChildren
   OrderRoute: typeof OrderRoute
-  TableRoute: typeof TableRoute
-  FormLazyRoute: typeof FormLazyRoute
-  QueryLazyRoute: typeof QueryLazyRoute
   BookBookIdRoute: typeof BookBookIdRoute
   BookIndexRoute: typeof BookIndexRoute
 }
@@ -405,9 +342,6 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   MeRoute: MeRouteWithChildren,
   OrderRoute: OrderRoute,
-  TableRoute: TableRoute,
-  FormLazyRoute: FormLazyRoute,
-  QueryLazyRoute: QueryLazyRoute,
   BookBookIdRoute: BookBookIdRoute,
   BookIndexRoute: BookIndexRoute,
 }
@@ -426,9 +360,6 @@ export const routeTree = rootRoute
         "/cart",
         "/me",
         "/order",
-        "/table",
-        "/form",
-        "/query",
         "/book/$bookId",
         "/book/"
       ]
@@ -453,15 +384,6 @@ export const routeTree = rootRoute
     },
     "/order": {
       "filePath": "order.tsx"
-    },
-    "/table": {
-      "filePath": "table.tsx"
-    },
-    "/form": {
-      "filePath": "form.lazy.tsx"
-    },
-    "/query": {
-      "filePath": "query.lazy.tsx"
     },
     "/book/$bookId": {
       "filePath": "book/$bookId.tsx"

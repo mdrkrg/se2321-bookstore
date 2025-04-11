@@ -37,11 +37,12 @@ export function OrderPopup({ children, orderList }: OrderPopupProps) {
   const [useDialog, setUseDialog] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 640px)')
 
+  // set whether use dialog or not only when it's out of view
   useEffect(() => {
     if (!open) {
       setUseDialog(isDesktop)
     }
-  }, [open])
+  }, [open, isDesktop])
 
   if (orderList.length === 0)
     return children

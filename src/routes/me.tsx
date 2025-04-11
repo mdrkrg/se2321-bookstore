@@ -99,6 +99,7 @@ function ProfileNavigation() {
     </NavigationMenu>
   )
 }
+
 function ProfileLayout({ children }: { children: ReactNode }) {
   return (
     <div className="container mx-auto p-4 max-sm:p-0 max-sm:mx-0">

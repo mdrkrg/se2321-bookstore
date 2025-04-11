@@ -52,14 +52,14 @@ export function BookDetail({ book }: BookDetailProps) {
         />
       </div>
 
-      <div className="md:w-2/3 p-8">
+      <article className="md:w-2/3 p-8">
         <h1 className="text-3xl font-bold text-gray-800 max-sm:text-center max-sm:mb-6">
           {book.title}
         </h1>
 
-        <div className="mt-4">
+        <section className="mt-4">
           <h2 className="text-lg font-semibold text-gray-700">基本信息</h2>
-          <p className="text-gray-600 p-2 leading-8">
+          <div className="text-gray-600 p-2 leading-8">
             作者&emsp;
             {book.author}
             <br />
@@ -78,22 +78,22 @@ export function BookDetail({ book }: BookDetailProps) {
                 </Badge>
               ))
             }
-          </p>
-        </div>
+          </div>
+        </section>
 
-        <div className="mt-4">
+        <section className="mt-4">
           <h2 className="text-lg font-semibold text-gray-700">作品简介</h2>
           <p className="text-gray-600 p-2 leading-8">
             {book.description}
           </p>
-        </div>
+        </section>
 
-        <div className="mt-4">
+        <section className="mt-4">
           <h2 className="text-lg font-semibold text-gray-700">价格</h2>
           <p className="text-pink-700 text-xl font-bold leading-10">{toCNYString(book.price)}</p>
-        </div>
+        </section>
 
-        <div className="mt-6 flex flex-row max-sm:flex-col">
+        <section className="mt-6 flex flex-row max-sm:flex-col">
           <NumberInput
             className="rounded-r-none mx-2 sm:ml-none max-sm:my-2"
             inputStyle="focus:outline-none"
@@ -126,8 +126,8 @@ export function BookDetail({ book }: BookDetailProps) {
               立即购买
             </Button>
           </OrderPopup>
-        </div>
-      </div>
+        </section>
+      </article>
     </>
   )
 }

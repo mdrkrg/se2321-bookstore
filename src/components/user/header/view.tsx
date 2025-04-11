@@ -68,4 +68,3 @@ export default function UserHeader() {
     </header>
   )
 }
-// <!--NavigationMenu.Link className={`${navigationMenuTriggerStyle} text-lg font-300 border-80 border-solid border-b-pink-300`} -->

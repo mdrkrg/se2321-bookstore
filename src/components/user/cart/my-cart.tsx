@@ -248,7 +248,7 @@ function useCartItemProps(cartItems: CartItem[]): CartItemProps[] {
   return cartItemProps
 }
 
-function useOrderList(cartItems: CartItemProps[]): OrderItem[] {
+function getOrderList(cartItems: CartItemProps[]): OrderItem[] {
   return cartItems.map((item) => {
     const { setNumber: _, ...remain } = item
     return remain
@@ -403,7 +403,7 @@ export default function MyCart() {
         </div>
         <div className="space-x-2">
           <OrderPopup
-            orderList={useOrderList(useSelectedCartItems())}
+            orderList={getOrderList(useSelectedCartItems())}
           >
             <Button
               variant="destructive"

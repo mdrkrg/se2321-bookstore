@@ -41,11 +41,13 @@ export default function UserIcon() {
             {user.username}
           </DropdownMenuItem>
           <DropdownMenuItem className={itemStyle}>
-            账户余额
-            {' '}
-            <div className="ml-auto pl-5">
-              {toCNYString(user.balance)}
-            </div>
+            <Link to="/me/rebalance">
+              账户余额
+              {' '}
+              <div className="ml-auto pl-5">
+                {toCNYString(user.balance)}
+              </div>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className={itemStyle} asChild>
             <Link to="/me/password">

@@ -15,7 +15,7 @@ import { ADDRESS_VALIDATOR, getNameValidator, PHONE_VALIDATOR } from '@/lib/util
 import { zodResolver } from '@hookform/resolvers/zod'
 import { mdiInformationOutline } from '@mdi/js'
 import Icon from '@mdi/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -73,42 +73,50 @@ export function ModifyAddressForm({
     })
   }
 
-  function handleResetSelect() {
-    if (!isModify)
-      return
+  function handleAddressSelect(
+    addressValue: string,
+    onAddressChange: (...event: any[]) => void,
+  ) {
+    onAddressChange(addressValue)
 
-    setIsModify(false)
-    form.setValue('selectedAddressId', undefined)
-  }
-
-  function handleDeleteSelect() {
-    if (!isModify)
-      return
-
-    toast(`已删除收货地址 ID ${form.getValues('selectedAddressId')}`)
-  }
-
-  useEffect(() => {
     const selectedAddressId = form.watch('selectedAddressId')
     const selectedAddress = addressList.find(
       address => address.id.toString() === selectedAddressId,
     )
-
     if (selectedAddress) {
       form.setValue('receiver', selectedAddress.receiver)
       form.setValue('address', selectedAddress.address)
       form.setValue('tel', selectedAddress.tel)
       setIsModify(true)
     }
-    else {
-      // clear the fields if no address is selected
-      form.setValue('receiver', '')
-      form.setValue('address', '')
-      form.setValue('tel', '')
-      form.setValue('selectedAddressId', undefined)
-      setIsModify(false)
-    }
-  }, [form.watch('selectedAddressId')])
+  }
+
+  function handleResetSelect() {
+    if (!isModify)
+      return
+
+    setIsModify(false)
+    form.reset({
+      receiver: '',
+      address: '',
+      tel: '',
+      selectedAddressId: undefined,
+    })
+  }
+
+  function handleDeleteSelect() {
+    if (!isModify)
+      return
+
+    setIsModify(false)
+    form.reset({
+      receiver: '',
+      address: '',
+      tel: '',
+      selectedAddressId: undefined,
+    })
+    toast(`已删除收货地址 ID ${form.getValues('selectedAddressId')}`)
+  }
 
   return (
     <Form {...form}>
@@ -127,7 +135,7 @@ export function ModifyAddressForm({
               <FormItem>
                 <FormLabel>选择收货地址进行修改</FormLabel>
                 <AddressSelectFormItem
-                  onValueChange={field.onChange}
+                  onValueChange={value => handleAddressSelect(value, field.onChange)}
                   defaultValue={field.value}
                   addressList={addressList}
                   selectedAddress={selectedAddress}
