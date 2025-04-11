@@ -3,6 +3,7 @@ export interface PagedItems<Item> {
   total: number
   items: Item[]
 }
+
 export interface OrderInfo {
   address: string
   receiver: string
