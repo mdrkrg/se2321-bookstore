@@ -15,6 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as OrderImport } from './routes/order'
 import { Route as MeImport } from './routes/me'
+import { Route as LoginImport } from './routes/login'
 import { Route as CartImport } from './routes/cart'
 import { Route as MeIndexImport } from './routes/me/index'
 import { Route as BookIndexImport } from './routes/book/index'
@@ -41,6 +42,12 @@ const OrderRoute = OrderImport.update({
 const MeRoute = MeImport.update({
   id: '/me',
   path: '/me',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LoginRoute = LoginImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -126,6 +133,13 @@ declare module '@tanstack/react-router' {
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartImport
+      parentRoute: typeof rootRoute
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
     '/me': {
@@ -235,6 +249,7 @@ const MeRouteWithChildren = MeRoute._addFileChildren(MeRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/cart': typeof CartRoute
+  '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -251,6 +266,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/cart': typeof CartRoute
+  '/login': typeof LoginRoute
   '/order': typeof OrderRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
@@ -267,6 +283,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/cart': typeof CartRoute
+  '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/book/$bookId': typeof BookBookIdRoute
@@ -285,6 +302,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cart'
+    | '/login'
     | '/me'
     | '/order'
     | '/book/$bookId'
@@ -300,6 +318,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cart'
+    | '/login'
     | '/order'
     | '/book/$bookId'
     | '/me/address'
@@ -314,6 +333,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/cart'
+    | '/login'
     | '/me'
     | '/order'
     | '/book/$bookId'
@@ -331,6 +351,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   CartRoute: typeof CartRoute
+  LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRouteWithChildren
   OrderRoute: typeof OrderRoute
   BookBookIdRoute: typeof BookBookIdRoute
@@ -340,6 +361,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   CartRoute: CartRoute,
+  LoginRoute: LoginRoute,
   MeRoute: MeRouteWithChildren,
   OrderRoute: OrderRoute,
   BookBookIdRoute: BookBookIdRoute,
@@ -358,6 +380,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/cart",
+        "/login",
         "/me",
         "/order",
         "/book/$bookId",
@@ -369,6 +392,9 @@ export const routeTree = rootRoute
     },
     "/cart": {
       "filePath": "cart.tsx"
+    },
+    "/login": {
+      "filePath": "login.tsx"
     },
     "/me": {
       "filePath": "me.tsx",

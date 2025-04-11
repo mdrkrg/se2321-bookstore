@@ -1,5 +1,4 @@
 import type { BookTag } from '@/lib/models/user'
-import type { ChangeEventHandler } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -77,7 +76,7 @@ function TagFilter({
 
 interface BookFilterProps extends React.ComponentProps<'div'> {
   filterInput: string
-  onFilterInputChange: ChangeEventHandler<HTMLInputElement>
+  onFilterInputChange: (input: string) => void
   tags: BookTag[]
   onSelectedTagsChange: (selectedItems: number[]) => void
 }
@@ -163,7 +162,7 @@ export default function BookFilter({
         <Input
           type="text"
           value={filterInput}
-          onChange={onFilterInputChange}
+          onChange={e => onFilterInputChange(e.target.value)}
           placeholder="Search..."
           className={cn('flex-[5] w-full shadow-md rounded-full outline-none h-10', isToggled
             ? 'animate-in slide-in-r-1/2 fade-in-0'
