@@ -3,8 +3,11 @@ package me.crvena.bookstore.models;
 import java.io.Serializable;
 import java.time.Instant;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.ReadOnlyProperty;
 
 import jakarta.persistence.*;
 
@@ -32,9 +35,13 @@ public abstract class BaseModel implements Serializable {
   private Long version;
 
   @CreatedDate
+  @CreationTimestamp
+  @ReadOnlyProperty
   @Column(updatable = false)
   private Instant createdAt;
 
   @LastModifiedDate
+  @UpdateTimestamp
+  @ReadOnlyProperty
   private Instant updatedAt;
 }
