@@ -8,6 +8,7 @@ build/
 src/main/resources/application-private.properties
 .env
 !.env.dist
+snapadmin_internal.mv.db
 
 ### STS ###
 .apt_generated
