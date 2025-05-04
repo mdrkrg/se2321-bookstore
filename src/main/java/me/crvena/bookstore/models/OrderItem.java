@@ -1,0 +1,55 @@
+package me.crvena.bookstore.models;
+
+import java.math.BigDecimal;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Entity
+public class OrderItem extends BaseModel {
+
+  @NonNull
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @NotNull
+  private Order order;
+
+  // TODO: Do we need a createdBy field?
+
+  @NonNull
+  @ManyToOne(fetch = FetchType.EAGER)
+  @OnDelete(action = OnDeleteAction.RESTRICT)
+  @NotNull
+  private Book book;
+
+  @NonNull
+  @NotNull
+  @Min(1)
+  @ColumnDefault("1")
+  private Long number = Long.valueOf(1);
+
+  /**
+   * Snapshot of book price at buying time
+   */
+  @Column(precision = 19, scale = 2, nullable = false)
+  @Min(0)
+  private BigDecimal unitPrice;
+
+  /**
+   * The price customer paid for this item in total
+   */
+  @Column(precision = 19, scale = 2, nullable = false)
+  @Min(0)
+  private BigDecimal paidPrice;
+}

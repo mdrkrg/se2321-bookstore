@@ -1,0 +1,72 @@
+package me.crvena.bookstore.models;
+
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.validator.constraints.URL;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@RequiredArgsConstructor
+@Entity
+@Table(indexes = @Index(columnList = "title"))
+public class Book extends BaseModel {
+
+  @NonNull
+  @Column(nullable = false, unique = true)
+  private String title;
+
+  @Builder.Default
+  @Column(columnDefinition = "TEXT")
+  @ColumnDefault("''")
+  private String description = "";
+
+  @Builder.Default
+  @Min(0)
+  @Column(precision = 19, scale = 2, nullable = false)
+  @ColumnDefault("0")
+  private BigDecimal price = BigDecimal.ZERO;
+
+  @Builder.Default
+  @URL
+  private String cover = null;
+
+  @Builder.Default
+  @NotNull
+  @NonNull
+  @ColumnDefault("0")
+  private Long sales = Long.valueOf(0);
+
+  @Builder.Default
+  @NotNull
+  @NonNull
+  @ColumnDefault("0")
+  private Long stock = Long.valueOf(0);
+
+  @Builder.Default
+  @ManyToMany
+  @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  @ToString.Exclude
+  @Setter(AccessLevel.NONE)
+  private Set<Tag> tags = new HashSet<>();
+
+  public void addTag(Tag tag) {
+    this.tags.add(tag);
+    tag.getBookSet().add(this); // Maintain bidirectional link
+  }
+
+  public void removeTag(Tag tag) {
+    this.tags.remove(tag);
+    tag.getBookSet().remove(this); // Maintain bidirectional link
+  }
+}

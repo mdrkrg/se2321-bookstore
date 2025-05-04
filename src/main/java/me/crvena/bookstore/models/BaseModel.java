@@ -1,0 +1,40 @@
+package me.crvena.bookstore.models;
+
+import java.io.Serializable;
+import java.time.Instant;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import jakarta.persistence.*;
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@MappedSuperclass
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public abstract class BaseModel implements Serializable {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
+
+  @Override
+  public String toString() {
+    return "<" + getClass().getSimpleName() + " #" + getId() + ">";
+  }
+
+  @Version
+  private Long version;
+
+  @CreatedDate
+  @Column(updatable = false)
+  private Instant createdAt;
+
+  @LastModifiedDate
+  private Instant updatedAt;
+}
