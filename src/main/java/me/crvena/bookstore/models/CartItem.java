@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.annotation.CreatedBy;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -22,19 +23,19 @@ import lombok.*;
 @Entity
 public class CartItem extends BaseModel {
 
-  // deleting a Cart will delete CartItem
-  // but not in reverse
+  /**
+   * The owner of the CartItem
+   */
   @NonNull
-  @ToString.Exclude
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @NotNull
-  private Cart cart;
+  @CreatedBy
+  @JoinColumn(name = "creator_id", nullable = false)
+  private User creator;
 
   // deleting a Book will delete CartItem
   // but not in reverse
   @NonNull
-  @ToString.Exclude
   @ManyToOne(fetch = FetchType.EAGER)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @NotNull
@@ -44,7 +45,7 @@ public class CartItem extends BaseModel {
   @NonNull
   @NotNull
   @ColumnDefault("1")
-  private Integer number = 1;
+  private Long number = Long.valueOf(1);
 
   public BigDecimal getPrice() {
     return book.getPrice().multiply(BigDecimal.valueOf(number));

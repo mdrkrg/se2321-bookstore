@@ -37,7 +37,7 @@ public class Order extends BaseModel {
   @OnDelete(action = OnDeleteAction.RESTRICT)
   @CreatedBy
   @JoinColumn(name = "creator_id", nullable = false)
-  private User createdBy;
+  private User creator;
 
   @Length(max = MAX_NAME_LENGTH)
   String receiver;
