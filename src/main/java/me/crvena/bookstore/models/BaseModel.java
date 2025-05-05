@@ -22,6 +22,7 @@ public abstract class BaseModel implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @ReadOnlyProperty
   @Setter(AccessLevel.NONE)
   @EqualsAndHashCode.Include
   private Long id;
@@ -32,6 +33,7 @@ public abstract class BaseModel implements Serializable {
   }
 
   @Version
+  @ReadOnlyProperty
   private Long version;
 
   @CreatedDate

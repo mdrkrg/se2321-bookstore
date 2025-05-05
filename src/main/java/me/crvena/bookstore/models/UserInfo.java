@@ -3,6 +3,7 @@ package me.crvena.bookstore.models;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.URL;
+import org.springframework.data.annotation.ReadOnlyProperty;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,6 +27,7 @@ public class UserInfo extends BaseModel {
   @NonNull
   @OneToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @ReadOnlyProperty
   @Setter(AccessLevel.NONE)
   @JoinColumn(nullable = false)
   private User user;
