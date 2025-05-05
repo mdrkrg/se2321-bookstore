@@ -10,7 +10,15 @@ classDiagram
         %% this should be handled by controller to
         %% either Personal View or User View
         +BigDecimal balance
+        +UserInfo userInfo FK OneToOne
+        +Role role
     }
+    class Role {
+        <<enumeration>>
+        USER
+        ADMIN
+    }
+    User "1" *-- "1" Role : is
     class UserInfo {
         -Long id PK
         -User user FK OneToOne user_id
@@ -26,6 +34,7 @@ classDiagram
         +BigDecimal price
         +URL cover
         +Long sales
+        +Long stock
         +Set~Tag~ tags FK ManyToMany
     }
     class Tag {
@@ -33,40 +42,34 @@ classDiagram
         +String name
     }
     Book "0..*" o-- "0..*" Tag : contains
-    class Cart {
-        +Set~CartItems~ items FK ManyToOne
-        +getTotalPrice() BigDecimal
-        +placeOrder() void
+    class CartItem {
+        +Long id PK
+        -User creator FK ManyToOne
+        +Book book FK ManyToOne
+        +Integer number
     }
-    User "1" *-- "1" Cart : owns
+    CartItem "0..*" o-- "1" Book : wraps
+    User "1" o-- "0..*" CartItem : creates
     class Order {
         +Long id PK
-        -User createdBy FK OneToMany
-        +Set~OrderItem~ items FK ManyToOne
+        -User creator FK ManyToOne
+        +Set~OrderItem~ items FK OneToMany
         +String receiver
         +String tel
         +String address
-        +BigDecimal paidPrice
-        +getTotalPrice() BigDecimal
+        +getOriginalPrice() BigDecimal
+        +getTotalPaidPrice() BigDecimal
     }
     class OrderItem {
         +Long id PK
-        -User createdBy FK OneToMany
-        +Book book FK OneToMany
-        +Integer number
-    }
-    class CartItem {
-        +Long id PK
-        -User createdBy FK OneToMany
-        +Book book FK OneToMany
-        +Integer number
+        +Book book FK ManyToOne
+        +Long number
+        +BigDecimal unitPrice
+        +BigDecimal paidPrice
     }
     OrderItem "0..*" o-- "1" Book : wraps
-    CartItem "0..*" o-- "1" Book : wraps
-    User "1" o-- "0..*" CartItem : creates
-    User "1" o-- "0..*" OrderItem : creates
+    CartItem "1" ..> "1" OrderItem : creates when place order
+    CartItem "1..*" ..> "1" Order : composes when place order
     Order "1" o-- "0..*" OrderItem : contains
-    Cart "1" o-- "0..*" CartItem : contains
-    User "1" o-- "0..*" Order : created
-    Order ..> Cart : places order
+    User "1" o-- "0..*" Order : creates
 ```

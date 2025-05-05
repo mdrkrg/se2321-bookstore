@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 
 import jakarta.persistence.*;
@@ -19,12 +20,25 @@ import lombok.*;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
-@Table(indexes = @Index(columnList = "title"))
+@Table(indexes = {
+    @Index(columnList = "title"),
+    @Index(columnList = "author"),
+}, uniqueConstraints = @UniqueConstraint(columnNames = {
+    "title",
+    "author",
+}))
 public class Book extends BaseModel {
 
+  public static final int MAX_NAME_LENGTH = 50;
+
   @NonNull
-  @Column(nullable = false, unique = true)
+  @NotNull
   private String title;
+
+  @Length(max = MAX_NAME_LENGTH)
+  @NonNull
+  @NotNull
+  private String author;
 
   @Builder.Default
   @Column(columnDefinition = "TEXT")
