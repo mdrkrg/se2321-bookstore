@@ -1,5 +1,7 @@
 package me.crvena.bookstore.models;
 
+import me.crvena.bookstore.constants.ConstraintConst;
+
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -22,10 +24,6 @@ import lombok.*;
 @Table(name = "orders")
 public class Order extends BaseModel {
 
-  public static final int MAX_ADDRESS_LENGTH = 100;
-  public static final int MAX_NAME_LENGTH = 50;
-  public static final int MAX_TEL_LENGTH = 30;
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Setter(AccessLevel.NONE)
@@ -45,15 +43,15 @@ public class Order extends BaseModel {
   @JoinColumn(name = "creator_id", nullable = false)
   private User creator;
 
-  @Length(max = MAX_NAME_LENGTH)
+  @Length(max = ConstraintConst.MAX_NAME_LENGTH)
   String receiver;
 
   // TODO: regex validation (in DTO?)
-  @Length(max = MAX_TEL_LENGTH)
-  @Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s.0-9]{9,}$")
+  @Length(max = ConstraintConst.MAX_TEL_LENGTH)
+  @Pattern(regexp = ConstraintConst.PHONE_REGEX)
   String tel;
 
-  @Length(max = MAX_ADDRESS_LENGTH)
+  @Length(max = ConstraintConst.MAX_ADDRESS_LENGTH)
   String address;
 
   public BigDecimal getTotalPaidPrice() {
