@@ -82,7 +82,6 @@ public class Book extends BaseModel {
   @ManyToMany
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
   @ToString.Exclude
-  @Setter(AccessLevel.NONE)
   private Set<Tag> tags = new HashSet<>();
 
   public void addTag(Tag tag) {

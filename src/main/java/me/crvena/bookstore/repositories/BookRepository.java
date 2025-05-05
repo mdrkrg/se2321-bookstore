@@ -11,7 +11,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import me.crvena.bookstore.models.Book;
 import me.crvena.bookstore.models.Tag;
 
-@RepositoryRestResource(collectionResourceRel = "cart", path = "cart")
+@RepositoryRestResource(collectionResourceRel = "book", path = "book")
 public interface BookRepository extends PagingAndSortingRepository<Book, Long> {
 
   Optional<Book> findByTitle(String title);

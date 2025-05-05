@@ -6,7 +6,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.models.UserInfo;
 
-@RepositoryRestResource(collectionResourceRel = "cart", path = "cart")
+@RepositoryRestResource(collectionResourceRel = "userinfo", path = "userinfo", exported = false)
 public interface UserInfoRepository extends CrudRepository<UserInfo, Long> {
 
   UserInfo findByUser(User user);

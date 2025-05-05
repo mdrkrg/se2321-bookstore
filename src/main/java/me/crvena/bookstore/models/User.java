@@ -4,6 +4,10 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.validator.constraints.*;
 // import org.springframework.security.core.GrantedAuthority;
 // import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.data.annotation.ReadOnlyProperty;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import me.crvena.bookstore.enums.Role;
 
@@ -50,6 +54,7 @@ public class User extends BaseModel {
    * User's hashed password.
    */
   @NonNull
+  @JsonIgnore
   @Column(nullable = false)
   private String password;
 
@@ -84,6 +89,7 @@ public class User extends BaseModel {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = false)
   @PrimaryKeyJoinColumn
   @ToString.Exclude
+  @ReadOnlyProperty
   @Setter(AccessLevel.NONE)
   private UserInfo userInfo = new UserInfo(this);
 }
