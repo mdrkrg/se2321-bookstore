@@ -41,42 +41,64 @@ public class CartController {
   // @GetMapping
   @Description("Get cart for current user.")
   @RestResource(rel = "cart")
-  @RequestMapping(value = "/cart", method = RequestMethod.GET, produces = "application/hal+json")
-  public ResponseEntity<PagedModel<EntityModel<CartItem>>> findAll(Pageable pageable) {
+  @RequestMapping(method = RequestMethod.GET, produces = "application/json")
+  // public ResponseEntity<PagedModel<EntityModel<CartItem>>> findAll(Pageable
+  // pageable) {
+  public ResponseEntity<Page<CartItem>> findAll(Pageable pageable) {
     // TODO: Spring Security user
     // WARN: test only user implementation
     User user = userService.getOrCreateTestUser();
     Page<CartItem> cartItems = cartService.getCartByUser(user, pageable);
 
-    PagedModel<EntityModel<CartItem>> pagedModel = pagedResourcesAssembler.toModel(cartItems, EntityModel::of);
-    pagedModel.forEach(model -> {
-      model.add(entityLinks.linkForItemResource(CartItem.class,
-          model.getContent().getId()).withSelfRel());
-      model.add(entityLinks.linkForItemResource(Book.class,
-          model.getContent().getBook().getId()).withRel("book"));
-    });
-    return ResponseEntity.ok(pagedModel);
+    // TODO: DTO
+    return ResponseEntity.ok(cartItems);
   }
 
   /**
-   * TODO: this logic can actually put into repository
+   * @throws CartItemAlreadyExistsException
    */
   // @PostMapping
-  @RequestMapping(value = "/cart", method = RequestMethod.POST, produces = "application/hal+json")
-  public ResponseEntity<CartItem> createCartItem(@RequestBody CartItemRequest cartItemRequest) {
+  @RequestMapping(method = RequestMethod.POST, produces = "application/json")
+  public ResponseEntity<CartItem> createCartItem(
+      @RequestBody CartItemRequest.PostCartItemRequest cartItemRequest) {
+
     // TODO: Spring Security user
     // WARN: test only user implementation
     User user = userService.getOrCreateTestUser();
-    Optional<CartItem> original = cartService.getCartItemByUserBook(user, cartItemRequest.getBook());
+    CartItem createdCartItem = cartService.createCartItem(
+        user, cartItemRequest.getBookId(), cartItemRequest.getNumber());
 
-    if (original.isPresent()) {
-      return new ResponseEntity<>(original.get(), HttpStatus.NOT_MODIFIED);
-    }
+    return new ResponseEntity<>(createdCartItem, HttpStatus.CREATED);
+  }
 
-    return new ResponseEntity<>(
-        cartService.createCartItem(
-            user, cartItemRequest.getBook(), cartItemRequest.getNumber()),
-        HttpStatus.CREATED);
+  @ExceptionHandler(CartItemAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleCartItemAlreadyExists(
+      CartItemAlreadyExistsException ex, WebRequest request) {
+
+    return ResponseUtil.createErrorResponse(
+        HttpStatus.CONFLICT, ex.getMessage(), request);
+  }
+
+  @RequestMapping(path = "/{id}", method = { RequestMethod.PUT,
+      RequestMethod.PATCH }, produces = "application/json")
+  public ResponseEntity<CartItem> patchCartItem(
+      @PathVariable("id") Long id,
+      @RequestBody CartItemRequest.PatchCartItemRequest request) {
+
+    // TODO: validate user
+
+    CartItem cartItem = cartService.modifyCartItem(id, request.getNumber());
+    return ResponseEntity.ok(cartItem);
+  }
+
+  @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<CartItem> deleteCartItem(
+      @PathVariable("id") Long id) {
+
+    // TODO: validate user
+
+    cartService.deleteCartItem(id);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
 }

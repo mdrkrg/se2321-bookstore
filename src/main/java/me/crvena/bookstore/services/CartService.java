@@ -1,8 +1,11 @@
 package me.crvena.bookstore.services;
 
+import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
+import me.crvena.bookstore.exceptions.ResourceDoesNotExistException;
 import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,13 @@ public class CartService {
   @Autowired
   private final CartItemRepository cartItemRepository;
 
+  @Autowired
+  private final BookRepository bookRepository;
+
+  public List<CartItem> getCartByUser(User user) {
+    return cartItemRepository.findByCreator(user);
+  }
+
   public Page<CartItem> getCartByUser(User user, Pageable pageable) {
     return cartItemRepository.findByCreator(user, pageable);
   }
@@ -28,9 +38,41 @@ public class CartService {
     return cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
   }
 
+  /**
+   * @throw CartItemAlreadyExistsException
+   */
   @Transactional
-  public CartItem createCartItem(User user, Book book, Long number) {
+  public CartItem createCartItem(User user, Long bookId, Long number) {
+    Book book = bookRepository.findById(bookId)
+        .orElseThrow(() -> new ResourceDoesNotExistException(Book.class, bookId));
+
+    Optional<CartItem> existingCartItem = cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
+    if (existingCartItem.isPresent()) {
+      throw new CartItemAlreadyExistsException("Cart item already exists for user and book");
+    }
     CartItem cartItem = new CartItem(user, book, number);
     return cartItemRepository.save(cartItem);
+  }
+
+  /**
+   * @throw {@link ResourceDoesNotExistException}
+   */
+  @Transactional
+  public CartItem modifyCartItem(Long id, Long number) {
+    CartItem cartItem = cartItemRepository.findById(id).orElseThrow(
+        () -> new ResourceDoesNotExistException(CartItem.class, id));
+    cartItem.setNumber(number);
+    return cartItemRepository.save(cartItem);
+  }
+
+  /**
+   * @throw {@link ResourceDoesNotExistException}
+   */
+  @Transactional
+  public void deleteCartItem(Long id) {
+    if (!cartItemRepository.existsById(id)) {
+      throw new ResourceDoesNotExistException(CartItem.class, id);
+    }
+    cartItemRepository.deleteById(id);
   }
 }
