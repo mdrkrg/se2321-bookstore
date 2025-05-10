@@ -19,7 +19,7 @@ import me.crvena.bookstore.models.Order;
 import me.crvena.bookstore.models.User;
 
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/api/order")
 // @CrossOrigin(origins = "http://localhost:3000")
 public class OrderController {
 

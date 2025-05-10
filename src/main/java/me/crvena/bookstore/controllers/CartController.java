@@ -15,17 +15,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
 import me.crvena.bookstore.services.CartService;
 import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.utils.ResponseUtil;
 import me.crvena.bookstore.dtos.CartItemRequest;
 import me.crvena.bookstore.dtos.ErrorResponse;
-import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
 import me.crvena.bookstore.models.CartItem;
 import me.crvena.bookstore.models.User;
 
 @RestController
-@RequestMapping("/cart")
+@RequestMapping("/api/cart")
 // @CrossOrigin(origins = "http://localhost:3000")
 public class CartController {
 

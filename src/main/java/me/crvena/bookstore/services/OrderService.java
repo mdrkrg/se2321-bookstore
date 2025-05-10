@@ -1,7 +1,6 @@
 package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.dtos.OrderRequest;
-import me.crvena.bookstore.exceptions.ResourceDoesNotExistException;
 import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
@@ -13,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import me.crvena.bookstore.exceptions.PermissionDenied;
+import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
 import lombok.*;
 
@@ -40,13 +41,18 @@ public class OrderService {
    */
   @Transactional
   public Order placeOrder(User user, OrderRequest orderRequest) {
-    // validate item ids
+    // validate items
     Set<Long> cartItemIds = orderRequest.getItemIds();
     Set<CartItem> cartItems = new HashSet<>();
     cartItemIds.forEach(id -> {
-      cartItems.add(cartItemRepository.findById(id)
-          .orElseThrow(() -> new ResourceDoesNotExistException(
-              CartItem.class, id)));
+      CartItem item = cartItemRepository.findById(id)
+          .orElseThrow(() -> new ResourceDoesNotExist(
+              CartItem.class, id));
+      if (!item.getCreator().equals(user)) {
+        throw new PermissionDenied(
+            user, "CartItem " + id + " does not belong to this user.");
+      }
+      cartItems.add(item);
     });
 
     Order order = createFromOrderRequest(user, orderRequest, cartItems);

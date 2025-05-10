@@ -1,7 +1,5 @@
 package me.crvena.bookstore.services;
 
-import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
-import me.crvena.bookstore.exceptions.ResourceDoesNotExistException;
 import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
@@ -13,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
+import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
 import lombok.*;
 
@@ -44,7 +44,7 @@ public class CartService {
   @Transactional
   public CartItem createCartItem(User user, Long bookId, Long number) {
     Book book = bookRepository.findById(bookId)
-        .orElseThrow(() -> new ResourceDoesNotExistException(Book.class, bookId));
+        .orElseThrow(() -> new ResourceDoesNotExist(Book.class, bookId));
 
     Optional<CartItem> existingCartItem = cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
     if (existingCartItem.isPresent()) {
@@ -55,23 +55,23 @@ public class CartService {
   }
 
   /**
-   * @throw {@link ResourceDoesNotExistException}
+   * @throw {@link ResourceDoesNotExist}
    */
   @Transactional
   public CartItem modifyCartItem(Long id, Long number) {
     CartItem cartItem = cartItemRepository.findById(id).orElseThrow(
-        () -> new ResourceDoesNotExistException(CartItem.class, id));
+        () -> new ResourceDoesNotExist(CartItem.class, id));
     cartItem.setNumber(number);
     return cartItemRepository.save(cartItem);
   }
 
   /**
-   * @throw {@link ResourceDoesNotExistException}
+   * @throw {@link ResourceDoesNotExist}
    */
   @Transactional
   public void deleteCartItem(Long id) {
     if (!cartItemRepository.existsById(id)) {
-      throw new ResourceDoesNotExistException(CartItem.class, id);
+      throw new ResourceDoesNotExist(CartItem.class, id);
     }
     cartItemRepository.deleteById(id);
   }
