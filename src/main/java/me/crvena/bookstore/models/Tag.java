@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import lombok.*;
 
 @Data
@@ -19,6 +22,7 @@ public class Tag extends BaseModel {
   private String name;
 
   @ToString.Exclude
+  @JsonBackReference
   @ManyToMany(mappedBy = "tags")
   Set<Book> bookSet = new HashSet<>();
 

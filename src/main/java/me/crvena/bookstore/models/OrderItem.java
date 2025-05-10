@@ -6,6 +6,8 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +24,7 @@ public class OrderItem extends BaseModel {
   @NonNull
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @JsonBackReference // avoid loop
   @NotNull
   private Order order;
 
@@ -52,4 +55,11 @@ public class OrderItem extends BaseModel {
   @Column(precision = 19, scale = 2, nullable = false)
   @Min(0)
   private BigDecimal paidPrice;
+
+  public static OrderItem createFromCartItem(Order order,
+      CartItem cartItem, BigDecimal paidPrice) {
+
+    return new OrderItem(order, cartItem.getBook(), cartItem.getNumber(),
+        cartItem.getBook().getPrice(), paidPrice);
+  }
 }

@@ -3,6 +3,7 @@ package me.crvena.bookstore.models;
 import java.io.Serializable;
 import java.time.Instant;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
@@ -40,6 +41,7 @@ public abstract class BaseModel implements Serializable {
   @CreationTimestamp
   @ReadOnlyProperty
   @Column(updatable = false)
+  // @ColumnDefault("getdate()")
   private Instant createdAt;
 
   @LastModifiedDate

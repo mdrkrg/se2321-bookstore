@@ -7,6 +7,8 @@ import java.util.Set;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.validator.constraints.URL;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -56,6 +58,7 @@ public class Book extends BaseModel {
   @Builder.Default
   @ManyToMany
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  @JsonManagedReference // avoid loop
   @ToString.Exclude
   private Set<Tag> tags = new HashSet<>();
 

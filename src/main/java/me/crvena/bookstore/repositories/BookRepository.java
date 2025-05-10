@@ -10,9 +10,12 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import me.crvena.bookstore.models.Book;
 import me.crvena.bookstore.models.Tag;
+import me.crvena.bookstore.repositories.utils.ReadonlyRepository;
 
 @RepositoryRestResource(collectionResourceRel = "book", path = "book")
-public interface BookRepository extends PagingAndSortingRepository<Book, Long> {
+public interface BookRepository extends
+    PagingAndSortingRepository<Book, Long>,
+    ReadonlyRepository<Book, Long> {
 
   Optional<Book> findByTitle(String title);
 

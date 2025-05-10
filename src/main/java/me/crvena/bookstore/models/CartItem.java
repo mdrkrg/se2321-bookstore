@@ -18,8 +18,8 @@ import lombok.*;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 @Entity
 public class CartItem extends BaseModel {
 
