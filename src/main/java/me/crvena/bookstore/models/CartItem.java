@@ -7,6 +7,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedBy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +20,7 @@ import lombok.*;
  */
 @Data
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
@@ -39,6 +42,7 @@ public class CartItem extends BaseModel {
   @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
   @CreatedBy
+  @JsonIgnore
   @JoinColumn(name = "creator_id", nullable = false)
   private User creator;
 

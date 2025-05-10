@@ -1,8 +1,10 @@
 package me.crvena.bookstore.models;
 
 import me.crvena.bookstore.constants.ConstraintConst;
+import me.crvena.bookstore.dtos.OrderRequest;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -13,11 +15,14 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.*;
 import org.springframework.data.annotation.CreatedBy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.*;
 
 @Data
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Entity
@@ -32,7 +37,8 @@ public class Order extends BaseModel {
 
   @NonNull
   @ToString.Exclude
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "order", orphanRemoval = true)
+  @JsonManagedReference // avoid loop
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "order", orphanRemoval = true, fetch = FetchType.EAGER)
   private Set<OrderItem> items;
 
   @NonNull
@@ -40,6 +46,7 @@ public class Order extends BaseModel {
   @ManyToOne
   @OnDelete(action = OnDeleteAction.RESTRICT)
   @CreatedBy
+  @JsonIgnore
   @JoinColumn(name = "creator_id", nullable = false)
   private User creator;
 

@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.*;
 import org.springframework.data.annotation.ReadOnlyProperty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import me.crvena.bookstore.enums.Role;
@@ -61,7 +62,7 @@ public class User extends BaseModel {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   @ColumnDefault("'USER'")
-  private Role role;
+  private Role role = Role.USER;
 
   @Column(precision = 19, scale = 2, nullable = false)
   @ColumnDefault("0")
@@ -79,16 +80,16 @@ public class User extends BaseModel {
     return false;
   }
 
-  // Relationships (e.g., to Cart, Order)
-
   // @Override
   // public Collection<? extends GrantedAuthority> getAuthorities() {
   // return role.getAuthorities();
   // }
 
+  @JsonManagedReference
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = false)
   @PrimaryKeyJoinColumn
   @ToString.Exclude
+  @EqualsAndHashCode.Exclude
   @ReadOnlyProperty
   @Setter(AccessLevel.NONE)
   private UserInfo userInfo = new UserInfo(this);
