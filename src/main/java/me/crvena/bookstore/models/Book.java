@@ -14,6 +14,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import me.crvena.bookstore.constants.ConstraintConst;
 
 @Data
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -31,8 +32,6 @@ import lombok.*;
 }))
 public class Book extends BaseModel {
 
-  public static final int MAX_NAME_LENGTH = 50;
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Setter(AccessLevel.NONE)
@@ -43,7 +42,7 @@ public class Book extends BaseModel {
   @NotNull
   private String title;
 
-  @Length(max = MAX_NAME_LENGTH)
+  @Length(max = ConstraintConst.MAX_NAME_LENGTH)
   @NonNull
   @NotNull
   private String author;

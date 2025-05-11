@@ -1,5 +1,7 @@
 package me.crvena.bookstore.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import me.crvena.bookstore.services.OrderService;
 import me.crvena.bookstore.services.UserService;
+import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.models.Order;
 import me.crvena.bookstore.models.User;
@@ -35,13 +38,15 @@ public class OrderController {
   @Description("Get order list for current user.")
   @RestResource(rel = "order")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
+  // public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
+  public ResponseEntity<ListResponse<Order>> getOrderList() {
     // TODO: Spring Security user
     // WARN: test only user implementation
     User user = userService.getOrCreateTestUser();
-    Page<Order> orders = orderService.getOrdersByUser(user, pageable);
+    // Page<Order> orders = orderService.getOrdersByUser(user, pageable);
+    List<Order> orders = orderService.getOrdersByUser(user);
 
-    return ResponseEntity.ok(orders);
+    return ResponseEntity.ok(new ListResponse<>(orders));
   }
 
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")

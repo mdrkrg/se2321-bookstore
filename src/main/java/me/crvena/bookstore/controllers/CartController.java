@@ -1,5 +1,7 @@
 package me.crvena.bookstore.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,7 @@ import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.utils.ResponseUtil;
 import me.crvena.bookstore.dtos.CartItemRequest;
 import me.crvena.bookstore.dtos.ErrorResponse;
+import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.models.CartItem;
 import me.crvena.bookstore.models.User;
 
@@ -44,14 +47,16 @@ public class CartController {
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<PagedModel<EntityModel<CartItem>>> findAll(Pageable
   // pageable) {
-  public ResponseEntity<Page<CartItem>> findAll(Pageable pageable) {
+  // public ResponseEntity<Page<CartItem>> findAll(Pageable pageable) {
+  public ResponseEntity<ListResponse<CartItem>> findAll() {
     // TODO: Spring Security user
     // WARN: test only user implementation
     User user = userService.getOrCreateTestUser();
-    Page<CartItem> cartItems = cartService.getCartByUser(user, pageable);
+    // Page<CartItem> cartItems = cartService.getCartByUser(user, pageable);
+    List<CartItem> cartItems = cartService.getCartByUser(user);
 
     // TODO: DTO
-    return ResponseEntity.ok(cartItems);
+    return ResponseEntity.ok(new ListResponse<>(cartItems));
   }
 
   /**

@@ -5,6 +5,7 @@ import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,10 @@ public class OrderService {
 
   public Page<Order> getOrdersByUser(User user, Pageable pageable) {
     return orderRepository.findByCreator(user, pageable);
+  }
+
+  public List<Order> getOrdersByUser(User user) {
+    return orderRepository.findByCreator(user);
   }
 
   /**

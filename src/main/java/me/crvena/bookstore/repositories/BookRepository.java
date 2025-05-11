@@ -18,6 +18,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
   Page<Book> findAll(Pageable pageable);
 
+  List<Book> findByAvailable(boolean available);
+
+  Optional<Book> findByIdAndAvailable(Long id, boolean available);
+
   Optional<Book> findByTitle(String title);
 
   List<Book> findByTagsIn(@Param("tags") Set<Tag> tags);
