@@ -56,7 +56,7 @@ export interface Order {
   address: string
   tel: string
   /** Format: date-time */
-  createdAt: string
+  // createdAt: string
   items: OrderItem[]
 }
 
@@ -66,6 +66,8 @@ export interface OrderItem {
   book: Book
   /** Format: int32 */
   number: number
+  unitPrice: number
+  paidPrice: number
 }
 
 export interface BookTag {

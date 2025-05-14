@@ -60,14 +60,15 @@ export const endpoints = g('/api', {
     index: '',
     change: (id: string | number) => `/${id}`,
   }),
-  order: '/order',
+  order: g('/order', {
+    index: '',
+    detail: (id: string | number) => `/${id}`,
+  }),
   book: g('/book', {
-    index: (id: string | number) => `/${id}`,
+    index: '', // search for books
+    detail: (id: string | number) => `/${id}`,
     tags: '/tags', // get book tags
     comments: (id: string | number) => `/${id}/comments`,
-  }),
-  books: g('/books', {
-    index: '', // search for books
     rank: '/rank', // top 10 rankings
   }),
 })

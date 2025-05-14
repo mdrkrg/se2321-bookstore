@@ -6,9 +6,16 @@ import type { Book, BookTag, PagedItems } from '../models/user'
 import type { CommentRequest } from './comment'
 import type { $MutateOptions, ApiResponseBase } from './utils'
 import { endpoints } from '../models/endpoints'
-import { $mutate, $query } from './utils'
+import { $mutate, $query, $queryOptions } from './utils'
 
 export function useBooks() {
+  function fetchBookOptions() {
+    return $queryOptions<PagedItems<Book>>({
+      url: endpoints.book.index,
+      key: ['books'],
+    })
+  }
+
   function search(
     tag: string,
     keyword: string,
@@ -16,7 +23,7 @@ export function useBooks() {
     pageSize: number,
   ) {
     return $query<PagedItems<Book>>({
-      url: endpoints.books.index,
+      url: endpoints.book.index,
       key: ['books', pageIndex],
       query: {
         tag,
@@ -42,6 +49,7 @@ export function useBooks() {
   }
 
   return {
+    fetchBookOptions,
     search,
     top,
     tags,
@@ -49,9 +57,9 @@ export function useBooks() {
 }
 
 export function useBook(id: number) {
-  function get() {
-    return $query<Book>({
-      url: endpoints.book.index(id),
+  function fetchBookOptions() {
+    return $queryOptions<Book>({
+      url: endpoints.book.detail(id),
       key: ['book', id], // add id to enable caching
     })
   }
@@ -67,7 +75,7 @@ export function useBook(id: number) {
   }
 
   return {
-    get,
+    fetchBookOptions,
     comment,
   }
 }

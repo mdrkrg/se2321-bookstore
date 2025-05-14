@@ -1,25 +1,23 @@
-import type { Book } from '@/lib/models/user'
 import type { ReactNode } from 'react'
 import { BookDetail } from '@/components/user/book/detail'
-import { testBookList } from '@/lib/utils/dummy'
+import { useBook } from '@/lib/api/book'
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useCountdown } from 'usehooks-ts'
 
-function fetchBookFake(id: number): Book | null {
-  return testBookList.find(book => book.id === id) ?? null
-}
-
 export const Route = createFileRoute('/book/$bookId')({
-  loader: async ({ params }) => {
+  loader: async ({ context: { queryClient }, params }) => {
     const bookId = Number(params.bookId)
     if (Number.isNaN(bookId))
       throw notFound()
-    const book = fetchBookFake(bookId)
-    if (book)
-      return book
-
-    throw notFound()
+    const { fetchBookOptions } = useBook(bookId)
+    // FIXME: handle 404 explicitly, avoid refetch
+    try {
+      return await queryClient.fetchQuery(fetchBookOptions())
+    }
+    catch {
+      throw notFound()
+    }
   },
   component: BookDetailComponent,
   notFoundComponent: NotFound,
@@ -58,7 +56,7 @@ function NotFound() {
 
   useEffect(() => {
     startCountdown()
-    // Cleanup on unmount
+    // cleanup on unmount
     return () => stopCountdown()
   })
 

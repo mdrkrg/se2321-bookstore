@@ -1,17 +1,23 @@
 import CardsWaterfall from '@/components/user/main/cards-waterfall'
 import BookFilter from '@/components/user/main/filter'
-import { fetchFakeTags, testBookList } from '@/lib/utils/dummy'
+import { useBooks } from '@/lib/api/book'
+import { fetchFakeTags } from '@/lib/utils/dummy'
 
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
-export const Route = createLazyFileRoute('/')({
+export const Route = createFileRoute('/')({
   component: App,
+  async loader({ context: { queryClient } }) {
+    return await queryClient.fetchQuery(useBooks().fetchBookOptions())
+  },
 })
 
 function App() {
   const [filterInput, setFilterInput] = useState('')
   const tags = fetchFakeTags()
+
+  const bookList = Route.useLoaderData()
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
@@ -29,7 +35,7 @@ function App() {
           tags={tags}
           className="w-full"
         />
-        <CardsWaterfall bookList={testBookList} />
+        <CardsWaterfall bookList={bookList.items} />
       </main>
     </div>
   )

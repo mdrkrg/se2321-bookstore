@@ -1,21 +1,13 @@
-import type { CartItem } from '@/lib/models/user'
 import DropdownLayout from '@/components/layouts/dropdown'
 import MyCart from '@/components/user/cart/my-cart'
-import { testBookList } from '@/lib/utils/dummy'
+import { useCart } from '@/lib/api/order'
 import { createFileRoute } from '@tanstack/react-router'
-import { random, sampleSize } from 'lodash'
 
 export const Route = createFileRoute('/cart')({
-  async loader() {
+  async loader({ context: { queryClient } }) {
     // load cart items
-    const selectedBooks = sampleSize(testBookList, random(0, testBookList.length))
-    const cartItems: CartItem[] = selectedBooks.map(book => ({
-      id: book.id,
-      book,
-      number: random(1, 10),
-    }))
-
-    return cartItems
+    const cartItems = await queryClient.fetchQuery(useCart().fetchCartOptions())
+    return cartItems.items
   },
   component: Cart,
 })

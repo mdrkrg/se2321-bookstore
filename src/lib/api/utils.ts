@@ -1,5 +1,5 @@
 import type { QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { queryOptions as _queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 
 export async function $fetch<T>(
   url: string,
@@ -38,6 +38,26 @@ export function $query<TData = any, TQuery = any>({
     : url
 
   return useQuery<TData, any>({
+    queryKey: key ?? [url],
+    queryFn: async () => {
+      return await $fetch<TData>(urlWithParams, fetchOptions)
+    },
+    ...queryOptions,
+  })
+}
+
+export function $queryOptions<TData = any, TQuery = any>({
+  url,
+  key,
+  query,
+  fetchOptions = {},
+  queryOptions = {},
+}: UseFetchProps<TData, TQuery>) {
+  const urlWithParams = query
+    ? `${url}?${new URLSearchParams(query).toString()}`
+    : url
+
+  return _queryOptions<TData, any>({
     queryKey: key ?? [url],
     queryFn: async () => {
       return await $fetch<TData>(urlWithParams, fetchOptions)
