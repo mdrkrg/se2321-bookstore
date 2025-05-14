@@ -27,6 +27,8 @@ const FormSchema = z.object({
     .string({
       required_error: '请选择收货地址',
     }),
+  // TODO: change this to cart item ids
+  // when number change, PUT to the cart api
   itemIds: z.array(
     z.object({
       id: z.number(),
@@ -132,7 +134,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
                 <FormMessage />
                 <FormDescription>
                   您可以在
-                  <Link to="/profile/address" target="_blank" className="text-pink-900">
+                  <Link to="/me/address" target="_blank" className="text-pink-900">
                     个人资料
                   </Link>
                   中管理收货地址。

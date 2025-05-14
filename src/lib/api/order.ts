@@ -2,6 +2,7 @@
  * Cart and order
  */
 
+import type { UseQueryOptions } from '@tanstack/react-query'
 import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
 import { endpoints } from '../models/endpoints'
@@ -10,11 +11,12 @@ import { $mutate, $queryOptions } from './utils'
 export type OrderRequest = OrderInfo
 
 export function useOrder() {
-  function fetchOrderOptions() {
+  function fetchOrderOptions(options?: UseQueryOptions) {
     return $queryOptions<PagedItems<Order>>({
       url: endpoints.order.index,
       // key: ['order', pageIndex],
       key: ['order'],
+      ...options,
     })
   }
 
@@ -39,16 +41,13 @@ interface AddCartQuery {
   number: number
 }
 
-interface UpdateCartQuery {
-  number: number
-}
-
 export function useCart() {
-  function fetchCartOptions() {
+  function fetchCartOptions(options?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
     return $queryOptions<PagedItems<CartItem>>({
       url: endpoints.cart.index,
       // key: ['cart', pageIndex],
       key: ['cart'],
+      queryOptions: options,
     })
   }
 
@@ -67,13 +66,11 @@ export function useCart() {
 
   function updateBookCount(
     bookId: number,
-    number: number,
     options?: $MutateOptions<undefined>,
   ) {
-    return $mutate<ApiResponseBase, undefined, UpdateCartQuery>({
+    return $mutate<CartItem, { number: number }>({
       url: endpoints.cart.change(bookId),
       method: 'PUT',
-      query: { number },
       ...options,
     })
   }
@@ -82,7 +79,7 @@ export function useCart() {
     bookId: number,
     options?: $MutateOptions<undefined>,
   ) {
-    return $mutate<ApiResponseBase>({
+    return $mutate<undefined>({
       url: endpoints.cart.change(bookId),
       method: 'DELETE',
       ...options,
@@ -95,4 +92,30 @@ export function useCart() {
     updateBookCount,
     deleteBook,
   }
+}
+
+export function addCartItem(bookId: number, number: number) {
+  return fetch(endpoints.cart.index, {
+    method: 'POST',
+    body: JSON.stringify({ bookId, number }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export function changeCartItem(id: number, number: number) {
+  return fetch(endpoints.cart.change(id), {
+    method: 'PUT',
+    body: JSON.stringify({ number }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
+export function deleteCartItem(id: number) {
+  return fetch(endpoints.cart.change(id), {
+    method: 'DELETE',
+  })
 }

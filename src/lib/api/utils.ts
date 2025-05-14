@@ -8,6 +8,8 @@ export async function $fetch<T>(
   try {
     const res = await fetch(url, options)
     if (res.ok) {
+      if (res.status === 204) // no content
+        return undefined as T
       return await (res.json() as Promise<T>)
     }
     throw res
@@ -94,14 +96,14 @@ export function $mutate<TData = any, TVariables = any, TQuery = undefined>({
 
   const { headers: fetchHeaders, ...fetchOptionsRest } = fetchOptions
   return useMutation<TData, any, TVariables>({
-    mutationFn: async (data: TVariables) => {
+    mutationFn: async (data?: TVariables) => {
       const _fetchOptions: RequestInit = {
         headers: {
           'Content-Type': 'application/json',
           ...fetchHeaders,
         },
         method,
-        body: JSON.stringify(data),
+        body: data && JSON.stringify(data),
         ...fetchOptionsRest,
       }
       const responseData = await $fetch(urlWithParams, _fetchOptions)

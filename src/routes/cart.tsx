@@ -13,9 +13,10 @@ export const Route = createFileRoute('/cart')({
 })
 
 function Cart() {
+  const cartItemsData = Route.useLoaderData()
   return (
     <DropdownLayout>
-      <MyCart />
+      <MyCart cartItemsData={cartItemsData} />
     </DropdownLayout>
   )
 }

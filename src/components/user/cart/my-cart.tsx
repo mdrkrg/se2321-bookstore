@@ -27,9 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { changeCartItem, deleteCartItem } from '@/lib/api/order'
 import { toCNYString } from '@/lib/utils/price'
-import { Route as CartRoute } from '@/routes/cart'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import {
   flexRender,
   getCoreRowModel,
@@ -226,16 +226,15 @@ function useCartItemProps(cartItems: CartItem[]): CartItemProps[] {
       {},
     ))
 
+  const router = useRouter()
   const cartItemProps = useMemo(() => cartItems.map((item) => {
     const { number: _, ...itemRemain } = item
     const setNumber = (newNumber: number) => {
       setItemNumbers(prev => ({ ...prev, [item.id]: newNumber }))
+      changeCartItem(item.id, newNumber).then(() => router.invalidate())
     }
     const handleDelete = () => {
-      // eslint-disable-next-line no-console
-      console.log(`Deleting ${item.id}`)
-      // TODO: you may need to re GET from /api/cart,
-      // the data manipulation is not handled by frontend
+      deleteCartItem(item.id).then(() => router.invalidate())
     }
     return {
       number: itemNumbers[item.id],
@@ -250,13 +249,21 @@ function useCartItemProps(cartItems: CartItem[]): CartItemProps[] {
 
 function getOrderList(cartItems: CartItemProps[]): OrderItem[] {
   return cartItems.map((item) => {
-    const { setNumber: _, ...remain } = item
-    return remain
+    const { setNumber: _, handleDelete: __, ...remain } = item
+    return {
+      unitPrice: item.book.price,
+      // TODO: use another form item to indicate price paid
+      paidPrice: item.book.price * item.number,
+      ...remain,
+    }
   })
 }
 
-export default function MyCart() {
-  const cartItemsData = CartRoute.useLoaderData()
+interface MyCartProps {
+  cartItemsData: CartItem[]
+}
+
+export default function MyCart({ cartItemsData }: MyCartProps) {
   const cartItems = useCartItemProps(cartItemsData)
   const [sorting, setSorting] = useState<SortingState>([])
   const [
