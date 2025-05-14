@@ -2,6 +2,7 @@ import type { Book } from '@/lib/models/user'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { NumberInput } from '@/components/ui/number-input'
+import { addCartItem } from '@/lib/api/order'
 import { toCNYString } from '@/lib/utils/price'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -23,6 +24,7 @@ export function BookDetail({ book }: BookDetailProps) {
     console.log(book)
     // eslint-disable-next-line no-console
     console.log(`count: ${count}`)
+    addCartItem(book.id, count)
   }
 
   function handleCartClick() {

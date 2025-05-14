@@ -152,7 +152,7 @@ const columns: ColumnDef<CartItemProps>[] = [
   },
   {
     id: 'price',
-    accessorFn: row => row.book.price,
+    accessorKey: 'price',
     header: ({ column }) => {
       return (
         <Button
@@ -167,8 +167,7 @@ const columns: ColumnDef<CartItemProps>[] = [
     },
     cell: ({ row }) => {
       const price = Number.parseFloat(row.getValue('price'))
-      const number: number = row.getValue('number')
-      const formattedPrice = toCNYString(price * number)
+      const formattedPrice = toCNYString(price)
 
       return <div className="font-medium">{formattedPrice}</div>
     },

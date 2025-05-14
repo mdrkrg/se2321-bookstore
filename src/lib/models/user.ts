@@ -82,6 +82,7 @@ export interface CartItem {
   book: Book
   /** Format: int32 */
   number: number
+  price: number
 }
 
 export interface CommentDTO {
