@@ -34,7 +34,9 @@ public class CartService {
     return cartItemRepository.findByCreatorOrderByIdDesc(user, pageable);
   }
 
-  public Optional<CartItem> getCartItemByUserBook(User user, Book book) {
+  public Optional<CartItem> getCartItemByUserAndBookId(User user, Long bookId) {
+    Book book = bookRepository.findById(bookId)
+        .orElseThrow(() -> new ResourceDoesNotExist(Book.class, bookId));
     return cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
   }
 

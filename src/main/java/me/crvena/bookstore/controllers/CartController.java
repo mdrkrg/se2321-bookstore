@@ -60,7 +60,7 @@ public class CartController {
   }
 
   /**
-   * @throws CartItemAlreadyExistsException
+   * Modify or create {@link CartItem}
    */
   // @PostMapping
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
@@ -70,10 +70,18 @@ public class CartController {
     // TODO: Spring Security user
     // WARN: test only user implementation
     User user = userService.getOrCreateTestUser();
-    CartItem createdCartItem = cartService.createCartItem(
-        user, cartItemRequest.getBookId(), cartItemRequest.getNumber());
-
-    return new ResponseEntity<>(createdCartItem, HttpStatus.CREATED);
+    try {
+      CartItem cartItem = cartService.createCartItem(
+          user, cartItemRequest.getBookId(), cartItemRequest.getNumber());
+      return new ResponseEntity<>(cartItem, HttpStatus.CREATED);
+    } catch (CartItemAlreadyExistsException e) {
+      CartItem cartItem = cartService.getCartItemByUserAndBookId(
+          user, cartItemRequest.getBookId())
+          .orElseThrow(() -> new RuntimeException("Unlikely to happen"));
+      cartItem = cartService.modifyCartItem(
+          cartItem.getId(), cartItemRequest.getNumber());
+      return ResponseEntity.ok(cartItem);
+    }
   }
 
   @ExceptionHandler(CartItemAlreadyExistsException.class)
