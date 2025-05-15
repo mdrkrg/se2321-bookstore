@@ -1,4 +1,4 @@
-import type { Book } from '@/lib/models/user'
+import type { Book, OrderItem } from '@/lib/models/user'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { NumberInput } from '@/components/ui/number-input'
@@ -17,18 +17,18 @@ export function BookDetail({ book }: BookDetailProps) {
   const [count, setCount] = useState<number>(1)
   const navigate = useNavigate()
 
-  function postAddToCart(book: Book, count: number) {
+  async function postAddToCart(book: Book, count: number) {
     // eslint-disable-next-line no-console
     console.log('adding to cart:')
     // eslint-disable-next-line no-console
     console.log(book)
     // eslint-disable-next-line no-console
     console.log(`count: ${count}`)
-    addCartItem(book.id, count)
+    return addCartItem(book.id, count)
   }
 
-  function handleCartClick() {
-    postAddToCart(book, count)
+  async function handleCartClick() {
+    await postAddToCart(book, count)
 
     return toast(`已将 ${book.title} 加入购物车`, {
       action: (
@@ -42,6 +42,34 @@ export function BookDetail({ book }: BookDetailProps) {
         </Button>
       ),
     })
+  }
+
+  // orderList is used as prop passed into OrderPopup
+  const [orderList, setOrderList] = useState<OrderItem[]>([{
+    id: -1, // placeholder
+    book,
+    number: count,
+    unitPrice: book.price,
+    paidPrice: book.price * count,
+  }])
+  const [posted, setPosted] = useState(false)
+
+  function handleBuyNowClick() {
+    // if not posted yet, or posted but number has changed
+    if (!posted || (posted && orderList[0].number !== count)) {
+      // add a cart item immediately, else get an existing cart item
+      postAddToCart(book, count).then((item) => {
+        // use .then to sync
+        setOrderList([{
+          unitPrice: book.price,
+          paidPrice: book.price * item.number,
+          book,
+          number: count,
+          id: item.id,
+        }])
+        setPosted(true)
+      })
+    }
   }
 
   return (
@@ -115,15 +143,11 @@ export function BookDetail({ book }: BookDetailProps) {
             加入购物车
           </Button>
           {/* create a orderList at once */}
-          <OrderPopup orderList={[{
-            id: book.id,
-            book,
-            number: count,
-          }]}
-          >
+          <OrderPopup orderList={orderList}>
             <Button
               variant="destructive"
               className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded mx-2 max-sm:my-2"
+              onClick={handleBuyNowClick}
             >
               立即购买
             </Button>

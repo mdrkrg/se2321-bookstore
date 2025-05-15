@@ -47,6 +47,8 @@ export function OrderPopup({ children, orderList }: OrderPopupProps) {
   if (orderList.length === 0)
     return children
 
+  const hasOrder = orderList.length > 0 && orderList[0].id !== -1
+
   const dialog = (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -60,7 +62,7 @@ export function OrderPopup({ children, orderList }: OrderPopupProps) {
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[80vh] pr-4">
-          <ConfirmOrder orderList={orderList} />
+          {hasOrder && <ConfirmOrder orderList={orderList} />}
         </ScrollArea>
       </DialogContent>
     </Dialog>
@@ -79,10 +81,13 @@ export function OrderPopup({ children, orderList }: OrderPopupProps) {
           </DrawerDescription>
         </DrawerHeader>
         <ScrollArea>
-          <ConfirmOrder
-            className="px-4 text-sm max-h-[75vh]"
-            orderList={orderList}
-          />
+          {hasOrder
+            && (
+              <ConfirmOrder
+                className="px-4 text-sm max-h-[75vh]"
+                orderList={orderList}
+              />
+            )}
         </ScrollArea>
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>

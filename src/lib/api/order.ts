@@ -111,7 +111,7 @@ export function addCartItem(bookId: number, number: number) {
     headers: {
       'Content-Type': 'application/json',
     },
-  })
+  }).then(rsp => rsp.json()) as Promise<CartItem>
 }
 
 export function changeCartItem(id: number, number: number) {
@@ -121,7 +121,7 @@ export function changeCartItem(id: number, number: number) {
     headers: {
       'Content-Type': 'application/json',
     },
-  })
+  }).then(rsp => rsp.json()) as Promise<CartItem>
 }
 
 export function deleteCartItem(id: number) {
