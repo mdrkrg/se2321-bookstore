@@ -103,7 +103,7 @@ public class CartController {
     // TODO: validate user
 
     cartService.deleteCartItem(id);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
 }

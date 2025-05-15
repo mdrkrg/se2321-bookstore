@@ -13,9 +13,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRequest {
-  private Set<Long> itemIds;
-  private BigDecimal paidPrice;
+
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class Item {
+    private Long itemId;
+    private BigDecimal paidPrice;
+  }
+
+  private Set<Item> items;
   private String tel;
-  private String recevier;
+  private String receiver;
   private String address;
 }

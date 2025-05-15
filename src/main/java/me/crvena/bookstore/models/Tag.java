@@ -3,6 +3,7 @@ package me.crvena.bookstore.models;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -30,6 +31,6 @@ public class Tag extends BaseModel {
   @ToString.Exclude
   @JsonBackReference
   @ManyToMany(mappedBy = "tags")
-  Set<Book> bookSet = new HashSet<>();
+  Set<Book> bookSet;
 
 }

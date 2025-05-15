@@ -13,7 +13,7 @@ import me.crvena.bookstore.models.User;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-  List<Order> findByCreator(User creator);
+  List<Order> findByCreatorOrderByIdDesc(User creator);
 
-  Page<Order> findByCreator(User creator, Pageable pageable);
+  Page<Order> findByCreatorOrderByIdDesc(User creator, Pageable pageable);
 }

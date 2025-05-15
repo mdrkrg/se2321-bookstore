@@ -27,11 +27,11 @@ public class CartService {
   private final BookRepository bookRepository;
 
   public List<CartItem> getCartByUser(User user) {
-    return cartItemRepository.findByCreator(user);
+    return cartItemRepository.findByCreatorOrderByIdDesc(user);
   }
 
   public Page<CartItem> getCartByUser(User user, Pageable pageable) {
-    return cartItemRepository.findByCreator(user, pageable);
+    return cartItemRepository.findByCreatorOrderByIdDesc(user, pageable);
   }
 
   public Optional<CartItem> getCartItemByUserBook(User user, Book book) {

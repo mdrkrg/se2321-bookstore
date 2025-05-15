@@ -2,6 +2,7 @@ package me.crvena.bookstore.models;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.annotations.ColumnDefault;
@@ -79,12 +80,12 @@ public class Book extends BaseModel {
   @ColumnDefault("0")
   private Long stock = Long.valueOf(0);
 
-  @Builder.Default
+  // @Builder.Default
   @ManyToMany
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
   @JsonManagedReference // avoid loop
   @ToString.Exclude
-  private Set<Tag> tags = new HashSet<>();
+  private List<Tag> tags;
 
   public void addTag(Tag tag) {
     this.tags.add(tag);

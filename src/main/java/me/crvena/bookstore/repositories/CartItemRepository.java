@@ -15,11 +15,11 @@ import me.crvena.bookstore.models.User;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-  List<CartItem> findByCreator(User creator);
+  List<CartItem> findByCreatorOrderByIdDesc(User creator);
 
-  Page<CartItem> findByCreator(User creator, Pageable pageable);
+  Page<CartItem> findByCreatorOrderByIdDesc(User creator, Pageable pageable);
 
-  List<CartItem> findByCreatorId(Long userId);
+  List<CartItem> findByCreatorIdOrderByIdDesc(Long userId);
 
   Optional<CartItem> findDistinctCartItemByCreatorAndBook(User creator, Book book);
 
