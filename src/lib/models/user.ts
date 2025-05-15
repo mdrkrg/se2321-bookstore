@@ -8,7 +8,10 @@ export interface OrderInfo {
   address: string
   receiver: string
   tel: string
-  itemIds: number[]
+  items: {
+    paidPrice: number
+    itemId: number // cart item id
+  }[]
 }
 
 export interface PartialUserDTO {

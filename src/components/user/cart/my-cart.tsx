@@ -229,8 +229,10 @@ function useCartItemProps(cartItems: CartItem[]): CartItemProps[] {
   const cartItemProps = useMemo(() => cartItems.map((item) => {
     const { number: _, ...itemRemain } = item
     const setNumber = (newNumber: number) => {
-      setItemNumbers(prev => ({ ...prev, [item.id]: newNumber }))
-      changeCartItem(item.id, newNumber).then(() => router.invalidate())
+      if (newNumber !== itemNumbers[item.id]) {
+        setItemNumbers(prev => ({ ...prev, [item.id]: newNumber }))
+        changeCartItem(item.id, newNumber).then(() => router.invalidate())
+      }
     }
     const handleDelete = () => {
       deleteCartItem(item.id).then(() => router.invalidate())

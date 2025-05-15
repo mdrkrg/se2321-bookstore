@@ -6,7 +6,7 @@ import type { UseQueryOptions } from '@tanstack/react-query'
 import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
 import { endpoints } from '../models/endpoints'
-import { $mutate, $queryOptions } from './utils'
+import { $fetch, $mutate, $queryOptions } from './utils'
 
 export type OrderRequest = OrderInfo
 
@@ -34,6 +34,16 @@ export function useOrder() {
     fetchOrderOptions,
     postOrder,
   }
+}
+
+export function placeOrder(order: OrderRequest) {
+  return $fetch<Order>(endpoints.order.index, {
+    method: 'POST',
+    body: JSON.stringify(order),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
 }
 
 interface AddCartQuery {

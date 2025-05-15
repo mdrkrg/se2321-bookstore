@@ -9,6 +9,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { NumberInput } from '@/components/ui/number-input'
+import { changeCartItem, placeOrder } from '@/lib/api/order'
 import { cn } from '@/lib/utils/cn'
 import { fetchFakeAddress } from '@/lib/utils/dummy'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,14 +28,10 @@ const FormSchema = z.object({
     .string({
       required_error: '请选择收货地址',
     }),
-  // TODO: change this to cart item ids
-  // when number change, PUT to the cart api
-  itemIds: z.array(
-    z.object({
-      id: z.number(),
-      number: z.number().min(1, '商品数量至少为 1'),
-    }),
-  ),
+  items: z.array(z.object({
+    paidPrice: z.number().min(0),
+    itemId: z.number(),
+  })),
 })
 
 export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
@@ -43,7 +40,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
     resolver: zodResolver(FormSchema),
     // initialize orderList
     defaultValues: {
-      itemIds: orderList.map(item => ({ id: item.id, number: item.number })),
+      items: orderList.map(({ id, paidPrice }) => ({ itemId: id, paidPrice })),
     },
   })
   const router = useRouter()
@@ -53,32 +50,32 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
       String(addr.id) === data.addressId) as Address
     const { id: _, ...addressData } = address
     const submittedData = {
-      itemIds: data.itemIds,
+      items: data.items,
       ...addressData,
     }
-    toast('已创建订单：', {
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(submittedData, null, 2)}
-          </code>
-        </pre>
-      ),
-      className: 'w-max!',
-      duration: 5000,
+    placeOrder(submittedData).then(() => {
+      toast('已创建订单：', {
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">
+              {JSON.stringify(submittedData, null, 2)}
+            </code>
+          </pre>
+        ),
+        className: 'w-max!',
+        duration: 5000,
+      })
+      setTimeout(() => {
+        router.navigate({ to: '/order' })
+      }, 200)
+    }).catch((err) => {
+      toast('出错：', err)
     })
-    setTimeout(() => {
-      router.navigate({ to: '/order' })
-    }, 200)
   }
 
   function updateQuantity(orderItemId: number, newQuantity: number) {
-    form.setValue(
-      'itemIds',
-      form.getValues().itemIds.map(item => (
-        item.id === orderItemId ? { ...item, number: newQuantity } : item
-      )),
-    )
+    // TODO: the outer won't change
+    changeCartItem(orderItemId, newQuantity).then(() => router.invalidate())
   }
 
   return (
@@ -89,18 +86,19 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
       >
         <FormField
           control={form.control}
-          name="itemIds"
+          name="items"
           render={({ field }) => {
             return (
               <FormItem>
                 <FormLabel>订单物品</FormLabel>
-                {field.value.map(({ id: bookId }, index) => {
+                {field.value.map((item, index) => {
                   const orderItem = orderList.at(index) as OrderItem
                   return (
                     <OrderPreview
                       orderItem={orderItem}
-                      onQuantityChange={(newQuantity) => {
-                        updateQuantity(bookId, newQuantity)
+                      handleQuantityChange={(newQuantity) => {
+                        updateQuantity(item.itemId, newQuantity)
+                        item.paidPrice = newQuantity * orderItem.unitPrice
                       }}
                       key={index}
                     />
@@ -157,10 +155,13 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
 
 interface OrderPreviewProps extends React.ComponentProps<'div'> {
   orderItem: OrderItem
-  onQuantityChange: (newQuantity: number) => void
+  handleQuantityChange: (newQuantity: number) => void
 }
 
-function OrderPreview({ orderItem, onQuantityChange }: OrderPreviewProps) {
+function OrderPreview({
+  orderItem,
+  handleQuantityChange,
+}: OrderPreviewProps) {
   return (
     <div className="flex rounded-md shadow-md hover:shadow-lg">
       <img
@@ -175,8 +176,10 @@ function OrderPreview({ orderItem, onQuantityChange }: OrderPreviewProps) {
         inputStyle="w-10"
         min={1}
         value={orderItem.number}
-        onValueChange={newCount =>
-          typeof newCount === 'number' ? onQuantityChange(newCount) : null}
+        onValueChange={(newCount) => {
+          if (newCount)
+            handleQuantityChange(newCount)
+        }}
       />
     </div>
   )
