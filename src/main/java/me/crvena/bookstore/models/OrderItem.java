@@ -12,12 +12,18 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
 public class OrderItem extends BaseModel {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
 
   @NonNull
   @ManyToOne(fetch = FetchType.LAZY)

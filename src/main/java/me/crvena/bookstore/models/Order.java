@@ -14,7 +14,7 @@ import org.springframework.data.annotation.CreatedBy;
 import lombok.*;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @Builder
@@ -25,6 +25,12 @@ public class Order extends BaseModel {
   public static final int MAX_ADDRESS_LENGTH = 100;
   public static final int MAX_NAME_LENGTH = 50;
   public static final int MAX_TEL_LENGTH = 30;
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
 
   @NonNull
   @ToString.Exclude

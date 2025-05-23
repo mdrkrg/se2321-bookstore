@@ -23,18 +23,6 @@ import lombok.*;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class BaseModel implements Serializable {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @ReadOnlyProperty
-  @Setter(AccessLevel.NONE)
-  @EqualsAndHashCode.Include
-  private Long id;
-
-  @Override
-  public String toString() {
-    return "<" + getClass().getSimpleName() + " #" + getId() + ">";
-  }
-
   @JsonIgnore
   @Version
   @ReadOnlyProperty
@@ -46,13 +34,13 @@ public abstract class BaseModel implements Serializable {
   @CreationTimestamp
   @ReadOnlyProperty
   @Column(updatable = false)
-  @ColumnDefault("NOW()")
+  @ColumnDefault("CURRENT_TIMESTAMP")
   private Instant createdAt;
 
   @JsonIgnore
   @LastModifiedDate
   @UpdateTimestamp
   @ReadOnlyProperty
-  @ColumnDefault("NOW()") // this will only take effect when manual insert
+  @ColumnDefault("CURRENT_TIMESTAMP") // this will only take effect when manual insert
   private Instant updatedAt;
 }

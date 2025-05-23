@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.*;
 import me.crvena.bookstore.enums.Role;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -17,17 +18,27 @@ import java.util.Collection;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
-// Avoid naming the table "user" as it's a reserved word in some databases
 @Table(name = "users", indexes = @Index(columnList = "username"))
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 // public class User extends BaseModel implements UserDetails {
 public class User extends BaseModel {
   private static final int USERNAME_MAX_LENGTH = 50;
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
 
   @NonNull
   @Column(nullable = false, unique = true)
   @Length(max = USERNAME_MAX_LENGTH)
   private String username;
+
+  @NonNull
+  @Column(nullable = false, unique = true)
+  @Email
+  private String email;
 
   /**
    * User's raw password, will not be persistant.
@@ -57,8 +68,11 @@ public class User extends BaseModel {
   private boolean accountNonExpired = true;
   @ColumnDefault("true")
   private boolean accountNonLocked = true;
-  @ColumnDefault("true")
-  private boolean credentialsNonExpired = true;
+
+  // @Override
+  private boolean isCredentialsNonExpired() {
+    return false;
+  }
 
   // Relationships (e.g., to Cart, Order)
 
@@ -68,6 +82,7 @@ public class User extends BaseModel {
   // }
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = false)
+  @PrimaryKeyJoinColumn
   @ToString.Exclude
   @Setter(AccessLevel.NONE)
   private UserInfo userInfo = new UserInfo(this);

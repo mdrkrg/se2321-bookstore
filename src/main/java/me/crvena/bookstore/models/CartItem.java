@@ -17,11 +17,20 @@ import lombok.*;
  * and over again.
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(name = "unique_cart_item_book_creator", columnNames = { "book_id", "creator_id" })
+})
 public class CartItem extends BaseModel {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
 
   /**
    * The owner of the CartItem

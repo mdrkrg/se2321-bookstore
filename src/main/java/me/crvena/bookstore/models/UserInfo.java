@@ -3,12 +3,19 @@ package me.crvena.bookstore.models;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.URL;
+<<<<<<< Updated upstream
+=======
+import org.springframework.data.annotation.ReadOnlyProperty;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+>>>>>>> Stashed changes
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -23,10 +30,18 @@ public class UserInfo extends BaseModel {
 
   private String introduction;
 
+  @Id
+  @Column(name = "user_id")
+  @JsonIgnore
+  private Long id;
+
+  @EqualsAndHashCode.Include
   @NonNull
   @OneToOne
+  @MapsId
+  @JsonBackReference
   @OnDelete(action = OnDeleteAction.CASCADE)
   @Setter(AccessLevel.NONE)
-  @JoinColumn(nullable = false)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 }

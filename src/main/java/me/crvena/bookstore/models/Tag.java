@@ -7,12 +7,18 @@ import java.util.Set;
 import lombok.*;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
 @Table(indexes = @Index(columnList = "name"))
 public class Tag extends BaseModel {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
 
   @NonNull
   @Column(nullable = false, unique = true)

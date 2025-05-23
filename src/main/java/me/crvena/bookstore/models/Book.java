@@ -14,7 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,6 +30,12 @@ import lombok.*;
 public class Book extends BaseModel {
 
   public static final int MAX_NAME_LENGTH = 50;
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Setter(AccessLevel.NONE)
+  @EqualsAndHashCode.Include
+  private Long id;
 
   @NonNull
   @NotNull
@@ -50,6 +56,11 @@ public class Book extends BaseModel {
   @Column(precision = 19, scale = 2, nullable = false)
   @ColumnDefault("0")
   private BigDecimal price = BigDecimal.ZERO;
+
+  @Builder.Default
+  @NotNull
+  @ColumnDefault("true")
+  private Boolean available = Boolean.TRUE;
 
   @Builder.Default
   @URL
