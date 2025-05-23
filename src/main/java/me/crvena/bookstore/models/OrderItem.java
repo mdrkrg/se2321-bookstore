@@ -17,6 +17,7 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @RequiredArgsConstructor
 @Entity
 public class OrderItem extends BaseModel {
@@ -65,7 +66,12 @@ public class OrderItem extends BaseModel {
   public static OrderItem createFromCartItem(Order order,
       CartItem cartItem, BigDecimal paidPrice) {
 
-    return new OrderItem(order, cartItem.getBook(), cartItem.getNumber(),
-        cartItem.getBook().getPrice(), paidPrice);
+    return OrderItem.builder()
+        .order(order)
+        .book(cartItem.getBook())
+        .number(cartItem.getNumber())
+        .unitPrice(cartItem.getBook().getPrice())
+        .paidPrice(paidPrice)
+        .build();
   }
 }

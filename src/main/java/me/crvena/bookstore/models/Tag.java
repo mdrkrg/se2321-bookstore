@@ -31,6 +31,6 @@ public class Tag extends BaseModel {
   @ToString.Exclude
   @JsonBackReference
   @ManyToMany(mappedBy = "tags")
-  Set<Book> bookSet;
+  private Set<Book> bookSet;
 
 }

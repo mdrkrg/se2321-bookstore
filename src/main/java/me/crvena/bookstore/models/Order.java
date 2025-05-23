@@ -1,10 +1,8 @@
 package me.crvena.bookstore.models;
 
 import me.crvena.bookstore.constants.ConstraintConst;
-import me.crvena.bookstore.dtos.OrderRequest;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;

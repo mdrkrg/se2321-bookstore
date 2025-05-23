@@ -20,6 +20,7 @@ import lombok.*;
  */
 @Data
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
@@ -58,6 +59,7 @@ public class CartItem extends BaseModel {
   @NonNull
   @NotNull
   @ColumnDefault("1")
+  @Builder.Default
   private Long number = Long.valueOf(1);
 
   public BigDecimal getPrice() {

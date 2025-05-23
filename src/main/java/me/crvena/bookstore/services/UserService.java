@@ -17,9 +17,10 @@ public class UserService {
   public User getOrCreateTestUser() {
     final String testUserName = "TEST_USER";
     final String testPassword = "password";
+    final String testEmail = "test@example.com";
     return userRepository.findByUsername(testUserName)
         .orElseGet(() -> {
-          User newUser = new User(testUserName, testPassword);
+          User newUser = new User(testUserName, testEmail, testPassword);
           return userRepository.save(newUser);
         });
   }

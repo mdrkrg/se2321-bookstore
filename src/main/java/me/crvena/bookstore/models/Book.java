@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.validator.constraints.Length;
@@ -85,7 +86,11 @@ public class Book extends BaseModel {
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
   @JsonManagedReference // avoid loop
   @ToString.Exclude
-  private List<Tag> tags;
+  private Set<Tag> tags;
+
+  public List<Tag> getTags() {
+    return tags.stream().collect(Collectors.toList());
+  }
 
   public void addTag(Tag tag) {
     this.tags.add(tag);

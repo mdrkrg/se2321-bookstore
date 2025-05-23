@@ -52,7 +52,8 @@ public class CartService {
     if (existingCartItem.isPresent()) {
       throw new CartItemAlreadyExistsException("Cart item already exists for user and book");
     }
-    CartItem cartItem = new CartItem(user, book, number);
+    CartItem cartItem = CartItem.builder()
+        .creator(user).book(book).number(number).build();
     return cartItemRepository.save(cartItem);
   }
 

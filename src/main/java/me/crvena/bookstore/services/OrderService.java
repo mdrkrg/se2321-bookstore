@@ -87,8 +87,13 @@ public class OrderService {
   private static Order createFromOrderRequest(
       User creator, OrderRequest orderRequest, Map<CartItem, BigDecimal> cartItems) {
     Set<OrderItem> orderItems = new HashSet<>();
-    Order order = new Order(
-        orderItems, creator, orderRequest.getReceiver(), orderRequest.getTel(), orderRequest.getAddress());
+    Order order = Order.builder()
+        .items(orderItems)
+        .creator(creator)
+        .receiver(orderRequest.getReceiver())
+        .tel(orderRequest.getTel())
+        .address(orderRequest.getAddress())
+        .build();
 
     Set<OrderRequest.Item> requestCartItems = orderRequest.getItems();
     for (var item : cartItems.entrySet()) {
