@@ -25,8 +25,27 @@ import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.repositories.UserRepository;
 
 @Service
+public interface AuthService {
+  @Transactional
+  public User signup(SignupRequest request, HttpServletResponse response);
+
+  public User login(LoginRequest request, HttpServletResponse response)
+      throws NoSuchElementException, PermissionDenied;
+
+  public void logout(HttpServletRequest request, HttpServletResponse response);
+
+  public static User getRequestUser() {
+    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+  }
+
+  public static boolean userHasPermission(Permission permission) {
+    return getRequestUser().hasPermission(permission);
+  }
+}
+
+@Service
 @RequiredArgsConstructor
-public class AuthService {
+class AuthServiceImpl implements AuthService {
 
   @Value("${jwt.cookieName}")
   private String cookieName;
@@ -113,13 +132,5 @@ public class AuthService {
         }
       }
     }
-  }
-
-  public static User getRequestUser() {
-    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-  }
-
-  public static boolean userHasPermission(Permission permission) {
-    return getRequestUser().hasPermission(permission);
   }
 }

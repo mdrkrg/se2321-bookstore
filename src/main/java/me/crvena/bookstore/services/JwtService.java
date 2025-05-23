@@ -15,9 +15,36 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Service
-public class JwtService {
+public interface JwtService {
+
+  public String extractUsername(String jwt);
+
+  public <T> T extractClaim(String jwt, Function<Claims, T> claimsResolver);
+
+  public String generateToken(UserDetails userDetails);
+
+  public String generateToken(Map<String, Object> claims, UserDetails userDetails);
+
+  public boolean isTokenValid(String jwt, UserDetails userDetails);
+
+  public boolean isTokenExpired(String jwt);
+
+  public Date extractExpiration(String jwt);
+
+  public Claims extractAllClaims(String jwt);
+
+  public Key getSigningKey();
+
+  public long getExpirationMs();
+
+}
+
+@Service
+@RequiredArgsConstructor
+class JwtServiceImpl implements JwtService {
 
   @Value("${jwt.secret}")
   public String secret;

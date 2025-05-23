@@ -51,17 +51,14 @@ public class AuthController {
     try {
       var user = authService.login(request, response);
       if (next != null && !next.isEmpty()) {
-        // If 'next' parameter is present, return a RedirectView
+        // redirect to next
         RedirectView redirect = new RedirectView(next);
         return ResponseEntity.status(HttpStatus.FOUND).body(redirect); // Use HttpStatus.FOUND (302)
       } else {
-        // If 'next' parameter is not present, return an AuthResponse
-        System.out.println(user);
         return ResponseEntity.ok(user);
       }
     } catch (NoSuchElementException e) {
-      // Handle login failure (e.g., return an error page or redirect with an error
-      // message)
+      // handle login failure
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     } catch (PermissionDenied e) {
       // user account is locked

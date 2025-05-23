@@ -17,8 +17,36 @@ import jakarta.transaction.Transactional;
 import lombok.*;
 
 @Service
+public interface CartService {
+
+  public List<CartItem> getCartByUser(User user);
+
+  public Page<CartItem> getCartByUser(User user, Pageable pageable);
+
+  public Optional<CartItem> getCartItemByUserAndBookId(User user, Long bookId);
+
+  /**
+   * @throw CartItemAlreadyExistsException
+   */
+  @Transactional
+  public CartItem createCartItem(User user, Long bookId, Long number);
+
+  /**
+   * @throw {@link ResourceDoesNotExist}
+   */
+  @Transactional
+  public CartItem modifyCartItem(Long id, Long number);
+
+  /**
+   * @throw {@link ResourceDoesNotExist}
+   */
+  @Transactional
+  public void deleteCartItem(Long id);
+}
+
+@Service
 @RequiredArgsConstructor
-public class CartService {
+class CartServiceImpl implements CartService {
 
   @Autowired
   private final CartItemRepository cartItemRepository;

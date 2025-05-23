@@ -5,7 +5,6 @@ import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +22,52 @@ import jakarta.transaction.Transactional;
 import lombok.*;
 
 @Service
+public interface OrderService {
+
+  public Page<Order> getOrdersByUser(User user, Pageable pageable);
+
+  public List<Order> getOrdersByUser(User user);
+
+  /**
+   * Places order
+   *
+   * @throws CartItemDoesNotExistException
+   */
+  @Transactional
+  public Order placeOrder(User user, OrderRequest orderRequest);
+
+  /**
+   * Create an Order from an {@link OrderRequest}.
+   * Will initilaize a set of {@link OrderItem} from {@link CartItem}s in
+   * orderRequest.
+   *
+   * @param creator      The creator of the order.
+   * @param orderRequest {@link OrderRequest} body.
+   * @param cartItems    cartItems.
+   */
+  public static Order createFromOrderRequest(
+      User creator, OrderRequest orderRequest, Map<CartItem, BigDecimal> cartItems) {
+    Set<OrderItem> orderItems = new HashSet<>();
+    Order order = Order.builder()
+        .items(orderItems)
+        .creator(creator)
+        .receiver(orderRequest.getReceiver())
+        .tel(orderRequest.getTel())
+        .address(orderRequest.getAddress())
+        .build();
+
+    for (var item : cartItems.entrySet()) {
+      OrderItem orderItem = OrderItem.createFromCartItem(
+          order, item.getKey(), item.getValue());
+      orderItems.add(orderItem);
+    }
+    return order;
+  }
+}
+
+@Service
 @RequiredArgsConstructor
-public class OrderService {
+class OrderServiceImpl implements OrderService {
 
   @Autowired
   private final CartItemRepository cartItemRepository;
@@ -64,7 +107,7 @@ public class OrderService {
       existingCartItems.put(item, entry.getPaidPrice());
     });
 
-    Order order = createFromOrderRequest(user, orderRequest, existingCartItems);
+    Order order = OrderService.createFromOrderRequest(user, orderRequest, existingCartItems);
 
     orderRepository.save(order);
     // WARN: does it save the order again?
@@ -72,35 +115,6 @@ public class OrderService {
 
     cartItemRepository.deleteAll(existingCartItems.keySet());
 
-    return order;
-  }
-
-  /**
-   * Create an Order from an {@link OrderRequest}.
-   * Will initilaize a set of {@link OrderItem} from {@link CartItem}s in
-   * orderRequest.
-   *
-   * @param creator      The creator of the order.
-   * @param orderRequest {@link OrderRequest} body.
-   * @param cartItems    cartItems.
-   */
-  private static Order createFromOrderRequest(
-      User creator, OrderRequest orderRequest, Map<CartItem, BigDecimal> cartItems) {
-    Set<OrderItem> orderItems = new HashSet<>();
-    Order order = Order.builder()
-        .items(orderItems)
-        .creator(creator)
-        .receiver(orderRequest.getReceiver())
-        .tel(orderRequest.getTel())
-        .address(orderRequest.getAddress())
-        .build();
-
-    Set<OrderRequest.Item> requestCartItems = orderRequest.getItems();
-    for (var item : cartItems.entrySet()) {
-      OrderItem orderItem = OrderItem.createFromCartItem(
-          order, item.getKey(), item.getValue());
-      orderItems.add(orderItem);
-    }
     return order;
   }
 }
