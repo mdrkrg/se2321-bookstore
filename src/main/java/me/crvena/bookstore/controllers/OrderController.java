@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.OrderService;
-import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.models.Order;
@@ -30,9 +29,6 @@ public class OrderController {
 
   @Autowired
   private OrderService orderService;
-
-  @Autowired
-  private UserService userService;
 
   /**
    * NOTE: No _embed if empty

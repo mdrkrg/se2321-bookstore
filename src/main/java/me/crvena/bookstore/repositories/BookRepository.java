@@ -24,5 +24,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
   Optional<Book> findByTitle(String title);
 
+  Optional<Book> findByTitleAndAuthor(String title, String author);
+
+  boolean existsByTitleAndAuthor(String title, String author);
+
   List<Book> findByTagsIn(@Param("tags") Set<Tag> tags);
 }

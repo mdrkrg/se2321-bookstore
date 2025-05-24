@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import me.crvena.bookstore.enums.Role;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.math.BigDecimal;

@@ -24,7 +24,6 @@ public class BookController {
   @Autowired
   private BookRepository bookRepository;
 
-  @Description("Get cart for current user.")
   @RestResource(rel = "book")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<Page<Book>> findAll(Pageable pageable) {

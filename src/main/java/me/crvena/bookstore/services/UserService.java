@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.repositories.UserRepository;
 
+@Deprecated(forRemoval = true)
 @Service
 public class UserService {
 

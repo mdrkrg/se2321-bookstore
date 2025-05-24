@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -82,7 +83,11 @@ class JwtServiceImpl implements JwtService {
   }
 
   public boolean isTokenExpired(String jwt) {
-    return extractExpiration(jwt).before(new Date());
+    try {
+      return extractExpiration(jwt).before(new Date());
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   public Date extractExpiration(String jwt) {
@@ -90,12 +95,16 @@ class JwtServiceImpl implements JwtService {
   }
 
   public Claims extractAllClaims(String jwt) {
-    return Jwts
-        .parserBuilder()
-        .setSigningKey(getSigningKey())
-        .build()
-        .parseClaimsJws(jwt)
-        .getBody();
+    try {
+      return Jwts
+          .parserBuilder()
+          .setSigningKey(getSigningKey())
+          .build()
+          .parseClaimsJws(jwt)
+          .getBody();
+    } catch (ExpiredJwtException e) {
+      return e.getClaims();
+    }
   }
 
   public Key getSigningKey() {

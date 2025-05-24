@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import me.crvena.bookstore.exceptions.ConflictExceptions.CartItemAlreadyExistsException;
+import me.crvena.bookstore.exceptions.ConflictExceptions.CartItemAlreadyExist;
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
@@ -27,7 +27,7 @@ public interface CartService {
   public Optional<CartItem> getCartItemByUserAndBookId(User user, Long bookId);
 
   /**
-   * @throw {@link CartItemAlreadyExistsException}
+   * @throw {@link CartItemAlreadyExist}
    */
   @Transactional
   public CartItem createCartItem(User user, Long bookId, Long number);
@@ -83,7 +83,7 @@ class CartServiceImpl implements CartService {
 
     Optional<CartItem> existingCartItem = cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
     if (existingCartItem.isPresent()) {
-      throw new CartItemAlreadyExistsException("Cart item already exists for user and book");
+      throw new CartItemAlreadyExist("Cart item already exists for user and book");
     }
     CartItem cartItem = CartItem.builder()
         .creator(user).book(book).number(number).build();

@@ -12,7 +12,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.JwtService;
 
 import io.micrometer.common.lang.NonNull;

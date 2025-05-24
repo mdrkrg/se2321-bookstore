@@ -1,20 +1,26 @@
 package me.crvena.bookstore.exceptions;
 
 public class ConflictExceptions {
-  public static class UsernameAlreadyExistsException extends RuntimeException {
-    public UsernameAlreadyExistsException(String message) {
+  public static class UsernameAlreadyExist extends RuntimeException {
+    public UsernameAlreadyExist(String message) {
       super(message);
     }
   }
 
-  public static class EmailAlreadyExistsException extends RuntimeException {
-    public EmailAlreadyExistsException(String message) {
+  public static class EmailAlreadyExist extends RuntimeException {
+    public EmailAlreadyExist(String message) {
       super(message);
     }
   }
 
-  public static class CartItemAlreadyExistsException extends RuntimeException {
-    public CartItemAlreadyExistsException(String message) {
+  public static class CartItemAlreadyExist extends RuntimeException {
+    public CartItemAlreadyExist(String message) {
+      super(message);
+    }
+  }
+
+  public static class ResourceAlreadyExist extends RuntimeException {
+    public ResourceAlreadyExist(String message) {
       super(message);
     }
   }

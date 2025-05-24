@@ -30,7 +30,7 @@ import me.crvena.bookstore.exceptions.ConflictExceptions.*;
 public interface AuthService {
   @Transactional
   public User signup(SignupRequest request, HttpServletResponse response)
-      throws UsernameAlreadyExistsException, EmailAlreadyExistsException;
+      throws UsernameAlreadyExist, EmailAlreadyExist;
 
   public User login(LoginRequest request, HttpServletResponse response)
       throws NoSuchElementException, PermissionDenied;
@@ -73,10 +73,10 @@ class AuthServiceImpl implements AuthService {
     var email = request.getEmail();
 
     if (repository.existsByUsername(username)) {
-      throw new UsernameAlreadyExistsException("username already taken");
+      throw new UsernameAlreadyExist("username already taken");
     }
     if (repository.existsByEmail(email)) {
-      throw new EmailAlreadyExistsException("email already taken");
+      throw new EmailAlreadyExist("email already taken");
     }
 
     var password = passwordEncoder.encode(request.getPassword());

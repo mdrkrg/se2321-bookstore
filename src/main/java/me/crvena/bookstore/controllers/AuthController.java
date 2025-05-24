@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
 import me.crvena.bookstore.exceptions.PermissionDenied;
-import me.crvena.bookstore.exceptions.ConflictExceptions.EmailAlreadyExistsException;
-import me.crvena.bookstore.exceptions.ConflictExceptions.UsernameAlreadyExistsException;
+import me.crvena.bookstore.exceptions.ConflictExceptions.EmailAlreadyExist;
+import me.crvena.bookstore.exceptions.ConflictExceptions.UsernameAlreadyExist;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.services.AuthService;
 
@@ -40,10 +40,10 @@ public class AuthController {
   public ResponseEntity<User> signup(@Valid @RequestBody SignupRequest request, HttpServletResponse response) {
     try {
       return ResponseEntity.ok(authService.signup(request, response));
-    } catch (UsernameAlreadyExistsException e) {
+    } catch (UsernameAlreadyExist e) {
       // TODO: indicate field
       return new ResponseEntity<>(HttpStatus.CONFLICT);
-    } catch (EmailAlreadyExistsException e) {
+    } catch (EmailAlreadyExist e) {
       return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
   }

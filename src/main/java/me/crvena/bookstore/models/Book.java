@@ -81,12 +81,12 @@ public class Book extends BaseModel {
   @ColumnDefault("0")
   private Long stock = Long.valueOf(0);
 
-  // @Builder.Default
   @ManyToMany
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
-  @JsonManagedReference // avoid loop
+  // @JsonManagedReference // avoid loop
   @ToString.Exclude
-  private Set<Tag> tags;
+  @Builder.Default
+  private Set<Tag> tags = new HashSet<>();
 
   public List<Tag> getTags() {
     return tags.stream().collect(Collectors.toList());
@@ -94,11 +94,11 @@ public class Book extends BaseModel {
 
   public void addTag(Tag tag) {
     this.tags.add(tag);
-    tag.getBookSet().add(this); // Maintain bidirectional link
+    // tag.getBookSet().add(this); // bidirectional link
   }
 
   public void removeTag(Tag tag) {
     this.tags.remove(tag);
-    tag.getBookSet().remove(this); // Maintain bidirectional link
+    // tag.getBookSet().remove(this); // bidirectional link
   }
 }

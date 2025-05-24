@@ -6,12 +6,14 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import me.crvena.bookstore.exceptions.PermissionDenied;
@@ -63,5 +65,25 @@ public class GlobalExceptionHandler {
       errors.put(fieldName, errorMessage);
     });
     return errors;
+  }
+
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNotFound(
+      Exception ex, WebRequest request) {
+    return ResponseUtil.createErrorResponse(
+        HttpStatus.NOT_FOUND,
+        ex.getMessage(),
+        request);
+  }
+
+  @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleNotSupported(
+      Exception ex, WebRequest request) {
+    return ResponseUtil.createErrorResponse(
+        HttpStatus.METHOD_NOT_ALLOWED,
+        ex.getMessage(),
+        request);
   }
 }
