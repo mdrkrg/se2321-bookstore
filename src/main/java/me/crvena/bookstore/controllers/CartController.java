@@ -9,7 +9,6 @@ import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
+import jakarta.validation.Valid;
+import me.crvena.bookstore.exceptions.ConflictExceptions.CartItemAlreadyExistsException;
+import me.crvena.bookstore.exceptions.PermissionDenied;
+import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
+import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.CartService;
 import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.utils.ResponseUtil;
@@ -33,15 +36,8 @@ import me.crvena.bookstore.models.User;
 public class CartController {
 
   @Autowired
-  private UserService userService;
-
-  @Autowired
   private CartService cartService;
 
-  /**
-   * NOTE: No _embed if empty
-   */
-  // @GetMapping
   @Description("Get cart for current user.")
   @RestResource(rel = "cart")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
@@ -49,9 +45,8 @@ public class CartController {
   // pageable) {
   // public ResponseEntity<Page<CartItem>> findAll(Pageable pageable) {
   public ResponseEntity<ListResponse<CartItem>> findAll() {
-    // TODO: Spring Security user
-    // WARN: test only user implementation
-    User user = userService.getOrCreateTestUser();
+
+    User user = AuthService.getRequestUser();
     // Page<CartItem> cartItems = cartService.getCartByUser(user, pageable);
     List<CartItem> cartItems = cartService.getCartByUser(user);
 
@@ -65,11 +60,10 @@ public class CartController {
   // @PostMapping
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
   public ResponseEntity<CartItem> createCartItem(
-      @RequestBody CartItemRequest.PostCartItemRequest cartItemRequest) {
+      @Valid @RequestBody CartItemRequest.PostCartItemRequest cartItemRequest) {
 
-    // TODO: Spring Security user
-    // WARN: test only user implementation
-    User user = userService.getOrCreateTestUser();
+    var user = AuthService.getRequestUser();
+
     try {
       CartItem cartItem = cartService.createCartItem(
           user, cartItemRequest.getBookId(), cartItemRequest.getNumber());
@@ -79,28 +73,20 @@ public class CartController {
           user, cartItemRequest.getBookId())
           .orElseThrow(() -> new RuntimeException("Unlikely to happen"));
       cartItem = cartService.modifyCartItem(
-          cartItem.getId(), cartItemRequest.getNumber());
+          cartItem.getId(), cartItemRequest.getNumber(), user);
       return ResponseEntity.ok(cartItem);
     }
-  }
-
-  @ExceptionHandler(CartItemAlreadyExistsException.class)
-  public ResponseEntity<ErrorResponse> handleCartItemAlreadyExists(
-      CartItemAlreadyExistsException ex, WebRequest request) {
-
-    return ResponseUtil.createErrorResponse(
-        HttpStatus.CONFLICT, ex.getMessage(), request);
   }
 
   @RequestMapping(path = "/{id}", method = { RequestMethod.PUT,
       RequestMethod.PATCH }, produces = "application/json")
   public ResponseEntity<CartItem> patchCartItem(
       @PathVariable("id") Long id,
-      @RequestBody CartItemRequest.PatchCartItemRequest request) {
+      @Valid @RequestBody CartItemRequest.PatchCartItemRequest request) {
 
-    // TODO: validate user
-
-    CartItem cartItem = cartService.modifyCartItem(id, request.getNumber());
+    // validate user
+    var user = AuthService.getRequestUser();
+    var cartItem = cartService.modifyCartItem(id, request.getNumber(), user);
     return ResponseEntity.ok(cartItem);
   }
 
@@ -108,9 +94,10 @@ public class CartController {
   public ResponseEntity<CartItem> deleteCartItem(
       @PathVariable("id") Long id) {
 
-    // TODO: validate user
+    // validate user
+    var user = AuthService.getRequestUser();
 
-    cartService.deleteCartItem(id);
+    cartService.deleteCartItem(id, user);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

@@ -11,7 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import me.crvena.bookstore.exceptions.CartItemAlreadyExistsException;
+import me.crvena.bookstore.exceptions.ConflictExceptions.CartItemAlreadyExistsException;
+import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
 import lombok.*;
@@ -26,22 +27,26 @@ public interface CartService {
   public Optional<CartItem> getCartItemByUserAndBookId(User user, Long bookId);
 
   /**
-   * @throw CartItemAlreadyExistsException
+   * @throw {@link CartItemAlreadyExistsException}
    */
   @Transactional
   public CartItem createCartItem(User user, Long bookId, Long number);
 
   /**
    * @throw {@link ResourceDoesNotExist}
+   * @throw {@link PermissionDenied}
    */
   @Transactional
-  public CartItem modifyCartItem(Long id, Long number);
+  public CartItem modifyCartItem(Long id, Long number, User user)
+      throws PermissionDenied, ResourceDoesNotExist;
 
   /**
    * @throw {@link ResourceDoesNotExist}
+   * @throw {@link PermissionDenied}
    */
   @Transactional
-  public void deleteCartItem(Long id);
+  public void deleteCartItem(Long id, User user)
+      throws PermissionDenied, ResourceDoesNotExist;
 }
 
 @Service
@@ -89,9 +94,14 @@ class CartServiceImpl implements CartService {
    * @throw {@link ResourceDoesNotExist}
    */
   @Transactional
-  public CartItem modifyCartItem(Long id, Long number) {
+  public CartItem modifyCartItem(Long id, Long number, User user) {
     CartItem cartItem = cartItemRepository.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(CartItem.class, id));
+
+    if (!cartItem.getCreator().equals(user)) {
+      throw new PermissionDenied(user);
+    }
+
     cartItem.setNumber(number);
     return cartItemRepository.save(cartItem);
   }
@@ -100,10 +110,14 @@ class CartServiceImpl implements CartService {
    * @throw {@link ResourceDoesNotExist}
    */
   @Transactional
-  public void deleteCartItem(Long id) {
-    if (!cartItemRepository.existsById(id)) {
-      throw new ResourceDoesNotExist(CartItem.class, id);
+  public void deleteCartItem(Long id, User user) {
+    CartItem cartItem = cartItemRepository.findById(id).orElseThrow(
+        () -> new ResourceDoesNotExist(CartItem.class, id));
+
+    if (!cartItem.getCreator().equals(user)) {
+      throw new PermissionDenied(user);
     }
+
     cartItemRepository.deleteById(id);
   }
 }

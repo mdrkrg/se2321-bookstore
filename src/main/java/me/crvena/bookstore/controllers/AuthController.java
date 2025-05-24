@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +17,13 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
 import me.crvena.bookstore.exceptions.PermissionDenied;
+import me.crvena.bookstore.exceptions.ConflictExceptions.EmailAlreadyExistsException;
+import me.crvena.bookstore.exceptions.ConflictExceptions.UsernameAlreadyExistsException;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.services.AuthService;
 
@@ -33,8 +37,15 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/signup")
-  public ResponseEntity<User> signup(@RequestBody SignupRequest request, HttpServletResponse response) {
-    return ResponseEntity.ok(authService.signup(request, response));
+  public ResponseEntity<User> signup(@Valid @RequestBody SignupRequest request, HttpServletResponse response) {
+    try {
+      return ResponseEntity.ok(authService.signup(request, response));
+    } catch (UsernameAlreadyExistsException e) {
+      // TODO: indicate field
+      return new ResponseEntity<>(HttpStatus.CONFLICT);
+    } catch (EmailAlreadyExistsException e) {
+      return new ResponseEntity<>(HttpStatus.CONFLICT);
+    }
   }
 
   /**
@@ -44,7 +55,7 @@ public class AuthController {
    */
   @PostMapping("/login")
   public ResponseEntity<?> login(
-      @RequestBody LoginRequest request,
+      @Valid @RequestBody LoginRequest request,
       HttpServletResponse response,
       HttpServletRequest httpRequest,
       @RequestParam(value = "next", required = false) String next) {
@@ -59,6 +70,8 @@ public class AuthController {
       }
     } catch (NoSuchElementException e) {
       // handle login failure
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    } catch (BadCredentialsException e) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     } catch (PermissionDenied e) {
       // user account is locked

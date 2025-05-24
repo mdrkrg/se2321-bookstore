@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.OrderService;
 import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.dtos.ListResponse;
@@ -40,9 +42,8 @@ public class OrderController {
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
   public ResponseEntity<ListResponse<Order>> getOrderList() {
-    // TODO: Spring Security user
-    // WARN: test only user implementation
-    User user = userService.getOrCreateTestUser();
+
+    User user = AuthService.getRequestUser();
     // Page<Order> orders = orderService.getOrdersByUser(user, pageable);
     List<Order> orders = orderService.getOrdersByUser(user);
 
@@ -50,10 +51,9 @@ public class OrderController {
   }
 
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
-  public ResponseEntity<Order> placeOrder(@RequestBody OrderRequest orderRequest) {
-    // TODO: Spring Security user
-    // WARN: test only user implementation
-    User user = userService.getOrCreateTestUser();
+  public ResponseEntity<Order> placeOrder(@Valid @RequestBody OrderRequest orderRequest) {
+
+    User user = AuthService.getRequestUser();
 
     Order order = orderService.placeOrder(user, orderRequest);
     return new ResponseEntity<>(order, HttpStatus.CREATED);

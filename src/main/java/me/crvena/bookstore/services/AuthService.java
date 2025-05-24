@@ -24,10 +24,13 @@ import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.repositories.UserRepository;
 
+import me.crvena.bookstore.exceptions.ConflictExceptions.*;
+
 @Service
 public interface AuthService {
   @Transactional
-  public User signup(SignupRequest request, HttpServletResponse response);
+  public User signup(SignupRequest request, HttpServletResponse response)
+      throws UsernameAlreadyExistsException, EmailAlreadyExistsException;
 
   public User login(LoginRequest request, HttpServletResponse response)
       throws NoSuchElementException, PermissionDenied;
@@ -65,6 +68,17 @@ class AuthServiceImpl implements AuthService {
 
   @Transactional
   public User signup(SignupRequest request, HttpServletResponse response) {
+
+    var username = request.getUsername();
+    var email = request.getEmail();
+
+    if (repository.existsByUsername(username)) {
+      throw new UsernameAlreadyExistsException("username already taken");
+    }
+    if (repository.existsByEmail(email)) {
+      throw new EmailAlreadyExistsException("email already taken");
+    }
+
     var password = passwordEncoder.encode(request.getPassword());
     var user = new User(request.getUsername(), request.getEmail(), password);
 
@@ -78,12 +92,12 @@ class AuthServiceImpl implements AuthService {
   public User login(LoginRequest request, HttpServletResponse response)
       throws NoSuchElementException, PermissionDenied {
     try {
+      var user = repository.findByUsername(request.getUsername())
+          .orElseThrow(() -> new NoSuchElementException("User not found"));
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(
               request.getUsername(),
               request.getPassword()));
-      var user = repository.findByUsername(request.getUsername())
-          .orElseThrow(() -> new NoSuchElementException("User not found"));
       if (!user.isAccountNonLocked()) {
         throw new PermissionDenied(user);
       }

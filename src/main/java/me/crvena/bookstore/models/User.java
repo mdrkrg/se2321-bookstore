@@ -26,7 +26,8 @@ import java.util.Collection;
 @Table(name = "users", indexes = @Index(columnList = "username"))
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 public class User extends BaseModel implements UserDetails {
-  private static final int USERNAME_MAX_LENGTH = 50;
+  public static final int USERNAME_MAX_LENGTH = 50;
+  public static final int USERNAME_MIN_LENGTH = 5;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +42,6 @@ public class User extends BaseModel implements UserDetails {
 
   @NonNull
   @Column(nullable = false, unique = true)
-  @Email
   private String email;
 
   /**
