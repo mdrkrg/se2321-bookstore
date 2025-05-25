@@ -2,22 +2,14 @@ package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
-import me.crvena.bookstore.utils.DataClass;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import me.crvena.bookstore.dtos.CreateBookRequest;
 import me.crvena.bookstore.dtos.ModifyBookRequest;
 import me.crvena.bookstore.exceptions.ConflictExceptions.ResourceAlreadyExist;
-import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
 import lombok.*;
@@ -52,13 +43,13 @@ public interface BookService {
 class BookServiceImpl implements BookService {
 
   @Autowired
-  BookRepository repository;
+  private BookRepository repository;
 
   @Autowired
-  TagRepository tagRepository;
+  private TagRepository tagRepository;
 
   @Autowired
-  ObjectMapper mapper;
+  private ObjectMapper mapper;
 
   public Book addBookTag(Long bookId, Long tagId) {
     return null;
