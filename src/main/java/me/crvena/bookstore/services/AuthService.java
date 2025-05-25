@@ -12,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindingResult;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,17 +22,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
+import me.crvena.bookstore.exceptions.FieldsConflictException;
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.repositories.UserRepository;
-
-import me.crvena.bookstore.exceptions.ConflictExceptions.*;
 
 @Service
 public interface AuthService {
   @Transactional
   public User signup(SignupRequest request, HttpServletResponse response)
-      throws UsernameAlreadyExist, EmailAlreadyExist;
+      throws FieldsConflictException;
 
   public User login(LoginRequest request, HttpServletResponse response)
       throws NoSuchElementException, PermissionDenied;
@@ -67,16 +68,29 @@ class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
 
   @Transactional
-  public User signup(SignupRequest request, HttpServletResponse response) {
+  public User signup(SignupRequest request, HttpServletResponse response)
+      throws FieldsConflictException {
 
     var username = request.getUsername();
     var email = request.getEmail();
 
+    BindingResult conflicts = new BeanPropertyBindingResult(
+        request, "signupRequest");
+
     if (repository.existsByUsername(username)) {
-      throw new UsernameAlreadyExist("username already taken");
+      conflicts.rejectValue(
+          "username", // field name
+          "conflict.username.exists",
+          "This username is already taken. Please choose a different one.");
     }
     if (repository.existsByEmail(email)) {
-      throw new EmailAlreadyExist("email already taken");
+      conflicts.rejectValue(
+          "email",
+          "conflict.email.exists",
+          "This email address is already registered.");
+    }
+    if (conflicts.hasErrors()) {
+      throw new FieldsConflictException(conflicts);
     }
 
     var password = passwordEncoder.encode(request.getPassword());

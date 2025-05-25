@@ -21,9 +21,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
+import me.crvena.bookstore.exceptions.FieldsConflictException;
 import me.crvena.bookstore.exceptions.PermissionDenied;
-import me.crvena.bookstore.exceptions.ConflictExceptions.EmailAlreadyExist;
-import me.crvena.bookstore.exceptions.ConflictExceptions.UsernameAlreadyExist;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.services.AuthService;
 
@@ -37,15 +36,10 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/signup")
-  public ResponseEntity<User> signup(@Valid @RequestBody SignupRequest request, HttpServletResponse response) {
-    try {
-      return ResponseEntity.ok(authService.signup(request, response));
-    } catch (UsernameAlreadyExist e) {
-      // TODO: indicate field
-      return new ResponseEntity<>(HttpStatus.CONFLICT);
-    } catch (EmailAlreadyExist e) {
-      return new ResponseEntity<>(HttpStatus.CONFLICT);
-    }
+  public ResponseEntity<User> signup(
+      @Valid @RequestBody SignupRequest requestBody, HttpServletResponse response)
+      throws FieldsConflictException {
+    return ResponseEntity.ok(authService.signup(requestBody, response));
   }
 
   /**
@@ -64,7 +58,7 @@ public class AuthController {
       if (next != null && !next.isEmpty()) {
         // redirect to next
         RedirectView redirect = new RedirectView(next);
-        return ResponseEntity.status(HttpStatus.FOUND).body(redirect); // Use HttpStatus.FOUND (302)
+        return ResponseEntity.status(HttpStatus.FOUND).body(redirect);
       } else {
         return ResponseEntity.ok(user);
       }

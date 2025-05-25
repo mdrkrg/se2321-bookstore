@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import me.crvena.bookstore.exceptions.FieldsConflictException;
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import me.crvena.bookstore.dtos.ErrorResponse;
@@ -41,6 +42,20 @@ public class GlobalExceptionHandler {
         HttpStatus.FORBIDDEN,
         ex.getMessage(),
         request);
+  }
+
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ExceptionHandler(FieldsConflictException.class)
+  @ResponseBody
+  public Map<String, String> handleFieldConflict(
+      FieldsConflictException ex, WebRequest request) {
+    Map<String, String> errors = new HashMap<>();
+    ex.getBindingResult().getAllErrors().forEach((error) -> {
+      String fieldName = ((FieldError) error).getField();
+      String errorMessage = error.getDefaultMessage();
+      errors.put(fieldName, errorMessage);
+    });
+    return errors;
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
