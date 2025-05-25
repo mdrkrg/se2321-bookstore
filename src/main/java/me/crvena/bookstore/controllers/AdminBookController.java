@@ -66,14 +66,11 @@ public class AdminBookController {
     }
   }
 
-  // TODO: Soft delete
   @RestResource(rel = "book")
   @RequestMapping(path = "/{id}", method = RequestMethod.DELETE, produces = "application/json")
   public ResponseEntity<Book> deleteBook(@PathVariable("id") Long id) {
-    if (!repository.existsById(id)) {
-      throw new ResourceDoesNotExist(Book.class, id);
-    }
-    repository.deleteById(id);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    Book book = repository.findById(id).orElseThrow(
+        () -> new ResourceDoesNotExist(Book.class, id));
+    return ResponseEntity.ok(service.changeAvailable(book, Boolean.FALSE));
   }
 }

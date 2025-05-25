@@ -43,6 +43,8 @@ public interface BookService {
   public Book createBook(CreateBookRequest data)
       throws RuntimeException, ResourceAlreadyExist;
 
+  public Book changeAvailable(Book book, Boolean available);
+
 }
 
 @Service
@@ -109,5 +111,11 @@ class BookServiceImpl implements BookService {
     } catch (JsonMappingException e) {
       throw new RuntimeException(e.getMessage());
     }
+  }
+
+  @Transactional
+  public Book changeAvailable(Book book, Boolean available) {
+    book.setAvailable(available);
+    return repository.save(book);
   }
 }

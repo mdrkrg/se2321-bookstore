@@ -3,7 +3,6 @@ package me.crvena.bookstore.dtos;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.hibernate.validator.constraints.URL;
 
@@ -23,6 +22,8 @@ public class CreateBookRequest {
 
   @NotNull
   private String title;
+
+  private Boolean available = true;
 
   private String description = "";
 

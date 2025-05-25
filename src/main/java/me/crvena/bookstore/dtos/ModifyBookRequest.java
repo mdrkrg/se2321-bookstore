@@ -21,6 +21,8 @@ public class ModifyBookRequest {
 
   private Optional<String> title;
 
+  private Optional<Boolean> available;
+
   private Optional<@Min(0) BigDecimal> price;
 
   private Optional<@URL String> cover;
