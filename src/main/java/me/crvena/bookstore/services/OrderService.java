@@ -1,5 +1,6 @@
 package me.crvena.bookstore.services;
 
+import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
@@ -15,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
@@ -35,6 +39,8 @@ public interface OrderService {
    */
   @Transactional
   public Order placeOrder(User user, OrderRequest orderRequest);
+
+  public Order modifyOrder(Order order, AdminModifyOrderRequest data);
 
   /**
    * Create an Order from an {@link OrderRequest}.
@@ -76,14 +82,17 @@ class OrderServiceImpl implements OrderService {
   private final OrderItemRepository orderItemRepository;
 
   @Autowired
-  private final OrderRepository orderRepository;
+  private final OrderRepository repository;
+
+  @Autowired
+  private ObjectMapper mapper;
 
   public Page<Order> getOrdersByUser(User user, Pageable pageable) {
-    return orderRepository.findByCreatorOrderByIdDesc(user, pageable);
+    return repository.findByCreatorOrderByIdDesc(user, pageable);
   }
 
   public List<Order> getOrdersByUser(User user) {
-    return orderRepository.findByCreatorOrderByIdDesc(user);
+    return repository.findByCreatorOrderByIdDesc(user);
   }
 
   /**
@@ -109,12 +118,22 @@ class OrderServiceImpl implements OrderService {
 
     Order order = OrderService.createFromOrderRequest(user, orderRequest, existingCartItems);
 
-    orderRepository.save(order);
+    repository.save(order);
     // WARN: does it save the order again?
     orderItemRepository.saveAll(order.getItems());
 
     cartItemRepository.deleteAll(existingCartItems.keySet());
 
     return order;
+  }
+
+  public Order modifyOrder(Order order, AdminModifyOrderRequest data)
+      throws RuntimeException {
+    try {
+      mapper.updateValue(order, data);
+      return repository.save(order);
+    } catch (JsonMappingException e) {
+      throw new RuntimeException(e.getMessage());
+    }
   }
 }
