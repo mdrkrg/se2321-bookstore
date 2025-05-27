@@ -18,7 +18,6 @@ import me.crvena.bookstore.models.Book;
 
 @RestController
 @RequestMapping("/api/book")
-// @CrossOrigin(origins = "http://localhost:3000")
 public class BookController {
 
   @Autowired

@@ -39,7 +39,10 @@ public interface AuthService {
   public void logout(HttpServletRequest request, HttpServletResponse response);
 
   public static User getRequestUser() {
-    return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    var user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if (user.equals("anonymousUser"))
+      return null;
+    return (User) user;
   }
 
   public static boolean userHasPermission(Permission permission) {

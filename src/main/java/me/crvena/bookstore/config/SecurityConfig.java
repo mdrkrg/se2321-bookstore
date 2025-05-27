@@ -76,7 +76,7 @@ public class SecurityConfig {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource))
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+            .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/curuser").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN") // Secure SnapAdmin
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated())

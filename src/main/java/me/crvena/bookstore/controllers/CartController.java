@@ -14,24 +14,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
 
 import jakarta.validation.Valid;
 import me.crvena.bookstore.exceptions.ConflictExceptions.CartItemAlreadyExist;
-import me.crvena.bookstore.exceptions.PermissionDenied;
-import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.CartService;
-import me.crvena.bookstore.utils.ResponseUtil;
 import me.crvena.bookstore.dtos.CartItemRequest;
-import me.crvena.bookstore.dtos.ErrorResponse;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.models.CartItem;
 import me.crvena.bookstore.models.User;
 
 @RestController
 @RequestMapping("/api/cart")
-// @CrossOrigin(origins = "http://localhost:3000")
 public class CartController {
 
   @Autowired

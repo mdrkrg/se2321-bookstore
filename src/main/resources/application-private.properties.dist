@@ -1,0 +1,7 @@
+spring.datasource.url=jdbc:postgresql://localhost:5432/bookstoredb
+spring.datasource.username=username
+spring.datasource.password=password
+jwt.secret=secret
+jwt.expiration=3600000
+jwt.cookieName=authtoken
+url.frontend=http://localhost:5173
