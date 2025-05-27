@@ -21,6 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
+import me.crvena.bookstore.dtos.UserDto;
 import me.crvena.bookstore.exceptions.FieldsConflictException;
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.models.User;
@@ -36,10 +37,11 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/signup")
-  public ResponseEntity<User> signup(
+  public ResponseEntity<UserDto> signup(
       @Valid @RequestBody SignupRequest requestBody, HttpServletResponse response)
       throws FieldsConflictException {
-    return ResponseEntity.ok(authService.signup(requestBody, response));
+    var user = authService.signup(requestBody, response);
+    return ResponseEntity.ok(UserDto.buildFromUser(user));
   }
 
   /**
@@ -60,7 +62,7 @@ public class AuthController {
         RedirectView redirect = new RedirectView(next);
         return ResponseEntity.status(HttpStatus.FOUND).body(redirect);
       } else {
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(UserDto.buildFromUser(user));
       }
     } catch (NoSuchElementException e) {
       // handle login failure
@@ -74,8 +76,12 @@ public class AuthController {
   }
 
   @GetMapping("/curuser")
-  public ResponseEntity<User> getUserByToken() {
-    return ResponseEntity.ok(AuthService.getRequestUser());
+  public ResponseEntity<UserDto> getUserByToken() {
+    var user = AuthService.getRequestUser();
+    if (user == null) {
+      return ResponseEntity.ok(UserDto.builder().build());
+    }
+    return ResponseEntity.ok(UserDto.buildFromUser(user));
   }
 
   @GetMapping("/logout")

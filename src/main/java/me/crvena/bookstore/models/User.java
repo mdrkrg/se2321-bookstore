@@ -60,13 +60,10 @@ public class User extends BaseModel implements UserDetails {
   @ColumnDefault("0")
   private BigDecimal balance = BigDecimal.ZERO;
 
-  @JsonIgnore
   @ColumnDefault("true")
   private boolean enabled = true;
-  @JsonIgnore
   @ColumnDefault("true")
   private boolean accountNonExpired = true;
-  @JsonIgnore
   @ColumnDefault("true")
   private boolean accountNonLocked = true;
 
