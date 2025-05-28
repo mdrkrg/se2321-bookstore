@@ -1,8 +1,9 @@
 import { Toaster } from '@/components/ui/sonner'
 import UserHeader from '@/components/user/header/view'
-import { fetchFakeUser } from '@/lib/utils/dummy'
+import { useUser } from '@/lib/api/user'
+import { NO_NEED_AUTH_ROUTES } from '@/lib/models/endpoints'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet, redirect } from '@tanstack/react-router'
 
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 
@@ -11,8 +12,16 @@ import { useState } from 'react'
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
-  loader() {
-    const user = fetchFakeUser()
+  async loader({ context: { queryClient }, location }) {
+    const user = await queryClient.fetchQuery(useUser().fetchUserOptions())
+    // if not in login or signup route, redirect
+    if (user.username === null && !NO_NEED_AUTH_ROUTES.includes(location.pathname)) {
+      throw redirect({ to: '/login', replace: true })
+    }
+    // if already logged in, redirect to root if go to login or signup
+    if (user.username !== null && NO_NEED_AUTH_ROUTES.includes(location.pathname)) {
+      throw redirect({ to: '/' })
+    }
     return {
       user,
     }

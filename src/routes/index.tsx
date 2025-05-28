@@ -1,6 +1,7 @@
 import CardsWaterfall from '@/components/user/main/cards-waterfall'
 import BookFilter from '@/components/user/main/filter'
 import { useBooks } from '@/lib/api/book'
+import { NO_NEED_AUTH_ROUTES } from '@/lib/models/endpoints'
 import { fetchFakeTags } from '@/lib/utils/dummy'
 
 import { createFileRoute } from '@tanstack/react-router'
@@ -8,7 +9,9 @@ import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
   component: App,
-  async loader({ context: { queryClient } }) {
+  async loader({ context: { queryClient }, location }) {
+    if (NO_NEED_AUTH_ROUTES.includes(location.pathname))
+      return []
     return await queryClient.fetchQuery(useBooks().fetchBookOptions())
   },
 })

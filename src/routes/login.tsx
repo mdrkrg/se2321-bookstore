@@ -1,6 +1,9 @@
-import type { LoginRequest } from '@/lib/api/user'
+import type { FieldError, LoginRequest } from '@/lib/api/user'
+import type { UserDTO } from '@/lib/models/user'
 import { Card, CardContent } from '@/components/ui/card'
 import { LoginForm } from '@/components/user/login/view'
+import { loginFetcher } from '@/lib/api/user'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, stripSearchParams, useRouter } from '@tanstack/react-router'
 import { zodValidator } from '@tanstack/zod-adapter'
 import { useState } from 'react'
@@ -23,21 +26,37 @@ function LoginComponent() {
   const router = useRouter()
   const { next } = Route.useSearch()
 
-  // useEffect(() => {
-  //   if (isAuthorized)
-  //     router.navigate({ to: next || '/', replace: true })
-  // }, [isAuthorized])
-
   const [auth, setAuth] = useState<LoginRequest>({
     username: '',
     password: '',
   })
 
+  const { mutate: login } = useMutation<UserDTO, Error | FieldError[], LoginRequest>({
+    mutationFn: loginFetcher,
+    onSuccess: (data) => {
+      toast('登录成功', {
+        description: `${data.username}, welcome!`,
+      })
+      router.navigate({ to: next || '/', replace: true })
+    },
+    onError: (data) => {
+      if (Array.isArray(data)) {
+        toast('登录失败', {
+          description: data.map(({ field, message }) => {
+            return `${field}: ${message}`
+          }).join('\n'),
+        })
+      }
+      else {
+        toast('登录失败', {
+          description: data.message,
+        })
+      }
+    },
+  })
+
   function handleLogin() {
-    // eslint-disable-next-line no-console
-    console.log(auth)
-    toast('登录成功')
-    router.navigate({ to: next || '/', replace: true })
+    login(auth)
   }
 
   return (

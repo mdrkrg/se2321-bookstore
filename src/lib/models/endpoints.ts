@@ -32,9 +32,11 @@ function g<T extends Endpoint>(base: string, subEndpoints: T): GResult<T> {
 }
 
 export const endpoints = g('/api', {
-  view: g('/', {
-    login: 'login',
-    logout: 'logout',
+  auth: g('/auth', {
+    login: '/login',
+    logout: '/logout',
+    signup: '/signup',
+    curuser: '/curuser',
   }),
   user: g('/user', {
     avatars: (filename: string | number) =>
@@ -72,3 +74,8 @@ export const endpoints = g('/api', {
     rank: '/rank', // top 10 rankings
   }),
 })
+
+export const NO_NEED_AUTH_ROUTES = [
+  '/login',
+  'signup',
+]

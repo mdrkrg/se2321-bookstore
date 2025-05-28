@@ -3,9 +3,12 @@
  * login and logout
  */
 
+import type { AxiosError } from 'axios'
+import type { UserDTO } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
+import axios from 'axios'
 import { endpoints } from '../models/endpoints'
-import { $mutate } from './utils'
+import { $mutate, $queryOptions } from './utils'
 
 export interface ChangeAvatarRequest {
   file: Blob
@@ -27,6 +30,12 @@ export interface AddAddressRequest {
 
 export interface LoginRequest {
   username: string
+  password: string
+}
+
+export interface SignUpRequest {
+  username: string
+  email: string
   password: string
 }
 
@@ -86,7 +95,17 @@ export function useUser() {
     options?: $MutateOptions<T>,
   ) {
     return $mutate<ApiResponseBase, T>({
-      url: endpoints.view.login,
+      url: endpoints.auth.login,
+      method: 'POST',
+      ...options,
+    })
+  }
+
+  function signup<T extends SignUpRequest = SignUpRequest>(
+    options?: $MutateOptions<T>,
+  ) {
+    return $mutate<ApiResponseBase, T>({
+      url: endpoints.auth.login,
       method: 'POST',
       ...options,
     })
@@ -96,9 +115,16 @@ export function useUser() {
     options?: $MutateOptions<undefined>,
   ) {
     return $mutate<ApiResponseBase>({
-      url: endpoints.view.logout,
+      url: endpoints.auth.logout,
       method: 'PUT',
       ...options,
+    })
+  }
+
+  function fetchUserOptions() {
+    return $queryOptions<UserDTO>({
+      url: endpoints.auth.curuser,
+      key: ['user'],
     })
   }
 
@@ -109,6 +135,54 @@ export function useUser() {
     addAddress,
     deleteAddress,
     login,
+    signup,
     logout,
+    fetchUserOptions,
+  }
+}
+
+export interface LoginErrorResponse {
+  username?: string
+  password?: string
+}
+
+export interface FieldError {
+  field: string
+  message: string
+}
+
+export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
+  try {
+    const response = await axios.post<UserDTO>(
+      endpoints.auth.login,
+      data,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+    return response.data
+  }
+  catch (error) {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<LoginErrorResponse>
+      if (axiosError.response && (
+        axiosError.response.status === 401 || axiosError.response.status === 403
+      )) {
+        // login failed or account locked
+        const errors: FieldError[] = Object.entries(axiosError.response.data).map(([key, val]) => ({
+          field: key,
+          message: val,
+        }))
+        throw errors
+      }
+      else {
+        // other axios errors
+        throw new Error(axiosError.message || 'unexpected login error')
+      }
+    }
+    // non axios errors
+    throw new Error('unexpected error')
   }
 }

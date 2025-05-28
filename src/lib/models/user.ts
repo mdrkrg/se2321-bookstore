@@ -21,13 +21,19 @@ export interface PartialUserDTO {
   introduction: string
 }
 
+export type Role = 'USER' | 'ADMIN'
+
 export interface UserDTO {
+  id: number
   username: string
-  nickname: string
-  /** Format: int64 */
+  email: string
   balance: number
-  avatar: string
-  introduction: string
+  role: Role
+  userInfo: {
+    avatar: string
+    introduction: string
+    nickname: string
+  }
 }
 
 export interface Address {
