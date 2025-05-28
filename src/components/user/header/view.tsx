@@ -47,7 +47,7 @@ export default function UserHeader() {
           {
             Object.entries(routes).map(([link, prop]) => {
               return (
-                <NavigationMenuItem key={link}>
+                <NavigationMenuItem key={link} tabIndex={100}>
                   <NavigationMenuLink
                     className="nav-link text-md max-sm:text-sm"
                     asChild

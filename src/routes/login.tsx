@@ -1,12 +1,9 @@
-import type { FieldError, LoginRequest } from '@/lib/api/user'
+import type { FieldError } from '@/lib/api/user'
 import type { UserDTO } from '@/lib/models/user'
 import { Card, CardContent } from '@/components/ui/card'
 import { LoginForm } from '@/components/user/auth/login'
-import { loginFetcher } from '@/lib/api/user'
-import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, stripSearchParams, useRouter } from '@tanstack/react-router'
 import { zodValidator } from '@tanstack/zod-adapter'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -26,37 +23,26 @@ function LoginComponent() {
   const router = useRouter()
   const { next } = Route.useSearch()
 
-  const [auth, setAuth] = useState<LoginRequest>({
-    username: '',
-    password: '',
-  })
+  function handleLoginSuccess(data: UserDTO) {
+    toast('登录成功', {
+      description: `${data.username}, welcome!`,
+    })
+    router.navigate({ to: next || '/', replace: true })
+  }
 
-  const { mutate: login } = useMutation<UserDTO, Error | FieldError[], LoginRequest>({
-    mutationFn: loginFetcher,
-    onSuccess: (data) => {
-      toast('登录成功', {
-        description: `${data.username}, welcome!`,
+  function handleLoginError(data: Error | FieldError[]) {
+    if (Array.isArray(data)) {
+      toast('登录失败', {
+        description: data.map(({ field, message }) => {
+          return `${field}: ${message}`
+        }).join('\n'),
       })
-      router.navigate({ to: next || '/', replace: true })
-    },
-    onError: (data) => {
-      if (Array.isArray(data)) {
-        toast('登录失败', {
-          description: data.map(({ field, message }) => {
-            return `${field}: ${message}`
-          }).join('\n'),
-        })
-      }
-      else {
-        toast('登录失败', {
-          description: data.message,
-        })
-      }
-    },
-  })
-
-  function handleLogin() {
-    login(auth)
+    }
+    else {
+      toast('登录失败', {
+        description: data.message,
+      })
+    }
   }
 
   return (
@@ -64,15 +50,8 @@ function LoginComponent() {
       <Card className="overflow-hidden">
         <CardContent className="grid p-0 md:grid-cols-2">
           <LoginForm
-            auth={auth}
-            onPasswordChange={password =>
-              setAuth({ username: auth.username, password })}
-            onUsernameChange={username =>
-              setAuth({ username, password: auth.password })}
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleLogin()
-            }}
+            onLoginSuccess={handleLoginSuccess}
+            onLoginError={handleLoginError}
           />
           <div className="relative hidden bg-muted md:flex">
             <span className="text-8xl text-center m-auto">📚🛒</span>
