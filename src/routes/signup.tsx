@@ -1,77 +1,77 @@
-import type { FieldError, LoginRequest } from '@/lib/api/user'
+import type { SignupFormData } from '@/components/user/auth/signup'
+import type { FieldError, SignupRequest } from '@/lib/api/user'
 import type { UserDTO } from '@/lib/models/user'
 import { Card, CardContent } from '@/components/ui/card'
-import { LoginForm } from '@/components/user/auth/login'
-import { loginFetcher } from '@/lib/api/user'
+import { SignupForm } from '@/components/user/auth/signup'
+import { signupFetcher } from '@/lib/api/user'
 import { useMutation } from '@tanstack/react-query'
-import { createFileRoute, stripSearchParams, useRouter } from '@tanstack/react-router'
-import { zodValidator } from '@tanstack/zod-adapter'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
-export const Route = createFileRoute('/login')({
-  validateSearch: zodValidator(
-    z.object({
-      next: z.string().catch(''),
-    }),
-  ),
-  search: {
-    middlewares: [stripSearchParams({ next: '' })],
-  },
-  component: LoginComponent,
+export const Route = createFileRoute('/signup')({
+  component: SignupComponent,
 })
 
-function LoginComponent() {
+function SignupComponent() {
   const router = useRouter()
-  const { next } = Route.useSearch()
 
-  const [auth, setAuth] = useState<LoginRequest>({
+  const [auth, setAuth] = useState<SignupFormData>({
     username: '',
+    email: '',
     password: '',
+    repeatPassword: '',
   })
 
-  const { mutate: login } = useMutation<UserDTO, Error | FieldError[], LoginRequest>({
-    mutationFn: loginFetcher,
+  const { mutate: signup } = useMutation<UserDTO, Error | FieldError[], SignupRequest>({
+    mutationFn: signupFetcher,
     onSuccess: (data) => {
-      toast('登录成功', {
+      toast('注册成功', {
         description: `${data.username}, welcome!`,
       })
-      router.navigate({ to: next || '/', replace: true })
+      router.navigate({ to: '/', replace: true })
     },
     onError: (data) => {
       if (Array.isArray(data)) {
-        toast('登录失败', {
+        toast('注册失败', {
           description: data.map(({ field, message }) => {
             return `${field}: ${message}`
           }).join('\n'),
         })
       }
       else {
-        toast('登录失败', {
+        toast('注册失败', {
           description: data.message,
         })
       }
     },
   })
 
-  function handleLogin() {
-    login(auth)
+  function handleSignup() {
+    signup({
+      username: auth.username,
+      password: auth.password,
+      email: auth.email,
+    })
   }
 
   return (
     <div className="flex flex-col gap-6 sm:w-3/4 lg:w-2/3 m-auto mt-[10vh]">
       <Card className="overflow-hidden">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <LoginForm
+          <SignupForm
             auth={auth}
             onPasswordChange={password =>
-              setAuth({ username: auth.username, password })}
+              setAuth({ ...auth, password })}
+            onRepeatPasswordChange={repeatPassword =>
+              setAuth({ ...auth, repeatPassword })}
             onUsernameChange={username =>
-              setAuth({ username, password: auth.password })}
+              setAuth({ ...auth, username })}
+            onEmailChange={email =>
+              setAuth({ ...auth, email })}
             onSubmit={(e) => {
               e.preventDefault()
-              handleLogin()
+              handleSignup()
             }}
           />
           <div className="relative hidden bg-muted md:flex">

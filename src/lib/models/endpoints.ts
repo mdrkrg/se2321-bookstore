@@ -77,5 +77,5 @@ export const endpoints = g('/api', {
 
 export const NO_NEED_AUTH_ROUTES = [
   '/login',
-  'signup',
+  '/signup',
 ]

@@ -33,7 +33,7 @@ export interface LoginRequest {
   password: string
 }
 
-export interface SignUpRequest {
+export interface SignupRequest {
   username: string
   email: string
   password: string
@@ -101,7 +101,7 @@ export function useUser() {
     })
   }
 
-  function signup<T extends SignUpRequest = SignUpRequest>(
+  function signup<T extends SignupRequest = SignupRequest>(
     options?: $MutateOptions<T>,
   ) {
     return $mutate<ApiResponseBase, T>({
@@ -151,10 +151,10 @@ export interface FieldError {
   message: string
 }
 
-export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
+export async function authFetcher<TRequest>(data: TRequest, endpoint: string): Promise<UserDTO> {
   try {
     const response = await axios.post<UserDTO>(
-      endpoints.auth.login,
+      endpoint,
       data,
       {
         headers: {
@@ -167,9 +167,8 @@ export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
   catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<LoginErrorResponse>
-      if (axiosError.response && (
-        axiosError.response.status === 401 || axiosError.response.status === 403
-      )) {
+      const knownCodes = [401, 403, 409]
+      if (axiosError.response && knownCodes.includes(axiosError.response.status)) {
         // login failed or account locked
         const errors: FieldError[] = Object.entries(axiosError.response.data).map(([key, val]) => ({
           field: key,
@@ -185,4 +184,12 @@ export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
     // non axios errors
     throw new Error('unexpected error')
   }
+}
+
+export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
+  return await authFetcher(data, endpoints.auth.login)
+}
+
+export async function signupFetcher(data: SignupRequest): Promise<UserDTO> {
+  return await authFetcher(data, endpoints.auth.signup)
 }
