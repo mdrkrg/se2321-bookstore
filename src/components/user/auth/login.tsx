@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { loginFetcher } from '@/lib/api/user'
 import { cn } from '@/lib/utils/cn'
+import { getNameValidator, PASSWORD_VALIDATOR } from '@/lib/utils/validate'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -39,8 +40,8 @@ const formItems = {
 } satisfies InputFormItems
 
 const formSchema = z.object({
-  username: z.string().min(6),
-  password: z.string().min(6),
+  username: getNameValidator('用户名'),
+  password: PASSWORD_VALIDATOR,
 })
 
 interface LoginFormProps extends React.ComponentProps<'form'> {
