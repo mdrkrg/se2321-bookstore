@@ -1,5 +1,7 @@
 package me.crvena.bookstore.controllers;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,7 @@ public class AuthController {
       HttpServletResponse response,
       HttpServletRequest httpRequest,
       @RequestParam(value = "next", required = false) String next) {
+    Map<String, String> errorBody = new HashMap<>();
     try {
       var user = authService.login(request, response);
       if (next != null && !next.isEmpty()) {
@@ -64,12 +67,15 @@ public class AuthController {
       }
     } catch (NoSuchElementException e) {
       // handle login failure
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+      errorBody.put("username", e.getMessage());
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
     } catch (BadCredentialsException e) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+      errorBody.put("password", e.getMessage());
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
     } catch (PermissionDenied e) {
       // user account is locked
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+      errorBody.put("username", "Your account is locked");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorBody);
     }
   }
 

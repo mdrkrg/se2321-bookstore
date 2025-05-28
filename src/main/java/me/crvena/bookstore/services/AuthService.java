@@ -101,7 +101,6 @@ class AuthServiceImpl implements AuthService {
 
     repository.save(user);
     var jwt = jwtService.generateToken(user);
-    // return AuthResponse.builder().token(jwt).build();
     setAuthCookie(jwt, response);
     return user;
   }
