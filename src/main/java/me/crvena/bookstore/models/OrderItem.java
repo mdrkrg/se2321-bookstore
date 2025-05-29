@@ -47,6 +47,7 @@ public class OrderItem extends BaseModel {
   @NotNull
   @Min(1)
   @ColumnDefault("1")
+  @Builder.Default
   private Long number = Long.valueOf(1);
 
   /**

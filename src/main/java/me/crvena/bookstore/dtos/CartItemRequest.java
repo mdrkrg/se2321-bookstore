@@ -1,6 +1,7 @@
 package me.crvena.bookstore.dtos;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +13,10 @@ public class CartItemRequest {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class PostCartItemRequest {
-    @NotBlank
+    @NotNull
     private Long bookId;
-    @NotBlank
+    @Min(1)
+    @NotNull
     private Long number;
   }
 
@@ -23,7 +25,8 @@ public class CartItemRequest {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class PatchCartItemRequest {
-    @NotBlank
+    @Min(1)
+    @NotNull
     private Long number;
   }
 }

@@ -3,7 +3,9 @@ package me.crvena.bookstore.dtos;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,13 +21,14 @@ public class OrderRequest {
   @AllArgsConstructor
   @NoArgsConstructor
   public static class Item {
-    @NotBlank
+    @NotNull
     private Long itemId;
-    @NotBlank
+    @Min(0)
+    @NotNull
     private BigDecimal paidPrice;
   }
 
-  @NotBlank
+  @NotNull
   private Set<Item> items;
   @NotBlank
   private String tel;

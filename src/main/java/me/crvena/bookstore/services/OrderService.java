@@ -6,6 +6,10 @@ import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +35,12 @@ public interface OrderService {
   public Page<Order> getOrdersByUser(User user, Pageable pageable);
 
   public List<Order> getOrdersByUser(User user);
+
+  public List<Order> getOrdersByUserAndCreatedAtBetween(
+      User user, LocalDate createdAtStart, LocalDate createdAtEnd);
+
+  public List<Order> getOrdersByUserAndTitleAndCreatedAtBetween(
+      User user, String title, LocalDate createdAtStart, LocalDate createdAtEnd);
 
   /**
    * Places order
@@ -93,6 +103,25 @@ class OrderServiceImpl implements OrderService {
 
   public List<Order> getOrdersByUser(User user) {
     return repository.findByCreatorOrderByIdDesc(user);
+  }
+
+  public List<Order> getOrdersByUserAndCreatedAtBetween(
+      User user, LocalDate createdAtStart, LocalDate createdAtEnd) {
+    Instant startInstant = createdAtStart.atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+    return repository.findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
+        user, startInstant, endInstant);
+  }
+
+  public List<Order> getOrdersByUserAndTitleAndCreatedAtBetween(
+      User user,
+      String title,
+      LocalDate createdAtStart,
+      LocalDate createdAtEnd) {
+    Instant startInstant = createdAtStart.atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+    return repository.findByCreatorAndBookTitleAndCreatedAtBetween(
+        user, title, startInstant, endInstant);
   }
 
   /**

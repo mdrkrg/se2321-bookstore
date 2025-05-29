@@ -1,17 +1,19 @@
 package me.crvena.bookstore.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.core.annotation.Description;
-import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -29,19 +31,30 @@ public class OrderController {
   @Autowired
   private OrderService orderService;
 
-  /**
-   * NOTE: No _embed if empty
-   */
   @Description("Get order list for current user.")
-  @RestResource(rel = "order")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
-  public ResponseEntity<ListResponse<Order>> getOrderList() {
+  public ResponseEntity<ListResponse<Order>> getOrderList(
+      @RequestParam(name = "title", required = false) String title,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
+    if (createdAtStart == null) {
+      createdAtStart = LocalDate.EPOCH;
+    }
+    if (createdAtEnd == null) {
+      createdAtEnd = LocalDate.now();
+    }
 
     User user = AuthService.getRequestUser();
     // Page<Order> orders = orderService.getOrdersByUser(user, pageable);
-    List<Order> orders = orderService.getOrdersByUser(user);
+    if (title == null || title.isEmpty()) {
+      List<Order> orders = orderService.getOrdersByUserAndCreatedAtBetween(
+          user, createdAtStart, createdAtEnd);
+      return ResponseEntity.ok(new ListResponse<>(orders));
+    }
 
+    List<Order> orders = orderService.getOrdersByUserAndCreatedAtBetween(
+        user, createdAtStart, createdAtEnd);
     return ResponseEntity.ok(new ListResponse<>(orders));
   }
 
@@ -53,5 +66,4 @@ public class OrderController {
     Order order = orderService.placeOrder(user, orderRequest);
     return new ResponseEntity<>(order, HttpStatus.CREATED);
   }
-
 }
