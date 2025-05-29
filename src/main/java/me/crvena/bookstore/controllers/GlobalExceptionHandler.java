@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import me.crvena.bookstore.exceptions.FieldsConflictException;
@@ -69,6 +70,16 @@ public class GlobalExceptionHandler {
       String errorMessage = error.getDefaultMessage();
       errors.put(fieldName, errorMessage);
     });
+    return errors;
+  }
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  @ResponseBody
+  public Map<String, String> handleRequestTypeExceptions(
+      MethodArgumentTypeMismatchException ex) {
+    Map<String, String> errors = new HashMap<>();
+    errors.put(ex.getName(), ex.getMessage());
     return errors;
   }
 

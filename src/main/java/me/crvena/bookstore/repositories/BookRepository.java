@@ -1,5 +1,6 @@
 package me.crvena.bookstore.repositories;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,6 +26,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
   Optional<Book> findByTitle(String title);
 
   Optional<Book> findByTitleAndAuthor(String title, String author);
+
+  List<Book> findByAvailableAndTitleIgnoreCaseContaining(boolean available, String partialTitle);
+
+  List<Book> findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
+      boolean available, String partialTitle, Collection<Long> tagIds);
+
+  List<Book> findByAvailableAndTags_IdIn(boolean available, Collection<Long> tagIds);
 
   boolean existsByTitleAndAuthor(String title, String author);
 
