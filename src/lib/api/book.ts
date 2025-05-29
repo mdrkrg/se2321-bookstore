@@ -9,10 +9,15 @@ import { endpoints } from '../models/endpoints'
 import { $mutate, $query, $queryOptions } from './utils'
 
 export function useBooks() {
-  function fetchBookOptions() {
+  function fetchBookOptions({ title, tagIds }:
+  { title?: string, tagIds?: number[] }) {
     return $queryOptions<PagedItems<Book>>({
       url: endpoints.book.index,
-      key: ['books'],
+      key: ['books', title, tagIds],
+      query: {
+        title: title ?? '',
+        tagIds: tagIds?.join(',') ?? '',
+      },
     })
   }
 
