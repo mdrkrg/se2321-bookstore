@@ -40,8 +40,8 @@ public class OrderController {
   // public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
   public ResponseEntity<ListResponse<Order>> getOrderList(
       @RequestParam(name = "title", required = false) String title,
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
+      @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
+      @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
     if (createdAtStart == null) {
       createdAtStart = LocalDate.EPOCH;
     }
