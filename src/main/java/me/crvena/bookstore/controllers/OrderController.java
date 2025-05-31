@@ -10,17 +10,21 @@ import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import jakarta.validation.Valid;
 import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.OrderService;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.dtos.OrderRequest;
+import me.crvena.bookstore.dtos.OutOfStockErrorResponse;
+import me.crvena.bookstore.exceptions.OutOfStockException;
 import me.crvena.bookstore.models.Order;
 import me.crvena.bookstore.models.User;
 
@@ -53,8 +57,8 @@ public class OrderController {
       return ResponseEntity.ok(new ListResponse<>(orders));
     }
 
-    List<Order> orders = orderService.getOrdersByUserAndCreatedAtBetween(
-        user, createdAtStart, createdAtEnd);
+    List<Order> orders = orderService.getOrdersByUserAndTitleAndCreatedAtBetween(
+        user, title, createdAtStart, createdAtEnd);
     return ResponseEntity.ok(new ListResponse<>(orders));
   }
 
@@ -65,5 +69,17 @@ public class OrderController {
 
     Order order = orderService.placeOrder(user, orderRequest);
     return new ResponseEntity<>(order, HttpStatus.CREATED);
+  }
+
+  @ExceptionHandler(OutOfStockException.class)
+  public ResponseEntity<OutOfStockErrorResponse> handleOutOfStockOrder(
+      OutOfStockException ex, WebRequest request) {
+
+    var errorResponse = OutOfStockErrorResponse.builder()
+        .outOfStockItems(ex.getOutOfStockItems())
+        .message(ex.getMessage())
+        .build();
+
+    return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
   }
 }

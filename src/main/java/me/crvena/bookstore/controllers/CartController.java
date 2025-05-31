@@ -50,7 +50,6 @@ public class CartController {
   /**
    * Modify or create {@link CartItem}
    */
-  // @PostMapping
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
   public ResponseEntity<CartItem> createCartItem(
       @Valid @RequestBody CartItemRequest.PostCartItemRequest cartItemRequest) {

@@ -2,6 +2,7 @@ package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.OrderRequest;
+import me.crvena.bookstore.dtos.OutOfStockErrorResponse.OutOfStockDetail;
 import me.crvena.bookstore.models.*;
 import me.crvena.bookstore.repositories.*;
 
@@ -10,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import me.crvena.bookstore.exceptions.OutOfStockException;
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
@@ -92,6 +95,9 @@ class OrderServiceImpl implements OrderService {
   private final OrderItemRepository orderItemRepository;
 
   @Autowired
+  private final BookRepository bookRepository;
+
+  @Autowired
   private final OrderRepository repository;
 
   @Autowired
@@ -133,25 +139,76 @@ class OrderServiceImpl implements OrderService {
   public Order placeOrder(User user, OrderRequest orderRequest) {
     // validate items
     Set<OrderRequest.Item> requestCartItems = orderRequest.getItems();
-    Map<CartItem, BigDecimal> existingCartItems = new HashMap<>();
-    requestCartItems.forEach(entry -> {
-      CartItem item = cartItemRepository.findById(entry.getItemId())
+    Map<CartItem, BigDecimal> validCartItems = new HashMap<>();
+    List<OutOfStockDetail> outOfStockDetails = new ArrayList<>();
+    requestCartItems.forEach(requestItem -> {
+
+      CartItem item = cartItemRepository.findById(requestItem.getItemId())
           .orElseThrow(() -> new ResourceDoesNotExist(
-              CartItem.class, entry.getItemId()));
+              CartItem.class, requestItem.getItemId()));
+
       if (!item.getCreator().equals(user)) {
         throw new PermissionDenied(
-            user, "CartItem " + entry.getItemId() + " does not belong to this user.");
+            user, "CartItem " + requestItem.getItemId() + " does not belong to this user.");
       }
-      existingCartItems.put(item, entry.getPaidPrice());
+
+      var book = item.getBook();
+
+      if (book.getStock() < item.getNumber()) {
+        outOfStockDetails.add(OutOfStockDetail.builder()
+            .cartItemId(item.getId())
+            .title(book.getTitle())
+            .requested(item.getNumber())
+            .available(book.getStock())
+            .build());
+      } else {
+        validCartItems.put(item, requestItem.getPaidPrice());
+      }
     });
 
-    Order order = OrderService.createFromOrderRequest(user, orderRequest, existingCartItems);
+    if (!outOfStockDetails.isEmpty()) {
+      throw new OutOfStockException(
+          "One or more items have insufficient quantity.",
+          outOfStockDetails);
+    }
+
+    Order order = OrderService.createFromOrderRequest(
+        user, orderRequest, validCartItems);
 
     repository.save(order);
     // WARN: does it save the order again?
-    orderItemRepository.saveAll(order.getItems());
+    if (order.getItems() != null && !order.getItems().isEmpty()) {
+      orderItemRepository.saveAll(order.getItems());
+    }
 
-    cartItemRepository.deleteAll(existingCartItems.keySet());
+    // decrease stock, increase sales for each book
+    List<Book> booksToUpdate = new ArrayList<>();
+    for (OrderItem orderItem : order.getItems()) {
+      Book orderedBook = orderItem.getBook();
+      Long quantity = orderItem.getNumber();
+      // check stock again for concurrent issue
+      Book currentBook = bookRepository.findById(orderedBook.getId()).orElseThrow(
+          () -> new ResourceDoesNotExist(Book.class, orderedBook.getId()) // Should not happen
+      );
+      if (currentBook.getStock() < quantity) {
+        throw new OutOfStockException(
+            String.format(
+                "Stock for book: '%s' was modified during making order. Available: %d, Requested: %d",
+                currentBook.getTitle(),
+                currentBook.getStock(),
+                quantity),
+            new OutOfStockDetail(
+                null,
+                currentBook.getTitle(),
+                quantity,
+                currentBook.getStock()));
+      }
+      currentBook.beOrdered(quantity);
+      booksToUpdate.add(currentBook);
+    }
+
+    bookRepository.saveAll(booksToUpdate);
+    cartItemRepository.deleteAll(validCartItems.keySet());
 
     return order;
   }

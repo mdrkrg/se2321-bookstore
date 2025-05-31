@@ -101,4 +101,13 @@ public class Book extends BaseModel {
     this.tags.remove(tag);
     // tag.getBookSet().remove(this); // bidirectional link
   }
+
+  /**
+   * Caller should check book's stock before calling
+   */
+  public Book beOrdered(Long quantity) throws RuntimeException {
+    stock -= quantity;
+    sales += quantity;
+    return this;
+  }
 }
