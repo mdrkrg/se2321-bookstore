@@ -33,7 +33,10 @@ function RouteComponent() {
     to: today,
   })
 
-  const statsQueryConfig = fetchUserStatOptions(date?.from, date?.to)
+  const statsQueryConfig = fetchUserStatOptions({
+    createdAtStart: date?.from,
+    createdAtEnd: date?.to,
+  })
 
   const {
     data: statResult,

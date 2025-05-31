@@ -5,17 +5,39 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
+import dayjs from 'dayjs'
 import { endpoints } from '../models/endpoints'
 import { $fetch, $mutate, $queryOptions } from './utils'
 
 export type OrderRequest = OrderInfo
 
+export interface FetchOrderRequest {
+  title?: string
+  createdAtStart?: Date
+  createdAtEnd?: Date
+}
+
 export function useOrder() {
-  function fetchOrderOptions(options?: UseQueryOptions) {
+  function fetchOrderOptions(params: FetchOrderRequest = {}, options?: UseQueryOptions) {
+    const query = {
+      title: params.title ?? '',
+      createdAtStart: params.createdAtStart
+        ? dayjs(params.createdAtStart).format('YYYY-MM-DD')
+        : '',
+      createdAtEnd: params.createdAtEnd
+        ? dayjs(params.createdAtEnd).format('YYYY-MM-DD')
+        : '',
+    }
     return $queryOptions<PagedItems<Order>>({
       url: endpoints.order.index,
       // key: ['order', pageIndex],
-      key: ['order'],
+      key: [
+        'order',
+        query.title || 'no-title',
+        query.createdAtStart || 'no-start',
+        query.createdAtEnd || 'no-end',
+      ],
+      query,
       ...options,
     })
   }

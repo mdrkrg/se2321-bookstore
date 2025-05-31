@@ -1,4 +1,3 @@
-import type { Order } from '@/lib/models/user'
 import DropdownLayout from '@/components/layouts/dropdown'
 import { MyOrders } from '@/components/user/order/my-orders'
 import { useOrder } from '@/lib/api/order'
@@ -8,15 +7,15 @@ export const Route = createFileRoute('/order')({
   component: OrderComponent,
   async loader({ context: { queryClient } }) {
     const orderList = await queryClient.fetchQuery(useOrder().fetchOrderOptions())
-    return orderList.items
+    return orderList
   },
 })
 
 function OrderComponent() {
-  const orderList: Order[] = Route.useLoaderData()
+  const orderList = Route.useLoaderData()
   return (
     <DropdownLayout>
-      <MyOrders orderList={orderList} />
+      <MyOrders initialOrderList={orderList} />
     </DropdownLayout>
   )
 }

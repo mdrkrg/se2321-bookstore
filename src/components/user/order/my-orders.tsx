@@ -1,4 +1,4 @@
-import type { Order } from '@/lib/models/user'
+import type { Order, PagedItems } from '@/lib/models/user'
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -6,7 +6,9 @@ import type {
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table'
+import type { DateRange } from 'react-day-picker'
 import { Button } from '@/components/ui/button'
+import { DatePickerWithRange } from '@/components/ui/date-picker-with-range'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useOrder } from '@/lib/api/order'
 import { cn } from '@/lib/utils/cn'
 import { toCNYString } from '@/lib/utils/price'
+import { useQuery } from '@tanstack/react-query'
 import {
   flexRender,
   getCoreRowModel,
@@ -35,9 +39,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { addDays } from 'date-fns'
 import { ArrowUpDown, ArrowUpWideNarrowIcon, MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
+import { useDebounceValue } from 'usehooks-ts'
 import { OrderExpandDetail } from './order-expand-detail'
 
 const columns: ColumnDef<Order>[] = [
@@ -168,10 +174,32 @@ const columns: ColumnDef<Order>[] = [
 ]
 
 interface MyOrdersProps extends React.ComponentProps<'table'> {
-  orderList: Order[]
+  initialOrderList: PagedItems<Order>
 }
 
-export function MyOrders({ orderList }: MyOrdersProps) {
+export function MyOrders({ initialOrderList }: MyOrdersProps) {
+  const today = new Date(Date.now())
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: addDays(today, -30),
+    to: today,
+  })
+
+  const [filterTitle, setFilterTitle] = useState('')
+  const [debouncedFilterTitle] = useDebounceValue(filterTitle, 500)
+
+  const ordersQueryConfig = useOrder().fetchOrderOptions({
+    title: debouncedFilterTitle,
+    createdAtStart: date?.from,
+    createdAtEnd: date?.to,
+  })
+  const {
+    data: orderList,
+  } = useQuery<PagedItems<Order>>({
+    ...ordersQueryConfig,
+    initialData: initialOrderList,
+    placeholderData: previousData => previousData,
+  })
+
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     [],
@@ -180,7 +208,7 @@ export function MyOrders({ orderList }: MyOrdersProps) {
     = React.useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const table = useReactTable({
-    data: orderList,
+    data: orderList.items,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -202,6 +230,16 @@ export function MyOrders({ orderList }: MyOrdersProps) {
   return (
     <div className="w-full">
       <h1 className="font-bold text-2xl pl-[0.5em] pb-4">订单</h1>
+      <div className="flex items-center pb-4">
+        <DatePickerWithRange date={date} setDate={setDate} />
+      </div>
+      <div className="flex items-center pb-4">
+        <Input
+          placeholder="筛选书名"
+          value={filterTitle}
+          onChange={event => setFilterTitle(event.target.value)}
+        />
+      </div>
       <div className="flex items-center pb-4">
         <Input
           placeholder="搜索收货地址"
@@ -281,7 +319,7 @@ export function MyOrders({ orderList }: MyOrdersProps) {
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      您没有订单。
+                      指定筛选条件下没有订单。
                     </TableCell>
                   </TableRow>
                 )}

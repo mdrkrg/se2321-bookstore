@@ -247,10 +247,10 @@ export async function statFetcher({
   }
 }
 
-export function fetchUserStatOptions(
-  createdAtStart?: Date,
-  createdAtEnd?: Date,
-) {
+export function fetchUserStatOptions({
+  createdAtStart,
+  createdAtEnd,
+}: UserStatRequest = {}) {
   const start = createdAtStart ? dayjs(createdAtStart).format('YYYY-MM-DD') : ''
   const end = createdAtEnd ? dayjs(createdAtEnd).format('YYYY-MM-DD') : ''
   return $queryOptions<UserStat>({
