@@ -36,14 +36,14 @@ function App() {
   }
 
   const [debouncedFilterInput] = useDebounceValue(filterInput, 500)
-  const booksQueryConfiguration = useBooks().fetchBookOptions({ title: debouncedFilterInput })
+  const booksQueryConfig = useBooks().fetchBookOptions({ title: debouncedFilterInput })
 
   const {
     data: booksResult,
     isLoading,
     isFetching,
   } = useQuery<PagedItems<Book>>({
-    ...booksQueryConfiguration,
+    ...booksQueryConfig,
     initialData: initialBookList,
     placeholderData: previousData => previousData,
   })

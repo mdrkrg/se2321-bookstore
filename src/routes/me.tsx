@@ -69,6 +69,9 @@ function ProfileNavigation() {
               <ListItem to="/me/comments" title="评论">
                 查看我发布的书籍评论
               </ListItem>
+              <ListItem to="/me/stats" title="统计信息">
+                查看我的购书统计信息
+              </ListItem>
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>

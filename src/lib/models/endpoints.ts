@@ -47,6 +47,7 @@ export const endpoints = g('/api', {
       passwd: '/password', // change password
       intro: '/introduction', // self introduction
       avatar: '/avatar', // avatar
+      stat: '/stat', // stat
       addrs: g('/addresses', { // my addresses
         index: '',
         delete: (id: string | number) => `/${id}`,

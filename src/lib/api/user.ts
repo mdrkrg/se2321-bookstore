@@ -4,9 +4,10 @@
  */
 
 import type { AxiosError } from 'axios'
-import type { UserDTO } from '../models/user'
+import type { Book, UserDTO } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
 import axios from 'axios'
+import dayjs from 'dayjs'
 import { endpoints } from '../models/endpoints'
 import { $mutate, $queryOptions } from './utils'
 
@@ -170,7 +171,9 @@ export async function authFetcher<TRequest>(data: TRequest, endpoint: string): P
       const knownCodes = [401, 403, 409]
       if (axiosError.response && knownCodes.includes(axiosError.response.status)) {
         // login failed or account locked
-        const errors: FieldError[] = Object.entries(axiosError.response.data).map(([key, val]) => ({
+        const errors: FieldError[] = Object.entries(
+          axiosError.response.data,
+        ).map(([key, val]) => ({
           field: key,
           message: val,
         }))
@@ -192,4 +195,74 @@ export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
 
 export async function signupFetcher(data: SignupRequest): Promise<UserDTO> {
   return await authFetcher(data, endpoints.auth.signup)
+}
+
+export interface UserStat {
+  totalPrice: number
+  totalNumber: number
+  bookStats: {
+    book: Book
+    number: number
+  }[]
+}
+
+export interface UserStatRequest {
+  createdAtStart?: Date
+  createdAtEnd?: Date
+}
+
+// TODO: generalize this fetcher
+export async function statFetcher({
+  createdAtStart,
+  createdAtEnd,
+}: UserStatRequest) {
+  try {
+    const response = await axios.get<UserStat>(endpoints.user.me.stat, {
+      params: {
+        createdAtStart: createdAtStart?.toISOString(),
+        createdAtEnd: createdAtEnd?.toISOString(),
+      },
+    })
+    return response.data
+  }
+  catch (error) {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<LoginErrorResponse>
+      if (axiosError.response && axiosError.response.status === 400) {
+        const errors: FieldError[] = Object.entries(
+          axiosError.response.data,
+        ).map(([key, val]) => ({
+          field: key,
+          message: val,
+        }))
+        throw errors
+      }
+      else {
+        // other axios errors
+        throw new Error(axiosError.message || 'unexpected fetch error')
+      }
+    }
+    // non axios errors
+    throw new Error('unexpected error')
+  }
+}
+
+export function fetchUserStatOptions(
+  createdAtStart?: Date,
+  createdAtEnd?: Date,
+) {
+  const start = createdAtStart ? dayjs(createdAtStart).format('YYYY-MM-DD') : ''
+  const end = createdAtEnd ? dayjs(createdAtEnd).format('YYYY-MM-DD') : ''
+  return $queryOptions<UserStat>({
+    url: endpoints.user.me.stat,
+    key: [
+      'user-stat',
+      start,
+      end,
+    ],
+    query: {
+      createdAtStart: start,
+      createdAtEnd: end,
+    },
+  })
 }

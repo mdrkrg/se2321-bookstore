@@ -12,10 +12,13 @@ export function ProfileInfo({
 }: React.ComponentProps<'article'>) {
   const {
     username,
+    userInfo,
+  } = ProfileRoute.useLoaderData()
+  const {
     nickname,
     avatar,
     introduction,
-  } = ProfileRoute.useLoaderData()
+  } = userInfo
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (

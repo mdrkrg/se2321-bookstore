@@ -19,6 +19,7 @@ import { Route as CartImport } from './routes/cart'
 import { Route as IndexImport } from './routes/index'
 import { Route as MeIndexImport } from './routes/me/index'
 import { Route as BookIndexImport } from './routes/book/index'
+import { Route as MeStatsImport } from './routes/me/stats'
 import { Route as MeStarsImport } from './routes/me/stars'
 import { Route as MeRebalanceImport } from './routes/me/rebalance'
 import { Route as MeProfileImport } from './routes/me/profile'
@@ -75,6 +76,12 @@ const BookIndexRoute = BookIndexImport.update({
   id: '/book/',
   path: '/book/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const MeStatsRoute = MeStatsImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => MeRoute,
 } as any)
 
 const MeStarsRoute = MeStarsImport.update({
@@ -214,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeStarsImport
       parentRoute: typeof MeImport
     }
+    '/me/stats': {
+      id: '/me/stats'
+      path: '/stats'
+      fullPath: '/me/stats'
+      preLoaderRoute: typeof MeStatsImport
+      parentRoute: typeof MeImport
+    }
     '/book/': {
       id: '/book/'
       path: '/book'
@@ -240,6 +254,7 @@ interface MeRouteChildren {
   MeProfileRoute: typeof MeProfileRoute
   MeRebalanceRoute: typeof MeRebalanceRoute
   MeStarsRoute: typeof MeStarsRoute
+  MeStatsRoute: typeof MeStatsRoute
   MeIndexRoute: typeof MeIndexRoute
 }
 
@@ -250,6 +265,7 @@ const MeRouteChildren: MeRouteChildren = {
   MeProfileRoute: MeProfileRoute,
   MeRebalanceRoute: MeRebalanceRoute,
   MeStarsRoute: MeStarsRoute,
+  MeStatsRoute: MeStatsRoute,
   MeIndexRoute: MeIndexRoute,
 }
 
@@ -269,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/me/profile': typeof MeProfileRoute
   '/me/rebalance': typeof MeRebalanceRoute
   '/me/stars': typeof MeStarsRoute
+  '/me/stats': typeof MeStatsRoute
   '/book': typeof BookIndexRoute
   '/me/': typeof MeIndexRoute
 }
@@ -286,6 +303,7 @@ export interface FileRoutesByTo {
   '/me/profile': typeof MeProfileRoute
   '/me/rebalance': typeof MeRebalanceRoute
   '/me/stars': typeof MeStarsRoute
+  '/me/stats': typeof MeStatsRoute
   '/book': typeof BookIndexRoute
   '/me': typeof MeIndexRoute
 }
@@ -305,6 +323,7 @@ export interface FileRoutesById {
   '/me/profile': typeof MeProfileRoute
   '/me/rebalance': typeof MeRebalanceRoute
   '/me/stars': typeof MeStarsRoute
+  '/me/stats': typeof MeStatsRoute
   '/book/': typeof BookIndexRoute
   '/me/': typeof MeIndexRoute
 }
@@ -312,54 +331,57 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/cart'
-    | '/login'
-    | '/me'
-    | '/order'
-    | '/signup'
-    | '/book/$bookId'
-    | '/me/address'
-    | '/me/comments'
-    | '/me/password'
-    | '/me/profile'
-    | '/me/rebalance'
-    | '/me/stars'
-    | '/book'
-    | '/me/'
+  | '/'
+  | '/cart'
+  | '/login'
+  | '/me'
+  | '/order'
+  | '/signup'
+  | '/book/$bookId'
+  | '/me/address'
+  | '/me/comments'
+  | '/me/password'
+  | '/me/profile'
+  | '/me/rebalance'
+  | '/me/stars'
+  | '/me/stats'
+  | '/book'
+  | '/me/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/cart'
-    | '/login'
-    | '/order'
-    | '/signup'
-    | '/book/$bookId'
-    | '/me/address'
-    | '/me/comments'
-    | '/me/password'
-    | '/me/profile'
-    | '/me/rebalance'
-    | '/me/stars'
-    | '/book'
-    | '/me'
+  | '/'
+  | '/cart'
+  | '/login'
+  | '/order'
+  | '/signup'
+  | '/book/$bookId'
+  | '/me/address'
+  | '/me/comments'
+  | '/me/password'
+  | '/me/profile'
+  | '/me/rebalance'
+  | '/me/stars'
+  | '/me/stats'
+  | '/book'
+  | '/me'
   id:
-    | '__root__'
-    | '/'
-    | '/cart'
-    | '/login'
-    | '/me'
-    | '/order'
-    | '/signup'
-    | '/book/$bookId'
-    | '/me/address'
-    | '/me/comments'
-    | '/me/password'
-    | '/me/profile'
-    | '/me/rebalance'
-    | '/me/stars'
-    | '/book/'
-    | '/me/'
+  | '__root__'
+  | '/'
+  | '/cart'
+  | '/login'
+  | '/me'
+  | '/order'
+  | '/signup'
+  | '/book/$bookId'
+  | '/me/address'
+  | '/me/comments'
+  | '/me/password'
+  | '/me/profile'
+  | '/me/rebalance'
+  | '/me/stars'
+  | '/me/stats'
+  | '/book/'
+  | '/me/'
   fileRoutesById: FileRoutesById
 }
 
@@ -423,6 +445,7 @@ export const routeTree = rootRoute
         "/me/profile",
         "/me/rebalance",
         "/me/stars",
+        "/me/stats",
         "/me/"
       ]
     },
@@ -457,6 +480,10 @@ export const routeTree = rootRoute
     },
     "/me/stars": {
       "filePath": "me/stars.tsx",
+      "parent": "/me"
+    },
+    "/me/stats": {
+      "filePath": "me/stats.tsx",
       "parent": "/me"
     },
     "/book/": {

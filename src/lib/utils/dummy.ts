@@ -68,11 +68,16 @@ export function fetchFakeOrderList(): Order[] {
 
 export function fetchFakeUser(): UserDTO {
   return {
+    id: 1,
     username: 'Lorem Ipsum',
-    nickname: 'lorem',
-    avatar: 'https://ui.shadcn.com/avatars/01.png',
-    introduction: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent pulvinar libero sagittis, suscipit leo quis, venenatis ante. Etiam nulla mauris, sodales vitae ultricies eu, fringilla in libero. Mauris volutpat molestie rhoncus. Donec sit amet ante in nulla vehicula imperdiet et eget mi. Proin finibus tortor ut placerat luctus. Nullam condimentum leo eu nunc sagittis consequat. Praesent mi dolor, accumsan quis tortor eu, varius vulputate lectus. Quisque quis vulputate urna. Curabitur venenatis vestibulum quam, ut sodales eros posuere eget.',
+    email: 'test@example.com',
+    role: 'USER',
     balance: 1000,
+    userInfo: {
+      nickname: 'lorem',
+      avatar: 'https://ui.shadcn.com/avatars/01.png',
+      introduction: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent pulvinar libero sagittis, suscipit leo quis, venenatis ante. Etiam nulla mauris, sodales vitae ultricies eu, fringilla in libero. Mauris volutpat molestie rhoncus. Donec sit amet ante in nulla vehicula imperdiet et eget mi. Proin finibus tortor ut placerat luctus. Nullam condimentum leo eu nunc sagittis consequat. Praesent mi dolor, accumsan quis tortor eu, varius vulputate lectus. Quisque quis vulputate urna. Curabitur venenatis vestibulum quam, ut sodales eros posuere eget.',
+    },
   }
 }
 
