@@ -1,6 +1,8 @@
 package me.crvena.bookstore.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -35,7 +37,17 @@ class UserServiceImpl implements UserService {
       data.setUserInfo(null);
       mapper.updateValue(user, data);
       mapper.updateValue(user.getUserInfo(), UserInfoData);
-      return repository.save(user);
+      repository.save(user);
+      User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+      // update auth
+      if (currentUser.equals(user)) {
+        UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+            user,
+            SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+            user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+      }
+      return user;
     } catch (JsonMappingException e) {
       throw new RuntimeException(e.getMessage());
     }

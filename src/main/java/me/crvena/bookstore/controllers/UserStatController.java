@@ -21,13 +21,13 @@ import me.crvena.bookstore.models.Order;
 import me.crvena.bookstore.models.User;
 
 @RestController
-@RequestMapping("/api/stat")
+@RequestMapping("/api/user/me/stat")
 public class UserStatController {
 
   @Autowired
   private OrderService orderService;
 
-  @RequestMapping(path = "/order", method = RequestMethod.GET, produces = "application/json")
+  @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<UserOrderStatResponse> getOrderStat(
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
