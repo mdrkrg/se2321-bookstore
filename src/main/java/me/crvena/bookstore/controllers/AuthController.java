@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,6 @@ import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
 import me.crvena.bookstore.dtos.UserDto;
 import me.crvena.bookstore.exceptions.FieldsConflictException;
-import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.services.AuthService;
 
@@ -72,7 +72,7 @@ public class AuthController {
     } catch (BadCredentialsException e) {
       errorBody.put("password", e.getMessage());
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
-    } catch (PermissionDenied e) {
+    } catch (LockedException e) {
       // user account is locked
       errorBody.put("username", "Your account is locked");
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorBody);
@@ -89,7 +89,10 @@ public class AuthController {
   }
 
   @GetMapping("/logout")
-  public RedirectView logout(HttpServletResponse response, HttpServletRequest httpRequest) {
-    return new RedirectView("/");
+  public ResponseEntity<UserDto> logout(
+      HttpServletResponse response,
+      HttpServletRequest httpRequest) {
+    authService.logout(httpRequest, response);
+    return ResponseEntity.ok(UserDto.builder().build());
   }
 }

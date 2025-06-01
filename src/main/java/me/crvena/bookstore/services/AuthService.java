@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -106,7 +107,7 @@ class AuthServiceImpl implements AuthService {
   }
 
   public User login(LoginRequest request, HttpServletResponse response)
-      throws NoSuchElementException, PermissionDenied {
+      throws NoSuchElementException, LockedException {
     try {
       var user = repository.findByUsername(request.getUsername())
           .orElseThrow(() -> new NoSuchElementException("User not found"));
@@ -114,9 +115,7 @@ class AuthServiceImpl implements AuthService {
           new UsernamePasswordAuthenticationToken(
               request.getUsername(),
               request.getPassword()));
-      if (!user.isAccountNonLocked()) {
-        throw new PermissionDenied(user);
-      }
+      // if user is locked, it will throw LockedException here
       var jwt = jwtService.generateToken(user);
       setAuthCookie(jwt, response);
       return user;
@@ -131,6 +130,7 @@ class AuthServiceImpl implements AuthService {
       HttpServletRequest request,
       HttpServletResponse response) {
     deleteCookie(request, response, cookieName);
+    deleteCookie(request, response, "JSESSIONID");
     SecurityContextHolder.clearContext();
   }
 
