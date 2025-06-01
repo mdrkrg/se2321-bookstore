@@ -54,6 +54,12 @@ export const endpoints = g('/api', {
       }),
     }),
   }),
+  admin: g('/admin', {
+    user: g('/user', {
+      index: '',
+      change: (id: string | number) => `/${id}`,
+    }),
+  }),
   comment: g('/comment', {
     index: (id: string | number) => `/${id}`,
     like: (id: string | number) => `/${id}/like`,

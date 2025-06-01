@@ -14,6 +14,7 @@ interface BookDetailProps {
 }
 
 export function BookDetail({ book }: BookDetailProps) {
+  // FIXME: count is kinda broken
   const [count, setCount] = useState<number>(1)
   const navigate = useNavigate()
 

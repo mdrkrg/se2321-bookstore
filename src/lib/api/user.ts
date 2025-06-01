@@ -193,6 +193,10 @@ export async function loginFetcher(data: LoginRequest): Promise<UserDTO> {
   return await authFetcher(data, endpoints.auth.login)
 }
 
+export async function logoutFetcher() {
+  return await axios.get(endpoints.auth.logout)
+}
+
 export async function signupFetcher(data: SignupRequest): Promise<UserDTO> {
   return await authFetcher(data, endpoints.auth.signup)
 }

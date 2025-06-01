@@ -25,7 +25,7 @@ const descriptionSchema = z.object({
 export function ModifyIntroForm({
   className,
 }: React.ComponentProps<'form'>) {
-  const { introduction: previousDescription } = MeRootRoute.useLoaderData()
+  const { introduction: previousDescription } = MeRootRoute.useLoaderData().userInfo
 
   const form = useForm<z.infer<typeof descriptionSchema>>({
     resolver: zodResolver(descriptionSchema),

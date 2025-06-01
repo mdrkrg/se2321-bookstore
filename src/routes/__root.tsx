@@ -36,10 +36,11 @@ export const Route = createRootRouteWithContext<{
         },
       }),
     )
+    const { user } = Route.useLoaderData()
     return (
       <>
-        <UserHeader />
         <QueryClientProvider client={queryClient}>
+          <UserHeader user={user} />
           <main>
             <Outlet />
           </main>

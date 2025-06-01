@@ -1,3 +1,4 @@
+import type { UserDTO } from '@/lib/models/user'
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -6,8 +7,8 @@ import {
 } from '@/components/ui/navigation-menu'
 import { mdiStore } from '@mdi/js'
 import Icon from '@mdi/react'
-import { Link } from '@tanstack/react-router'
 
+import { Link } from '@tanstack/react-router'
 import UserIcon from './icon'
 
 const routes = {
@@ -36,7 +37,13 @@ rounded-full nav-transition
 // TODO: responsive design:
 // - When in sm, the header will be a trigger dropdown menu
 
-export default function UserHeader() {
+export interface UserHeaderProps extends React.ComponentProps<'header'> {
+  user?: UserDTO
+}
+
+export default function UserHeader({
+  user,
+}: UserHeaderProps) {
   return (
     <header className="min-w-full flex space-around rounded-b-md bg-white py-[0.5em] border-solid border-b-[4px] border-b-gray-300">
       <NavigationMenu className="z-10 w-full">
@@ -60,6 +67,18 @@ export default function UserHeader() {
               )
             })
           }
+          {user?.role === 'ADMIN' && (
+            <NavigationMenuItem tabIndex={100}>
+              <NavigationMenuLink
+                className="nav-link text-md max-sm:text-sm"
+                asChild
+              >
+                <Link to="/admin">
+                  管理页面
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          )}
         </NavigationMenuList>
       </NavigationMenu>
       <span className={iconStyle} key="user">

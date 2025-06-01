@@ -21,7 +21,16 @@ export interface PartialUserDTO {
   introduction: string
 }
 
-export type Role = 'USER' | 'ADMIN'
+export const Roles = {
+  USER: '用户',
+  ADMIN: '管理员',
+} as const
+
+export type Role = keyof typeof Roles
+
+export function getRoleDisplay(role: Role) {
+  return Roles[role]
+}
 
 export interface UserDTO {
   id: number
@@ -34,6 +43,12 @@ export interface UserDTO {
     introduction: string
     nickname: string
   }
+}
+
+export interface User extends UserDTO {
+  enabled: boolean
+  accountNonExpired: boolean
+  accountNonLocked: boolean
 }
 
 export interface Address {

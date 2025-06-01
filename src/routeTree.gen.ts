@@ -16,6 +16,7 @@ import { Route as OrderImport } from './routes/order'
 import { Route as MeImport } from './routes/me'
 import { Route as LoginImport } from './routes/login'
 import { Route as CartImport } from './routes/cart'
+import { Route as AdminImport } from './routes/admin'
 import { Route as IndexImport } from './routes/index'
 import { Route as MeIndexImport } from './routes/me/index'
 import { Route as BookIndexImport } from './routes/book/index'
@@ -27,6 +28,7 @@ import { Route as MePasswordImport } from './routes/me/password'
 import { Route as MeCommentsImport } from './routes/me/comments'
 import { Route as MeAddressImport } from './routes/me/address'
 import { Route as BookBookIdImport } from './routes/book/$bookId'
+import { Route as AdminUsersImport } from './routes/admin/users'
 
 // Create/Update Routes
 
@@ -57,6 +59,12 @@ const LoginRoute = LoginImport.update({
 const CartRoute = CartImport.update({
   id: '/cart',
   path: '/cart',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AdminRoute = AdminImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -126,6 +134,12 @@ const BookBookIdRoute = BookBookIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AdminUsersRoute = AdminUsersImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -135,6 +149,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminImport
       parentRoute: typeof rootRoute
     }
     '/cart': {
@@ -171,6 +192,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/signup'
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersImport
+      parentRoute: typeof AdminImport
     }
     '/book/$bookId': {
       id: '/book/$bookId'
@@ -247,6 +275,16 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
+interface AdminRouteChildren {
+  AdminUsersRoute: typeof AdminUsersRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminUsersRoute: AdminUsersRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface MeRouteChildren {
   MeAddressRoute: typeof MeAddressRoute
   MeCommentsRoute: typeof MeCommentsRoute
@@ -273,11 +311,13 @@ const MeRouteWithChildren = MeRoute._addFileChildren(MeRouteChildren)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/signup': typeof SignupRoute
+  '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
   '/me/comments': typeof MeCommentsRoute
@@ -292,10 +332,12 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/login': typeof LoginRoute
   '/order': typeof OrderRoute
   '/signup': typeof SignupRoute
+  '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
   '/me/comments': typeof MeCommentsRoute
@@ -311,11 +353,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/signup': typeof SignupRoute
+  '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
   '/me/comments': typeof MeCommentsRoute
@@ -331,62 +375,69 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-  | '/'
-  | '/cart'
-  | '/login'
-  | '/me'
-  | '/order'
-  | '/signup'
-  | '/book/$bookId'
-  | '/me/address'
-  | '/me/comments'
-  | '/me/password'
-  | '/me/profile'
-  | '/me/rebalance'
-  | '/me/stars'
-  | '/me/stats'
-  | '/book'
-  | '/me/'
+    | '/'
+    | '/admin'
+    | '/cart'
+    | '/login'
+    | '/me'
+    | '/order'
+    | '/signup'
+    | '/admin/users'
+    | '/book/$bookId'
+    | '/me/address'
+    | '/me/comments'
+    | '/me/password'
+    | '/me/profile'
+    | '/me/rebalance'
+    | '/me/stars'
+    | '/me/stats'
+    | '/book'
+    | '/me/'
   fileRoutesByTo: FileRoutesByTo
   to:
-  | '/'
-  | '/cart'
-  | '/login'
-  | '/order'
-  | '/signup'
-  | '/book/$bookId'
-  | '/me/address'
-  | '/me/comments'
-  | '/me/password'
-  | '/me/profile'
-  | '/me/rebalance'
-  | '/me/stars'
-  | '/me/stats'
-  | '/book'
-  | '/me'
+    | '/'
+    | '/admin'
+    | '/cart'
+    | '/login'
+    | '/order'
+    | '/signup'
+    | '/admin/users'
+    | '/book/$bookId'
+    | '/me/address'
+    | '/me/comments'
+    | '/me/password'
+    | '/me/profile'
+    | '/me/rebalance'
+    | '/me/stars'
+    | '/me/stats'
+    | '/book'
+    | '/me'
   id:
-  | '__root__'
-  | '/'
-  | '/cart'
-  | '/login'
-  | '/me'
-  | '/order'
-  | '/signup'
-  | '/book/$bookId'
-  | '/me/address'
-  | '/me/comments'
-  | '/me/password'
-  | '/me/profile'
-  | '/me/rebalance'
-  | '/me/stars'
-  | '/me/stats'
-  | '/book/'
-  | '/me/'
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/cart'
+    | '/login'
+    | '/me'
+    | '/order'
+    | '/signup'
+    | '/admin/users'
+    | '/book/$bookId'
+    | '/me/address'
+    | '/me/comments'
+    | '/me/password'
+    | '/me/profile'
+    | '/me/rebalance'
+    | '/me/stars'
+    | '/me/stats'
+    | '/book/'
+    | '/me/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CartRoute: typeof CartRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRouteWithChildren
@@ -398,6 +449,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   CartRoute: CartRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRouteWithChildren,
@@ -418,6 +470,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/admin",
         "/cart",
         "/login",
         "/me",
@@ -429,6 +482,12 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/admin": {
+      "filePath": "admin.tsx",
+      "children": [
+        "/admin/users"
+      ]
     },
     "/cart": {
       "filePath": "cart.tsx"
@@ -454,6 +513,10 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/admin/users": {
+      "filePath": "admin/users.tsx",
+      "parent": "/admin"
     },
     "/book/$bookId": {
       "filePath": "book/$bookId.tsx"
