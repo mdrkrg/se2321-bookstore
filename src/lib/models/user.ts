@@ -70,7 +70,12 @@ export interface Book {
   cover: string
   /** Format: int32 */
   sales: number
+  stock: number
   tags: BookTag[]
+}
+
+export function isBookOutOfStock(book: Book) {
+  return book.stock <= 0
 }
 
 export interface Order {
@@ -123,4 +128,16 @@ export interface CommentDTO {
   liked: boolean
   /** Format: date-time */
   createdAt: string
+}
+
+export interface OutOfStockDetail {
+  cartItemId: number
+  available: number
+  requested: number
+  title: string
+}
+
+export interface OutOfStockErrorResponse {
+  message: string
+  outOfStockItems: OutOfStockDetail[]
 }

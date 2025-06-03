@@ -1,4 +1,4 @@
-import type { Book, CartItem, OrderItem } from '@/lib/models/user'
+import { isBookOutOfStock, type Book, type CartItem, type OrderItem } from '@/lib/models/user'
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -71,7 +71,10 @@ const columns: ColumnDef<CartItemProps>[] = [
     accessorFn: row => row.book.cover,
     header: () => {
       return (
-        <Button variant="ghost">
+        <Button
+          variant="ghost"
+          className="bg-transparent hover:bg-transparent"
+        >
           封面
         </Button>
       )
@@ -114,7 +117,10 @@ const columns: ColumnDef<CartItemProps>[] = [
     cell: ({ row }) => {
       const title: string = row.getValue('title')
       return (
-        <div>{title}</div>
+        <div>
+          {title}
+          {isBookOutOfStock(row.original.book) && '（已售空）'}
+        </div>
       )
     },
   },
@@ -145,6 +151,8 @@ const columns: ColumnDef<CartItemProps>[] = [
             }}
             defaultValue={1}
             min={1}
+            max={row.original.book.stock}
+            disabled={isBookOutOfStock(row.original.book)}
           />
         </div>
       )
@@ -288,6 +296,10 @@ export default function MyCart({ cartItemsData }: MyCartProps) {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    enableRowSelection(row) {
+      // disable selection for out of stock ones
+      return !isBookOutOfStock(row.original.book)
+    },
     state: {
       sorting,
       columnFilters,

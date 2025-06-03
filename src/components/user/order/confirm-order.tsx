@@ -1,4 +1,4 @@
-import type { Address, OrderItem } from '@/lib/models/user'
+import type { Address, OrderItem, OutOfStockErrorResponse } from '@/lib/models/user'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -69,7 +69,16 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
         router.navigate({ to: '/order' })
       }, 200)
     }).catch((err) => {
-      toast('出错：', err)
+      return err.json()
+    }).then((errRsp: OutOfStockErrorResponse) => {
+      toast('出错：', {
+        description: `${errRsp.message}:`,
+      })
+      errRsp.outOfStockItems.forEach((detail) => {
+        form.setError(`items`, {
+          message: `“${detail.title}”的库存不足。可用：${detail.available}，请求：${detail.requested}`
+        })
+      })
     })
   }
 
@@ -175,6 +184,7 @@ function OrderPreview({
         className="mr-1"
         inputStyle="w-10"
         min={1}
+        max={orderItem.book.stock}
         value={orderItem.number}
         onValueChange={(newCount) => {
           if (newCount)

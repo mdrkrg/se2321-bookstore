@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { NumberInput } from '@/components/ui/number-input'
 import { addCartItem } from '@/lib/api/order'
+import { isBookOutOfStock } from '@/lib/models/user'
 import { toCNYString } from '@/lib/utils/price'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -56,6 +57,8 @@ export function BookDetail({ book }: BookDetailProps) {
   const [posted, setPosted] = useState(false)
 
   function handleBuyNowClick() {
+    if (book.stock <= 0)
+      return
     // if not posted yet, or posted but number has changed
     if (!posted || (posted && orderList[0].number !== count)) {
       // add a cart item immediately, else get an existing cart item
@@ -97,6 +100,9 @@ export function BookDetail({ book }: BookDetailProps) {
             销量&emsp;
             {book.sales}
             <br />
+            库存&emsp;
+            {book.stock}
+            <br />
             标签&ensp;
             {
               book.tags.map(tag => (
@@ -130,7 +136,9 @@ export function BookDetail({ book }: BookDetailProps) {
             inputStyle="focus:outline-none"
             placeholder="数量"
             defaultValue={1}
-            min={1}
+            disabled={isBookOutOfStock(book)}
+            min={isBookOutOfStock(book) ? 0 : 1}
+            max={book.stock}
             value={count}
             onValueChange={
               newCount => typeof newCount === 'number' ? setCount(newCount) : null
@@ -140,6 +148,7 @@ export function BookDetail({ book }: BookDetailProps) {
             variant="secondary"
             className="font-bold py-2 px-4 rounded mx-2 max-sm:my-2"
             onClick={handleCartClick}
+            disabled={isBookOutOfStock(book)}
           >
             加入购物车
           </Button>
@@ -149,6 +158,7 @@ export function BookDetail({ book }: BookDetailProps) {
               variant="destructive"
               className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded mx-2 max-sm:my-2"
               onClick={handleBuyNowClick}
+              disabled={isBookOutOfStock(book)}
             >
               立即购买
             </Button>

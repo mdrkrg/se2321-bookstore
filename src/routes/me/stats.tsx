@@ -64,7 +64,7 @@ function RouteComponent() {
                   书籍信息
                   {statResult.bookStats.map(({ book, number }) => {
                     return (
-                      <div>
+                      <div key={book.id}>
                         <span>
                           标题:
                           {' '}
