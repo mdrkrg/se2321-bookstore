@@ -76,7 +76,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
       })
       errRsp.outOfStockItems.forEach((detail) => {
         form.setError(`items`, {
-          message: `“${detail.title}”的库存不足。可用：${detail.available}，请求：${detail.requested}`
+          message: `“${detail.title}”的库存不足。可用：${detail.available}，请求：${detail.requested}`,
         })
       })
     })

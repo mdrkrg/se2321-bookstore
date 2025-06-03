@@ -1,4 +1,4 @@
-import { isBookOutOfStock, type Book, type CartItem, type OrderItem } from '@/lib/models/user'
+import type { Book, CartItem, OrderItem } from '@/lib/models/user'
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -28,6 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { changeCartItem, deleteCartItem } from '@/lib/api/order'
+import { isBookOutOfStock } from '@/lib/models/user'
 import { toCNYString } from '@/lib/utils/price'
 import { Link, useRouter } from '@tanstack/react-router'
 import {
