@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/navigation-menu'
 import { Separator } from '@/components/ui/separator'
 import { ProfileInfo } from '@/components/user/profile/info'
+import { useUser } from '@/lib/api/user'
 import { cn } from '@/lib/utils/cn'
-import { fetchFakeUser } from '@/lib/utils/dummy'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import React from 'react'
 
@@ -48,8 +48,8 @@ const ListItem = React.forwardRef<
 ListItem.displayName = 'ListItem'
 
 export const Route = createFileRoute('/me')({
-  loader() {
-    return fetchFakeUser()
+  async loader({ context: { queryClient } }) {
+    return await queryClient.fetchQuery(useUser().fetchUserOptions())
   },
   component: ProfileComponent,
   notFoundComponent: ProfileNotFound,
