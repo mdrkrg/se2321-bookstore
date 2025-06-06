@@ -12,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
+import { toast } from 'sonner'
 import { useDebounceValue } from 'usehooks-ts'
 
 export const Route = createFileRoute('/')({
@@ -131,6 +132,17 @@ function App() {
   const isBookLoading = status === 'pending' || (isInitialFetching && bookList.length === 0 && status !== 'error')
   const isFilterEnabled = debouncedFilterInput.length > 0 || selectedTagIds.length > 0
 
+  // toast error if something goes wrong
+  useEffect(() => {
+    if (status === 'error') {
+      toast('出错：', {
+        className: 'text-red-500!',
+        description: error?.message || '无法加载书籍列表',
+        descriptionClassName: 'text-red-500!',
+      })
+    }
+  }, [error, status])
+
   const loadingStyle = `w-80vw text-center text-slate-500 dark:text-slate-400`
 
   return (
@@ -143,14 +155,6 @@ function App() {
           tags={tags}
           className="w-full"
         />
-
-        {status === 'error' && (
-          <p className="m-auto text-red-500 dark:text-red-400 font-semibold p-4 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-md">
-            出错:
-            {' '}
-            {error?.message || '无法加载书籍列表'}
-          </p>
-        )}
 
         <CardsWaterfall
           bookList={bookList}

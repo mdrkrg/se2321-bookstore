@@ -19,6 +19,6 @@ export async function changeUser(id: number, data: Partial<User>) {
 export function fetchUserListOptions() {
   return $queryOptions<PagedItems<User>>({
     url: endpoints.admin.user.index,
-    key: ['admin-user'],
+    key: ['admin', 'user'],
   })
 }

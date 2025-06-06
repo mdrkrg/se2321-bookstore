@@ -66,7 +66,10 @@ function AdminLayout({ children }: { children: ReactNode }) {
 function RouteComponent() {
   return (
     <AdminLayout>
-      <h2>欢迎您，管理员</h2>
+      <div className="m-auto p-4 text-xl">
+        <h2 className="text-2xl my-2">管理界面</h2>
+        <h4>欢迎您，管理员</h4>
+      </div>
       <Separator className="sm:w-[80%] md:w-3/4 lg:w-1/2 m-auto" />
       <AdminNavigation />
       <Outlet />

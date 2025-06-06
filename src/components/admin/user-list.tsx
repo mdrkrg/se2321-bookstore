@@ -26,8 +26,7 @@ import {
 } from '@/components/ui/table'
 import { changeUser, fetchUserListOptions } from '@/lib/api/admin'
 import { getRoleDisplay } from '@/lib/models/user'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   flexRender,
   getCoreRowModel,
@@ -87,6 +86,13 @@ const columns: ColumnDef<User>[] = [
     },
   },
   {
+    accessorKey: 'accountNonLocked',
+    header: '是否禁用',
+    cell: ({ row }) => {
+      return row.original.accountNonLocked ? '否' : '是'
+    },
+  },
+  {
     id: 'actions',
     enableHiding: false,
     header: ({ column }) => {
@@ -103,7 +109,8 @@ const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
       const role = row.original.role
       const banned = !row.original.accountNonLocked
-      const router = useRouter()
+      const queryClient = useQueryClient()
+      const queryKey = fetchUserListOptions().queryKey
 
       const {
         mutate: mutateUser,
@@ -111,7 +118,9 @@ const columns: ColumnDef<User>[] = [
         mutationFn: data => changeUser(row.original.id, data),
         onSuccess(_) {
           toast(`成功修改了用户${row.original.id}`)
-          router.invalidate()
+          queryClient.invalidateQueries({
+            queryKey,
+          })
         },
         onError(_) {
           toast('修改失败')
@@ -127,7 +136,7 @@ const columns: ColumnDef<User>[] = [
 
       function handleUnbanUser() {
         const data = {
-          accountNonLocked: false,
+          accountNonLocked: true,
         } satisfies ChangeUserRequest
         mutateUser(data)
       }

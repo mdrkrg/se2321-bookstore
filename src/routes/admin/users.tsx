@@ -12,10 +12,11 @@ export const Route = createFileRoute('/admin/users')({
 })
 
 function RouteComponent() {
-  const userList = Route.useLoaderData()
+  const initialUserList = Route.useLoaderData()
+
   return (
     <DropdownLayout>
-      <UserList initialUserList={userList} />
+      <UserList initialUserList={initialUserList} />
     </DropdownLayout>
   )
 }
