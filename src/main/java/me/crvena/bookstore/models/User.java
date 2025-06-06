@@ -31,12 +31,16 @@ public class User extends BaseModel implements UserDetails {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Setter(AccessLevel.NONE)
-  @EqualsAndHashCode.Include
   private Long id;
 
+  /**
+   * Spring Security relies on {@code equals()} and {@code hashCode()}
+   * based on username.
+   */
   @NonNull
   @Column(nullable = false, unique = true)
   @Length(max = USERNAME_MAX_LENGTH)
+  @EqualsAndHashCode.Include
   private String username;
 
   @NonNull

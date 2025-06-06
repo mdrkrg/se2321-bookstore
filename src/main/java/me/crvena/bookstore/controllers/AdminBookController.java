@@ -3,12 +3,7 @@ package me.crvena.bookstore.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.core.annotation.Description;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,9 +31,7 @@ public class AdminBookController {
   @Autowired
   private BookService service;
 
-  @RestResource(rel = "book")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  // public ResponseEntity<Page<Book>> findAll(Pageable pageable) {
   public ResponseEntity<ListResponse<Book>> findAll() {
     // TODO: paged
     var books = repository.findAll();
@@ -54,7 +47,6 @@ public class AdminBookController {
     return ResponseEntity.ok(book);
   }
 
-  @RestResource(rel = "book")
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
   public ResponseEntity<Book> createBook(@Valid @RequestBody CreateBookRequest data) {
     return ResponseEntity.ok(service.createBook(data));
@@ -73,7 +65,6 @@ public class AdminBookController {
     }
   }
 
-  @RestResource(rel = "book")
   @RequestMapping(path = "/{id}", method = RequestMethod.DELETE, produces = "application/json")
   public ResponseEntity<Book> deleteBook(@PathVariable("id") Long id) {
     Book book = repository.findById(id).orElseThrow(

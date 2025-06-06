@@ -2,7 +2,6 @@ package me.crvena.bookstore.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,9 +37,10 @@ public class AuthController {
 
   @PostMapping("/signup")
   public ResponseEntity<UserDto> signup(
-      @Valid @RequestBody SignupRequest requestBody, HttpServletResponse response)
+      @Valid @RequestBody SignupRequest requestBody,
+      HttpServletRequest httpRequest, HttpServletResponse httpResponse)
       throws FieldsConflictException {
-    var user = authService.signup(requestBody, response);
+    var user = authService.signup(requestBody, httpRequest, httpResponse);
     return ResponseEntity.ok(UserDto.buildFromUser(user));
   }
 
@@ -52,12 +52,12 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<?> login(
       @Valid @RequestBody LoginRequest request,
-      HttpServletResponse response,
       HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse,
       @RequestParam(value = "next", required = false) String next) {
     Map<String, String> errorBody = new HashMap<>();
     try {
-      var user = authService.login(request, response);
+      var user = authService.login(request, httpRequest, httpResponse);
       if (next != null && !next.isEmpty()) {
         // redirect to next
         RedirectView redirect = new RedirectView(next);
@@ -65,11 +65,9 @@ public class AuthController {
       } else {
         return ResponseEntity.ok(UserDto.buildFromUser(user));
       }
-    } catch (NoSuchElementException e) {
-      // handle login failure
-      errorBody.put("username", e.getMessage());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
     } catch (BadCredentialsException e) {
+      // username or password incorrect
+      errorBody.put("username", e.getMessage());
       errorBody.put("password", e.getMessage());
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
     } catch (LockedException e) {

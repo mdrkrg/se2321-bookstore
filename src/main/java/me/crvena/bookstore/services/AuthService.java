@@ -1,17 +1,18 @@
 package me.crvena.bookstore.services;
 
 import java.security.Permission;
-import java.util.NoSuchElementException;
 
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
@@ -19,23 +20,25 @@ import org.springframework.validation.BindingResult;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
 import me.crvena.bookstore.exceptions.FieldsConflictException;
-import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.repositories.UserRepository;
 
 @Service
 public interface AuthService {
-  @Transactional
-  public User signup(SignupRequest request, HttpServletResponse response)
+
+  public User signup(SignupRequest request, HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse)
       throws FieldsConflictException;
 
-  public User login(LoginRequest request, HttpServletResponse response)
-      throws NoSuchElementException, PermissionDenied;
+  public User login(LoginRequest request, HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse)
+      throws BadCredentialsException, LockedException;
 
   public void logout(HttpServletRequest request, HttpServletResponse response);
 
@@ -55,9 +58,6 @@ public interface AuthService {
 @RequiredArgsConstructor
 class AuthServiceImpl implements AuthService {
 
-  @Value("${jwt.cookieName}")
-  private String cookieName;
-
   @Autowired
   private final UserRepository repository;
 
@@ -65,14 +65,17 @@ class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
 
   @Autowired
-  private final JwtService jwtService;
+  private final SecurityContextRepository securityContextRepository;
 
   @Autowired
-  @Lazy
   private final AuthenticationManager authenticationManager;
 
+  @Autowired
+  private final SessionRegistry sessionRegistry;
+
   @Transactional
-  public User signup(SignupRequest request, HttpServletResponse response)
+  public User signup(SignupRequest request, HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse)
       throws FieldsConflictException {
 
     var username = request.getUsername();
@@ -101,66 +104,67 @@ class AuthServiceImpl implements AuthService {
     var user = new User(request.getUsername(), request.getEmail(), password);
 
     repository.save(user);
-    var jwt = jwtService.generateToken(user);
-    setAuthCookie(jwt, response);
+
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+        user, null, user.getAuthorities());
+
+    setAuthContext(authentication, httpRequest, httpResponse);
+    storeSessionToRegistry(authentication, httpRequest);
+
     return user;
   }
 
-  public User login(LoginRequest request, HttpServletResponse response)
-      throws NoSuchElementException, LockedException {
-    try {
-      var user = repository.findByUsername(request.getUsername())
-          .orElseThrow(() -> new NoSuchElementException("User not found"));
-      authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(
-              request.getUsername(),
-              request.getPassword()));
-      // if user is locked, it will throw LockedException here
-      var jwt = jwtService.generateToken(user);
-      setAuthCookie(jwt, response);
-      return user;
-    } catch (NoSuchElementException e) {
-      throw e;
-    } catch (PermissionDenied e) {
-      throw e;
-    }
+  public User login(LoginRequest request, HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse)
+      throws BadCredentialsException, LockedException {
+
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            request.getUsername(),
+            request.getPassword()));
+
+    setAuthContext(authentication, httpRequest, httpResponse);
+    storeSessionToRegistry(authentication, httpRequest);
+
+    return (User) authentication.getPrincipal();
   }
 
-  public void logout(
-      HttpServletRequest request,
-      HttpServletResponse response) {
-    deleteCookie(request, response, cookieName);
-    deleteCookie(request, response, "JSESSIONID");
+  public void logout(HttpServletRequest request, HttpServletResponse response) {
+    HttpSession session = request.getSession(false);
+
+    if (session != null) {
+      session.invalidate();
+    }
+
     SecurityContextHolder.clearContext();
+
+    Cookie sessionCookie = new Cookie("JSESSIONID", null);
+    sessionCookie.setPath("/");
+    sessionCookie.setMaxAge(0);
+    sessionCookie.setHttpOnly(true);
+    response.addCookie(sessionCookie);
   }
 
   /**
-   * Use Set-Cookie header to set client jwt
+   * Bind the authentication to AuthContext which internally use session
    */
-  private void setAuthCookie(String jwt, HttpServletResponse response) {
-    ResponseCookie cookie = ResponseCookie.from(
-        cookieName, jwt)
-        .httpOnly(true)
-        .secure(false) // Set to true in production for HTTPS
-        .sameSite("Strict") // Or "Lax" as appropriate
-        .path("/")
-        .maxAge(jwtService.getExpirationMs() / 1000) // seconds
-        .build();
-    response.addHeader("Set-Cookie", cookie.toString());
+  private void setAuthContext(Authentication authentication,
+      HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+
+    SecurityContext context = SecurityContextHolder.createEmptyContext();
+    context.setAuthentication(authentication);
+    SecurityContextHolder.setContext(context);
+    securityContextRepository.saveContext(
+        context, httpRequest, httpResponse);
   }
 
-  private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if (cookie.getName().equals(name)) {
-          cookie.setValue("");
-          cookie.setPath("/");
-          cookie.setMaxAge(0);
-          response.addCookie(cookie);
-          break;
-        }
-      }
+  /**
+   * Store session to registry for manual management afterwards
+   */
+  private void storeSessionToRegistry(Authentication authentication, HttpServletRequest httpRequest) {
+    HttpSession session = httpRequest.getSession(false);
+    if (session != null) {
+      sessionRegistry.registerNewSession(session.getId(), authentication.getPrincipal());
     }
   }
 }
