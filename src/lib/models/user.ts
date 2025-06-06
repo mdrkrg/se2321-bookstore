@@ -2,6 +2,9 @@ export interface PagedItems<Item> {
   /** Format: int32 */
   total: number
   items: Item[]
+  pageNumber: number
+  pageSize: number
+  totalPages: number
 }
 
 export interface OrderInfo {

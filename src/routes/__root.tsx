@@ -3,6 +3,7 @@ import UserHeader from '@/components/user/header/view'
 import { useUser } from '@/lib/api/user'
 import { NO_NEED_AUTH_ROUTES } from '@/lib/models/endpoints'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, Outlet, redirect } from '@tanstack/react-router'
 
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
@@ -44,6 +45,7 @@ export const Route = createRootRouteWithContext<{
           <main>
             <Outlet />
           </main>
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
         <TanStackRouterDevtools />
         <footer className="w-full text-center py-4em">

@@ -24,7 +24,7 @@ export default function GoodCard({
 }: GoodCardProps) {
   if (loading) {
     return (
-      <Card className={cn('flex flex-col overflow-hidden', className)}>
+      <Card className={cn('flex flex-col overflow-hidden hover:shadow-lg', className)}>
         <CardHeader className="flex-grow p-4">
           <CardDescription className="flex justify-center mb-4">
             {/* image */}
@@ -47,7 +47,7 @@ export default function GoodCard({
   }
 
   return (
-    <Card className={cn('flex flex-col overflow-hidden', className)}>
+    <Card className={cn('flex flex-col overflow-hidden hover:shadow-lg', className)}>
       <CardHeader className="flex-grow p-4">
         <CardDescription className="flex justify-center mb-4">
           <img
