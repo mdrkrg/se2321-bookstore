@@ -5,10 +5,7 @@ import { NO_NEED_AUTH_ROUTES } from '@/lib/models/endpoints'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, Outlet, redirect } from '@tanstack/react-router'
-
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-
-import { useState } from 'react'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -28,15 +25,7 @@ export const Route = createRootRouteWithContext<{
     }
   },
   component: () => {
-    const [queryClient] = useState(
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: 3,
-          },
-        },
-      }),
-    )
+    const { queryClient } = Route.useRouteContext()
     const { user } = Route.useLoaderData()
     return (
       <>
