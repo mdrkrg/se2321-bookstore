@@ -1,10 +1,6 @@
 package me.crvena.bookstore.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.core.annotation.Description;
-import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -33,15 +29,18 @@ public class AdminOrderController {
   @Autowired
   private OrderService service;
 
-  @Description("Show all orders.")
-  @RestResource(rel = "order")
+  /**
+   * Show all orders
+   */
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  // public ResponseEntity<Page<Book>> findAll(Pageable pageable) {
   public ResponseEntity<ListResponse<Order>> findAll() {
+    // TODO: paging
     return ResponseEntity.ok(new ListResponse<>(repository.findAll()));
   }
 
-  @Description("Show a specific order by their id.")
+  /**
+   * Show a specific order by their id.
+   */
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<Order> findOneUser(@PathVariable("id") Long id) {
     Order order = repository.findById(id).orElseThrow(
