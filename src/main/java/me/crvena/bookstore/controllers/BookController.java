@@ -3,10 +3,9 @@ package me.crvena.bookstore.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.core.annotation.Description;
-import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import me.crvena.bookstore.repositories.BookRepository;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
@@ -27,29 +28,35 @@ public class BookController {
   @Autowired
   private BookRepository bookRepository;
 
-  @RestResource(rel = "book")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  // public ResponseEntity<Page<Book>> findAll(Pageable pageable) {
   public ResponseEntity<ListResponse<Book>> findAll(
+      @RequestParam @Valid @Min(0) @NotNull Integer pageNumber,
+      @RequestParam @Valid @Min(1) @NotNull Integer pageSize,
+      // public ResponseEntity<ListResponse<Book>> findAll(
       @RequestParam(name = "title", required = false) String title,
       @RequestParam(name = "tagIds", required = false) @Valid List<Long> tagIds) {
     // TODO: too complicated logic
+    Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("id"));
     var titleProvided = title != null && !title.isEmpty();
     var tagsProvided = tagIds != null && !tagIds.isEmpty();
     if (titleProvided && tagsProvided) {
       return ResponseEntity.ok(
-          new ListResponse<>(bookRepository.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
-              true, title, tagIds)));
+          ListResponse.of(
+              bookRepository.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
+                  true, title, tagIds, pageable)));
     } else if (titleProvided && !tagsProvided) {
       return ResponseEntity.ok(
-          new ListResponse<>(bookRepository.findByAvailableAndTitleIgnoreCaseContaining(
-              true, title)));
+          ListResponse.of(
+              bookRepository.findByAvailableAndTitleIgnoreCaseContaining(
+                  true, title, pageable)));
     } else if (!titleProvided && tagsProvided) {
       return ResponseEntity.ok(
-          new ListResponse<>(bookRepository.findByAvailableAndTags_IdIn(true, tagIds)));
+          ListResponse.of(
+              bookRepository.findByAvailableAndTags_IdIn(true, tagIds, pageable)));
     } else {
       return ResponseEntity.ok(
-          new ListResponse<>(bookRepository.findByAvailable(true)));
+          ListResponse.of(
+              bookRepository.findByAvailable(true, pageable)));
     }
   }
 

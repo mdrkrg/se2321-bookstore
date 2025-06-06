@@ -1,5 +1,8 @@
 package me.crvena.bookstore.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,7 +40,11 @@ public class AdminBookController {
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<Page<Book>> findAll(Pageable pageable) {
   public ResponseEntity<ListResponse<Book>> findAll() {
-    return ResponseEntity.ok(new ListResponse<>(repository.findAll()));
+    // TODO: paged
+    var books = repository.findAll();
+    List<Book> bookList = new ArrayList<>();
+    books.iterator().forEachRemaining(bookList::add);
+    return ResponseEntity.ok(new ListResponse<>(bookList));
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
