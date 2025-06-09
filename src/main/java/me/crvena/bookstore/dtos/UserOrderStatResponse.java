@@ -18,17 +18,10 @@ import me.crvena.bookstore.models.Order;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserOrderStatResponse {
-  @Data
-  @Builder
-  @AllArgsConstructor
-  public static class BookStat {
-    private Book book;
-    private Long number;
-  }
 
   private BigDecimal totalPrice;
   private Long totalNumber;
-  private List<BookStat> bookStats;
+  private List<BookSalesStat> bookStats;
 
   public UserOrderStatResponse(Collection<Order> orders) {
     var totalPrice = BigDecimal.ZERO;
@@ -51,7 +44,7 @@ public class UserOrderStatResponse {
     this.totalPrice = totalPrice;
     this.totalNumber = totalNumber;
     this.bookStats = bookNumberMap.entrySet().stream().map(entry -> {
-      return new BookStat(entry.getKey(), entry.getValue());
+      return new BookSalesStat(entry.getKey(), entry.getValue());
     }).toList();
   }
 }

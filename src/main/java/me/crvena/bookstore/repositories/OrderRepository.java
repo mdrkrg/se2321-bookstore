@@ -20,6 +20,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   Page<Order> findByCreatorOrderByIdDesc(User creator, Pageable pageable);
 
+  List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+      Instant createdAtStart, Instant createdAtEnd);
+
+  Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+      Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
+
   List<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
       User creator, Instant createdAtStart, Instant createdAtEnd);
 

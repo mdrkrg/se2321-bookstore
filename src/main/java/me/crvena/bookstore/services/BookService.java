@@ -2,11 +2,16 @@ package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.models.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +19,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dao.OrderItemDao;
 import me.crvena.bookstore.dao.TagDao;
+import me.crvena.bookstore.dtos.BookSalesStat;
 import me.crvena.bookstore.dtos.CreateBookRequest;
 import me.crvena.bookstore.dtos.ModifyBookRequest;
 import me.crvena.bookstore.exceptions.ConflictExceptions.ResourceAlreadyExist;
@@ -24,6 +31,11 @@ import lombok.*;
 
 @Service
 public interface BookService {
+
+  public Page<BookSalesStat> getTopSellingBooks(
+      LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+  public Page<BookSalesStat> getTopSellingBooks(Pageable pageable);
 
   public Book addBookTag(Long bookId, Long tagId);
 
@@ -50,6 +62,9 @@ class BookServiceImpl implements BookService {
   private TagDao tagDao;
 
   @Autowired
+  private OrderItemDao orderItemDao;
+
+  @Autowired
   private ObjectMapper mapper;
 
   public Book addBookTag(Long bookId, Long tagId) {
@@ -58,6 +73,19 @@ class BookServiceImpl implements BookService {
 
   public Book removeBookTag(Long bookId, Long tagId) {
     return null;
+  }
+
+  @Transactional
+  public Page<BookSalesStat> getTopSellingBooks(Pageable pageable) {
+    return orderItemDao.findBestSellingBooks(pageable);
+  }
+
+  @Transactional
+  public Page<BookSalesStat> getTopSellingBooks(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    Instant startInstant = startDate.atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant endInstant = endDate.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+
+    return orderItemDao.findBestSellingBooks(startInstant, endInstant, pageable);
   }
 
   @Transactional

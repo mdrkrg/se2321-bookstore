@@ -27,6 +27,12 @@ public interface OrderDao {
 
   public Page<Order> findByCreatorOrderByIdDesc(User creator, Pageable pageable);
 
+  List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+      Instant createdAtStart, Instant createdAtEnd);
+
+  Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+      Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
+
   public List<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
       User creator, Instant createdAtStart, Instant createdAtEnd);
 
