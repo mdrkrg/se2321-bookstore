@@ -164,7 +164,8 @@ class AuthServiceImpl implements AuthService {
   private void storeSessionToRegistry(Authentication authentication, HttpServletRequest httpRequest) {
     HttpSession session = httpRequest.getSession(false);
     if (session != null) {
-      sessionRegistry.registerNewSession(session.getId(), authentication.getPrincipal());
+      sessionRegistry.registerNewSession(
+          session.getId(), authentication.getPrincipal());
     }
   }
 }

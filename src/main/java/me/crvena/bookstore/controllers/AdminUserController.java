@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import me.crvena.bookstore.repositories.UserRepository;
-import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.dtos.AdminModifyUserRequest;
 import me.crvena.bookstore.dtos.ListResponse;
@@ -77,18 +76,15 @@ public class AdminUserController {
       User modifiedUser = service.modifyUser(userToModify, data);
       logger.debug("Modified user " + modifiedUser);
 
-      User currentUser = AuthService.getRequestUser();
-
-      logger.debug("Checking if current user is the target");
-      // check self modify
-      if (currentUser != null && currentUser.getId().equals(modifiedUser.getId())) {
-        boolean isNowDisabled = !modifiedUser.isAccountNonLocked() || !modifiedUser.isEnabled();
-        if (isNowDisabled) {
-          logger.info("Current user is disabled");
-          // admin locked own account
-          invalidateUserSessions(modifiedUser.getUsername());
-        } else {
-          // admin changed own details
+      boolean isNowDisabled = !modifiedUser.isAccountNonLocked() || !modifiedUser.isEnabled();
+      if (isNowDisabled) {
+        logger.info("User is disabled");
+        // admin locked account
+        invalidateUserSessions(modifiedUser.getUsername());
+      } else {
+        // admin changed details
+        User currentUser = AuthService.getRequestUser();
+        if (currentUser.getId().equals(modifiedUser.getId())) {
           Authentication newAuth = new UsernamePasswordAuthenticationToken(
               modifiedUser,
               modifiedUser.getPassword(),

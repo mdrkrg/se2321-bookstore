@@ -92,9 +92,6 @@ class OrderServiceImpl implements OrderService {
   private final CartItemRepository cartItemRepository;
 
   @Autowired
-  private final OrderItemRepository orderItemRepository;
-
-  @Autowired
   private final BookRepository bookRepository;
 
   @Autowired
@@ -176,10 +173,6 @@ class OrderServiceImpl implements OrderService {
         user, orderRequest, validCartItems);
 
     repository.save(order);
-    // WARN: does it save the order again?
-    if (order.getItems() != null && !order.getItems().isEmpty()) {
-      orderItemRepository.saveAll(order.getItems());
-    }
 
     // decrease stock, increase sales for each book
     List<Book> booksToUpdate = new ArrayList<>();
