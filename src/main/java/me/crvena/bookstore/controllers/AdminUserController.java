@@ -1,10 +1,14 @@
 package me.crvena.bookstore.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,13 +22,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.UserService;
 import me.crvena.bookstore.dao.UserDao;
 import me.crvena.bookstore.dtos.AdminModifyUserRequest;
+import me.crvena.bookstore.dtos.AdminUserStat;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import me.crvena.bookstore.models.User;
@@ -52,6 +59,23 @@ public class AdminUserController {
   public ResponseEntity<ListResponse<User>> findAll() {
     // TODO: paging
     return ResponseEntity.ok(new ListResponse<>(dao.findAll()));
+  }
+
+  @RequestMapping(path = "/stats", method = RequestMethod.GET, produces = "application/json")
+  public ResponseEntity<ListResponse<AdminUserStat>> getUserSpendingStats(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+      @RequestParam(defaultValue = "0") @Valid @Min(0) Integer pageNumber,
+      @RequestParam(defaultValue = "10") @Valid @Min(1) Integer pageSize) {
+
+    LocalDate finalStartDate = (startDate == null) ? LocalDate.EPOCH : startDate;
+    LocalDate finalEndDate = (endDate == null) ? LocalDate.now() : endDate;
+
+    Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+    return ResponseEntity
+        .ok(ListResponse.of(
+            service.getTopSpenders(finalStartDate, finalEndDate, pageable)));
   }
 
   /**

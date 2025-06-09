@@ -27,11 +27,17 @@ public interface OrderDao {
 
   public Page<Order> findByCreatorOrderByIdDesc(User creator, Pageable pageable);
 
-  List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+  public List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
       Instant createdAtStart, Instant createdAtEnd);
 
-  Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+  public Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
       Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
+
+  public List<Order> findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
+      String title, Instant createdAtStart, Instant createdAtEnd);
+
+  public Page<Order> findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
+      String title, Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
 
   public List<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
       User creator, Instant createdAtStart, Instant createdAtEnd);

@@ -1,13 +1,17 @@
 package me.crvena.bookstore.dao;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+import me.crvena.bookstore.dtos.AdminUserStat;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.repositories.UserRepository;
 
@@ -24,6 +28,9 @@ public interface UserDao {
   boolean existsByEmail(String email);
 
   User save(User user);
+
+  Page<AdminUserStat> findUserSpendingStats(
+      Instant startDate, Instant endDate, Pageable pageable);
 }
 
 @Repository

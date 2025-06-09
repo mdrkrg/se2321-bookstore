@@ -41,6 +41,12 @@ public interface OrderService {
 
   public List<Order> getOrdersByUser(User user);
 
+  public List<Order> getOrdersByCreatedAtBetween(
+      LocalDate createdAtStart, LocalDate createdAtEnd);
+
+  public List<Order> getOrdersByTitleAndCreatedAtBetween(
+      String title, LocalDate createdAtStart, LocalDate createdAtEnd);
+
   public List<Order> getOrdersByUserAndCreatedAtBetween(
       User user, LocalDate createdAtStart, LocalDate createdAtEnd);
 
@@ -108,6 +114,22 @@ class OrderServiceImpl implements OrderService {
 
   public List<Order> getOrdersByUser(User user) {
     return dao.findByCreatorOrderByIdDesc(user);
+  }
+
+  public List<Order> getOrdersByCreatedAtBetween(
+      LocalDate createdAtStart, LocalDate createdAtEnd) {
+    Instant startInstant = createdAtStart.atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+    return dao.findByCreatedAtBetweenOrderByCreatedAtDesc(
+        startInstant, endInstant);
+  }
+
+  public List<Order> getOrdersByTitleAndCreatedAtBetween(
+      String title, LocalDate createdAtStart, LocalDate createdAtEnd) {
+    Instant startInstant = createdAtStart.atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+    return dao.findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
+        title, startInstant, endInstant);
   }
 
   public List<Order> getOrdersByUserAndCreatedAtBetween(

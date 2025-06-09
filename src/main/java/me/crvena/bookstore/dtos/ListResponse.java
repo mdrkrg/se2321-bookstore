@@ -1,6 +1,5 @@
 package me.crvena.bookstore.dtos;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +9,7 @@ import org.springframework.data.domain.Page;
 import lombok.Data;
 
 @Data
-public class ListResponse<T extends Serializable> {
+public class ListResponse<T> {
 
   private List<T> items;
   private Integer total;
@@ -43,17 +42,17 @@ public class ListResponse<T extends Serializable> {
     this.totalPages = totalPages;
   }
 
-  public static <T extends Serializable> ListResponse<T> of(
+  public static <T> ListResponse<T> of(
       Iterable<T> items, Integer pageNumber, Integer pageSize, Integer totalPages) {
     return new ListResponse<>(items, pageNumber, pageSize, totalPages);
   }
 
-  public static <T extends Serializable> ListResponse<T> of(
+  public static <T> ListResponse<T> of(
       Collection<T> items, Integer pageNumber, Integer pageSize, Integer totalPages) {
     return new ListResponse<>(items, pageNumber, pageSize, totalPages);
   }
 
-  public static <T extends Serializable> ListResponse<T> of(Page<T> items) {
+  public static <T> ListResponse<T> of(Page<T> items) {
     return new ListResponse<>(
         items.getContent(),
         items.getPageable().getPageNumber(),
