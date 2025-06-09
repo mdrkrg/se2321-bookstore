@@ -17,19 +17,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import lombok.RequiredArgsConstructor;
-import me.crvena.bookstore.repositories.UserRepository;
+import me.crvena.bookstore.dao.UserDao;
 
 @RequiredArgsConstructor
 @Configuration
 public class ApplicationConfig {
 
   @Autowired
-  private final UserRepository repo;
+  private final UserDao userDao;
 
   @Bean
   public UserDetailsService userDetailsService() {
     return username -> {
-      UserDetails userDetails = repo.findByUsername(username)
+      UserDetails userDetails = userDao.findByUsername(username)
           .orElseThrow(() -> new UsernameNotFoundException("User not found"));
       return userDetails;
     };

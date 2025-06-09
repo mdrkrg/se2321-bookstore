@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import me.crvena.bookstore.repositories.BookRepository;
+import me.crvena.bookstore.dao.BookDao;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import me.crvena.bookstore.models.Book;
@@ -26,7 +26,7 @@ import me.crvena.bookstore.models.Book;
 public class BookController {
 
   @Autowired
-  private BookRepository bookRepository;
+  private BookDao dao;
 
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<ListResponse<Book>> findAll(
@@ -42,27 +42,27 @@ public class BookController {
     if (titleProvided && tagsProvided) {
       return ResponseEntity.ok(
           ListResponse.of(
-              bookRepository.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
+              dao.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
                   true, title, tagIds, pageable)));
     } else if (titleProvided && !tagsProvided) {
       return ResponseEntity.ok(
           ListResponse.of(
-              bookRepository.findByAvailableAndTitleIgnoreCaseContaining(
+              dao.findByAvailableAndTitleIgnoreCaseContaining(
                   true, title, pageable)));
     } else if (!titleProvided && tagsProvided) {
       return ResponseEntity.ok(
           ListResponse.of(
-              bookRepository.findByAvailableAndTags_IdIn(true, tagIds, pageable)));
+              dao.findByAvailableAndTags_IdIn(true, tagIds, pageable)));
     } else {
       return ResponseEntity.ok(
           ListResponse.of(
-              bookRepository.findByAvailable(true, pageable)));
+              dao.findByAvailable(true, pageable)));
     }
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<Book> findOneBook(@PathVariable("id") Long id) {
-    Book book = bookRepository.findByIdAndAvailable(id, true).orElseThrow(
+    Book book = dao.findByIdAndAvailable(id, true).orElseThrow(
         () -> new ResourceDoesNotExist(Book.class, id));
     return ResponseEntity.ok(book);
   }

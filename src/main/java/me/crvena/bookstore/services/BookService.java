@@ -1,7 +1,6 @@
 package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.models.*;
-import me.crvena.bookstore.repositories.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +13,8 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dao.TagDao;
 import me.crvena.bookstore.dtos.CreateBookRequest;
 import me.crvena.bookstore.dtos.ModifyBookRequest;
 import me.crvena.bookstore.exceptions.ConflictExceptions.ResourceAlreadyExist;
@@ -43,10 +44,10 @@ public interface BookService {
 class BookServiceImpl implements BookService {
 
   @Autowired
-  private BookRepository repository;
+  private BookDao dao;
 
   @Autowired
-  private TagRepository tagRepository;
+  private TagDao tagDao;
 
   @Autowired
   private ObjectMapper mapper;
@@ -61,7 +62,7 @@ class BookServiceImpl implements BookService {
 
   @Transactional
   public Book createBook(CreateBookRequest data) throws RuntimeException, ResourceAlreadyExist {
-    if (repository.existsByTitleAndAuthor(data.getTitle(), data.getAuthor())) {
+    if (dao.existsByTitleAndAuthor(data.getTitle(), data.getAuthor())) {
       throw new ResourceAlreadyExist("book already exist");
     }
     Book book = Book.builder()
@@ -76,11 +77,11 @@ class BookServiceImpl implements BookService {
 
     var tagIds = data.getTagIds();
     for (var tagId : tagIds) {
-      Tag tag = tagRepository.findById(tagId).orElseThrow(
+      Tag tag = tagDao.findById(tagId).orElseThrow(
           () -> new ResourceDoesNotExist(Tag.class, tagId));
       book.addTag(tag);
     }
-    return repository.save(book);
+    return dao.save(book);
   }
 
   @Transactional
@@ -88,17 +89,17 @@ class BookServiceImpl implements BookService {
     try {
       mapper.updateValue(book, data);
       if (data.getTagIds().isEmpty()) {
-        return repository.save(book);
+        return dao.save(book);
       }
       var tagIds = data.getTagIds().get();
       Set<Tag> tags = new HashSet<>();
       for (var tagId : tagIds) {
-        Tag tag = tagRepository.findById(tagId).orElseThrow(
+        Tag tag = tagDao.findById(tagId).orElseThrow(
             () -> new ResourceDoesNotExist(Tag.class, tagId));
         tags.add(tag);
       }
       book.setTags(tags);
-      return repository.save(book);
+      return dao.save(book);
     } catch (JsonMappingException e) {
       throw new RuntimeException(e.getMessage());
     }
@@ -107,6 +108,6 @@ class BookServiceImpl implements BookService {
   @Transactional
   public Book changeAvailable(Book book, Boolean available) {
     book.setAvailable(available);
-    return repository.save(book);
+    return dao.save(book);
   }
 }

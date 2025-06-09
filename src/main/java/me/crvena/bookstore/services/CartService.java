@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import me.crvena.bookstore.exceptions.ConflictExceptions.CartItemAlreadyExist;
+import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dao.CartItemDao;
 import me.crvena.bookstore.exceptions.PermissionDenied;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import jakarta.transaction.Transactional;
@@ -54,23 +56,23 @@ public interface CartService {
 class CartServiceImpl implements CartService {
 
   @Autowired
-  private final CartItemRepository cartItemRepository;
+  private final CartItemDao dao;
 
   @Autowired
-  private final BookRepository bookRepository;
+  private final BookDao bookDao;
 
   public List<CartItem> getCartByUser(User user) {
-    return cartItemRepository.findByCreatorOrderByIdDesc(user);
+    return dao.findByCreatorOrderByIdDesc(user);
   }
 
   public Page<CartItem> getCartByUser(User user, Pageable pageable) {
-    return cartItemRepository.findByCreatorOrderByIdDesc(user, pageable);
+    return dao.findByCreatorOrderByIdDesc(user, pageable);
   }
 
   public Optional<CartItem> getCartItemByUserAndBookId(User user, Long bookId) {
-    Book book = bookRepository.findById(bookId)
+    Book book = bookDao.findById(bookId)
         .orElseThrow(() -> new ResourceDoesNotExist(Book.class, bookId));
-    return cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
+    return dao.findDistinctCartItemByCreatorAndBook(user, book);
   }
 
   /**
@@ -78,16 +80,16 @@ class CartServiceImpl implements CartService {
    */
   @Transactional
   public CartItem createCartItem(User user, Long bookId, Long number) {
-    Book book = bookRepository.findById(bookId)
+    Book book = bookDao.findById(bookId)
         .orElseThrow(() -> new ResourceDoesNotExist(Book.class, bookId));
 
-    Optional<CartItem> existingCartItem = cartItemRepository.findDistinctCartItemByCreatorAndBook(user, book);
+    Optional<CartItem> existingCartItem = dao.findDistinctCartItemByCreatorAndBook(user, book);
     if (existingCartItem.isPresent()) {
       throw new CartItemAlreadyExist("Cart item already exists for user and book");
     }
     CartItem cartItem = CartItem.builder()
         .creator(user).book(book).number(number).build();
-    return cartItemRepository.save(cartItem);
+    return dao.save(cartItem);
   }
 
   /**
@@ -95,7 +97,7 @@ class CartServiceImpl implements CartService {
    */
   @Transactional
   public CartItem modifyCartItem(Long id, Long number, User user) {
-    CartItem cartItem = cartItemRepository.findById(id).orElseThrow(
+    CartItem cartItem = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(CartItem.class, id));
 
     if (!cartItem.getCreator().equals(user)) {
@@ -103,7 +105,7 @@ class CartServiceImpl implements CartService {
     }
 
     cartItem.setNumber(number);
-    return cartItemRepository.save(cartItem);
+    return dao.save(cartItem);
   }
 
   /**
@@ -111,13 +113,13 @@ class CartServiceImpl implements CartService {
    */
   @Transactional
   public void deleteCartItem(Long id, User user) {
-    CartItem cartItem = cartItemRepository.findById(id).orElseThrow(
+    CartItem cartItem = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(CartItem.class, id));
 
     if (!cartItem.getCreator().equals(user)) {
       throw new PermissionDenied(user);
     }
 
-    cartItemRepository.deleteById(id);
+    dao.deleteById(id);
   }
 }

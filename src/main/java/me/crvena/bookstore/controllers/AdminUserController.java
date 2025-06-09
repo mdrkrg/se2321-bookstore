@@ -21,8 +21,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import me.crvena.bookstore.repositories.UserRepository;
+import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.UserService;
+import me.crvena.bookstore.dao.UserDao;
 import me.crvena.bookstore.dtos.AdminModifyUserRequest;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
@@ -36,7 +37,7 @@ public class AdminUserController {
   Logger logger = LoggerFactory.getLogger(AdminUserController.class);
 
   @Autowired
-  private UserRepository repository;
+  private UserDao dao;
 
   @Autowired
   private UserService service;
@@ -50,7 +51,7 @@ public class AdminUserController {
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<ListResponse<User>> findAll() {
     // TODO: paging
-    return ResponseEntity.ok(new ListResponse<>(repository.findAll()));
+    return ResponseEntity.ok(new ListResponse<>(dao.findAll()));
   }
 
   /**
@@ -58,7 +59,7 @@ public class AdminUserController {
    */
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<User> findOneUser(@PathVariable("id") Long id) {
-    User user = repository.findById(id).orElseThrow(
+    User user = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(User.class, id));
     return ResponseEntity.ok(user);
   }
@@ -69,7 +70,7 @@ public class AdminUserController {
       @PathVariable("id") Long id, @Valid @RequestBody AdminModifyUserRequest data) {
     logger.info("Modifying user...");
     logger.debug("Request body: " + data);
-    User userToModify = repository.findById(id).orElseThrow(
+    User userToModify = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(User.class, id));
     logger.debug("Modifying user " + userToModify);
     try {
@@ -100,9 +101,9 @@ public class AdminUserController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.DELETE, produces = "application/json")
   public ResponseEntity<User> lockUserAccount(@PathVariable("id") Long id) {
-    User user = repository.findById(id).orElseThrow(() -> new ResourceDoesNotExist(User.class, id));
+    User user = dao.findById(id).orElseThrow(() -> new ResourceDoesNotExist(User.class, id));
     user.setAccountNonLocked(true);
-    repository.save(user);
+    dao.save(user);
     invalidateUserSessions(user.getUsername());
     return ResponseEntity.ok(user);
   }

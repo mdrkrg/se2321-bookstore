@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
+import me.crvena.bookstore.dao.UserDao;
 import me.crvena.bookstore.dtos.AdminModifyUserRequest;
 import me.crvena.bookstore.models.User;
-import me.crvena.bookstore.repositories.UserRepository;
 
 @Service
 public interface UserService {
@@ -23,7 +23,7 @@ public interface UserService {
 class UserServiceImpl implements UserService {
 
   @Autowired
-  private UserRepository repository;
+  private UserDao dao;
 
   @Autowired
   private ObjectMapper mapper;
@@ -37,7 +37,7 @@ class UserServiceImpl implements UserService {
       data.setUserInfo(null);
       mapper.updateValue(user, data);
       mapper.updateValue(user.getUserInfo(), UserInfoData);
-      repository.save(user);
+      dao.save(user);
       User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
       // update auth
       if (currentUser.equals(user)) {

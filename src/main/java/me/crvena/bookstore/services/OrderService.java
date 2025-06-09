@@ -1,10 +1,12 @@
 package me.crvena.bookstore.services;
 
+import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dao.CartItemDao;
+import me.crvena.bookstore.dao.OrderDao;
 import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.dtos.OutOfStockErrorResponse.OutOfStockDetail;
 import me.crvena.bookstore.models.*;
-import me.crvena.bookstore.repositories.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -89,30 +91,30 @@ public interface OrderService {
 class OrderServiceImpl implements OrderService {
 
   @Autowired
-  private final CartItemRepository cartItemRepository;
+  private final CartItemDao cartItemDao;
 
   @Autowired
-  private final BookRepository bookRepository;
+  private final BookDao bookDao;
 
   @Autowired
-  private final OrderRepository repository;
+  private final OrderDao dao;
 
   @Autowired
   private ObjectMapper mapper;
 
   public Page<Order> getOrdersByUser(User user, Pageable pageable) {
-    return repository.findByCreatorOrderByIdDesc(user, pageable);
+    return dao.findByCreatorOrderByIdDesc(user, pageable);
   }
 
   public List<Order> getOrdersByUser(User user) {
-    return repository.findByCreatorOrderByIdDesc(user);
+    return dao.findByCreatorOrderByIdDesc(user);
   }
 
   public List<Order> getOrdersByUserAndCreatedAtBetween(
       User user, LocalDate createdAtStart, LocalDate createdAtEnd) {
     Instant startInstant = createdAtStart.atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
     Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
-    return repository.findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
+    return dao.findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
         user, startInstant, endInstant);
   }
 
@@ -123,7 +125,7 @@ class OrderServiceImpl implements OrderService {
       LocalDate createdAtEnd) {
     Instant startInstant = createdAtStart.atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
     Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
-    return repository.findByCreatorAndBookTitleAndCreatedAtBetween(
+    return dao.findByCreatorAndBookTitleAndCreatedAtBetween(
         user, title, startInstant, endInstant);
   }
 
@@ -140,7 +142,7 @@ class OrderServiceImpl implements OrderService {
     List<OutOfStockDetail> outOfStockDetails = new ArrayList<>();
     requestCartItems.forEach(requestItem -> {
 
-      CartItem item = cartItemRepository.findById(requestItem.getItemId())
+      CartItem item = cartItemDao.findById(requestItem.getItemId())
           .orElseThrow(() -> new ResourceDoesNotExist(
               CartItem.class, requestItem.getItemId()));
 
@@ -172,7 +174,7 @@ class OrderServiceImpl implements OrderService {
     Order order = OrderService.createFromOrderRequest(
         user, orderRequest, validCartItems);
 
-    repository.save(order);
+    dao.save(order);
 
     // decrease stock, increase sales for each book
     List<Book> booksToUpdate = new ArrayList<>();
@@ -180,7 +182,7 @@ class OrderServiceImpl implements OrderService {
       Book orderedBook = orderItem.getBook();
       Long quantity = orderItem.getNumber();
       // check stock again for concurrent issue
-      Book currentBook = bookRepository.findById(orderedBook.getId()).orElseThrow(
+      Book currentBook = bookDao.findById(orderedBook.getId()).orElseThrow(
           () -> new ResourceDoesNotExist(Book.class, orderedBook.getId()) // Should not happen
       );
       if (currentBook.getStock() < quantity) {
@@ -200,8 +202,8 @@ class OrderServiceImpl implements OrderService {
       booksToUpdate.add(currentBook);
     }
 
-    bookRepository.saveAll(booksToUpdate);
-    cartItemRepository.deleteAll(validCartItems.keySet());
+    bookDao.saveAll(booksToUpdate);
+    cartItemDao.deleteAll(validCartItems.keySet());
 
     return order;
   }
@@ -210,7 +212,7 @@ class OrderServiceImpl implements OrderService {
       throws RuntimeException {
     try {
       mapper.updateValue(order, data);
-      return repository.save(order);
+      return dao.save(order);
     } catch (JsonMappingException e) {
       throw new RuntimeException(e.getMessage());
     }

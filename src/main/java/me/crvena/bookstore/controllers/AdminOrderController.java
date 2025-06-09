@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import me.crvena.bookstore.repositories.OrderRepository;
 import me.crvena.bookstore.services.OrderService;
+import me.crvena.bookstore.dao.OrderDao;
 import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
@@ -24,7 +24,7 @@ import me.crvena.bookstore.models.Order;
 public class AdminOrderController {
 
   @Autowired
-  private OrderRepository repository;
+  private OrderDao dao;
 
   @Autowired
   private OrderService service;
@@ -35,7 +35,7 @@ public class AdminOrderController {
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<ListResponse<Order>> findAll() {
     // TODO: paging
-    return ResponseEntity.ok(new ListResponse<>(repository.findAll()));
+    return ResponseEntity.ok(new ListResponse<>(dao.findAll()));
   }
 
   /**
@@ -43,7 +43,7 @@ public class AdminOrderController {
    */
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<Order> findOneUser(@PathVariable("id") Long id) {
-    Order order = repository.findById(id).orElseThrow(
+    Order order = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Order.class, id));
     return ResponseEntity.ok(order);
   }
@@ -52,7 +52,7 @@ public class AdminOrderController {
       RequestMethod.PATCH }, produces = "application/json")
   public ResponseEntity<Order> modifyOrder(
       @PathVariable("id") Long id, @Valid @RequestBody AdminModifyOrderRequest data) {
-    Order order = repository.findById(id).orElseThrow(
+    Order order = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Order.class, id));
     try {
       order = service.modifyOrder(order, data);

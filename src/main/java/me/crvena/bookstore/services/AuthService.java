@@ -23,11 +23,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import me.crvena.bookstore.dao.UserDao;
 import me.crvena.bookstore.dtos.LoginRequest;
 import me.crvena.bookstore.dtos.SignupRequest;
 import me.crvena.bookstore.exceptions.FieldsConflictException;
 import me.crvena.bookstore.models.User;
-import me.crvena.bookstore.repositories.UserRepository;
 
 @Service
 public interface AuthService {
@@ -59,7 +59,7 @@ public interface AuthService {
 class AuthServiceImpl implements AuthService {
 
   @Autowired
-  private final UserRepository repository;
+  private final UserDao userDao;
 
   @Autowired
   private final PasswordEncoder passwordEncoder;
@@ -84,13 +84,13 @@ class AuthServiceImpl implements AuthService {
     BindingResult conflicts = new BeanPropertyBindingResult(
         request, "signupRequest");
 
-    if (repository.existsByUsername(username)) {
+    if (userDao.existsByUsername(username)) {
       conflicts.rejectValue(
           "username", // field name
           "conflict.username.exists",
           "This username is already taken. Please choose a different one.");
     }
-    if (repository.existsByEmail(email)) {
+    if (userDao.existsByEmail(email)) {
       conflicts.rejectValue(
           "email",
           "conflict.email.exists",
@@ -103,7 +103,7 @@ class AuthServiceImpl implements AuthService {
     var password = passwordEncoder.encode(request.getPassword());
     var user = new User(request.getUsername(), request.getEmail(), password);
 
-    repository.save(user);
+    userDao.save(user);
 
     Authentication authentication = new UsernamePasswordAuthenticationToken(
         user, null, user.getAuthorities());

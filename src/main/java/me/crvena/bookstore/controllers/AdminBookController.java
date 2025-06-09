@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import me.crvena.bookstore.repositories.BookRepository;
 import me.crvena.bookstore.services.BookService;
+import me.crvena.bookstore.dao.BookDao;
 import me.crvena.bookstore.dtos.CreateBookRequest;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.dtos.ModifyBookRequest;
@@ -26,7 +26,7 @@ import me.crvena.bookstore.models.Book;
 public class AdminBookController {
 
   @Autowired
-  private BookRepository repository;
+  private BookDao dao;
 
   @Autowired
   private BookService service;
@@ -34,7 +34,7 @@ public class AdminBookController {
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<ListResponse<Book>> findAll() {
     // TODO: paged
-    var books = repository.findAll();
+    var books = dao.findAll();
     List<Book> bookList = new ArrayList<>();
     books.iterator().forEachRemaining(bookList::add);
     return ResponseEntity.ok(new ListResponse<>(bookList));
@@ -42,7 +42,7 @@ public class AdminBookController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<Book> findOneBook(@PathVariable("id") Long id) {
-    Book book = repository.findById(id).orElseThrow(
+    Book book = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Book.class, id));
     return ResponseEntity.ok(book);
   }
@@ -55,7 +55,7 @@ public class AdminBookController {
   @RequestMapping(path = "/{id}", method = { RequestMethod.PUT, RequestMethod.PATCH }, produces = "application/json")
   public ResponseEntity<Book> modifyBook(
       @PathVariable("id") Long id, @Valid @RequestBody ModifyBookRequest data) {
-    Book book = repository.findById(id).orElseThrow(
+    Book book = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Book.class, id));
     try {
       book = service.modifyBook(book, data);
@@ -67,7 +67,7 @@ public class AdminBookController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.DELETE, produces = "application/json")
   public ResponseEntity<Book> deleteBook(@PathVariable("id") Long id) {
-    Book book = repository.findById(id).orElseThrow(
+    Book book = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Book.class, id));
     return ResponseEntity.ok(service.changeAvailable(book, Boolean.FALSE));
   }
