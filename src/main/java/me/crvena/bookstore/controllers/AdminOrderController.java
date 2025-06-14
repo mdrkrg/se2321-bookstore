@@ -83,4 +83,12 @@ public class AdminOrderController {
       return ResponseEntity.internalServerError().build();
     }
   }
+
+  @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
+  public ResponseEntity<?> deleteOrder(@PathVariable("id") Long id) {
+    Order order = dao.findById(id).orElseThrow(
+        () -> new ResourceDoesNotExist(Order.class, id));
+    dao.delete(order);
+    return ResponseEntity.noContent().build();
+  }
 }
