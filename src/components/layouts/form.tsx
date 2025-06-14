@@ -1,44 +1,56 @@
-import type { ReactNode } from '@tanstack/react-router'
-import type { Control, FieldValues, Path, UseFormReturn } from 'react-hook-form'
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import type { ReactNode } from 'react'
+import type { ControllerRenderProps, FieldValues, Path, UseFormReturn } from 'react-hook-form'
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 
-export interface InputFormItemProps extends React.ComponentProps<'input'> {
+export interface FormItemDefinition<
+  TFieldValues extends FieldValues,
+  TName extends Path<TFieldValues>,
+> {
   formLabel: string | ReactNode
   formDescription?: string
-  type?: React.HTMLInputTypeAttribute
+  render: (props: { field: ControllerRenderProps<TFieldValues, TName> }) => ReactNode
 }
 
-export interface InputFormItems { [key: string]: InputFormItemProps }
+// map over each key in form schema `TFieldValues`
+// for each key, create an optional property with FormItemDefinition
+export type FormItems<TFieldValues extends FieldValues> = {
+  [TName in Path<TFieldValues>]?: FormItemDefinition<TFieldValues, TName>
+}
 
-interface RenderInputFormItemsProps<
+export function BulkFormItems<
   TFieldValues extends FieldValues,
-  TFormItemKey extends Path<TFieldValues> & string,
-  TItems extends Readonly<Record<TFormItemKey, InputFormItemProps>>,
-> {
-  form: UseFormReturn<TFieldValues>
-  formItems: TItems
-}
-
-export function BulkInputFormItems<
-  const TItems extends Record<string, InputFormItemProps>,
-  TFormItemKey extends Path<TFieldValues> & string,
-  TFieldValues extends FieldValues & { [K in Extract<keyof TItems, string>]?: any },
 >({
   form,
   formItems,
-}: RenderInputFormItemsProps<TFieldValues, TFormItemKey, TItems>): React.ReactElement {
-  type FormItemName = Extract<keyof TItems, string>
+}: {
+  form: UseFormReturn<TFieldValues>
+  formItems: FormItems<TFieldValues>
+}): React.ReactElement {
+  const formItemKeys = Object.keys(formItems) as Path<TFieldValues>[]
+
   return (
     <>
-      {(Object.entries(formItems) as [TFormItemKey, TItems[FormItemName]][]).map(([
-        name,
-        { formLabel, formDescription, ...inputProps },
-      ]) => {
+      {formItemKeys.map((name) => {
+        const itemDefinition = formItems[name]
+
+        // should not happen
+        if (!itemDefinition) {
+          return null
+        }
+
+        const { formLabel, formDescription, render: renderComponent } = itemDefinition
+
         return (
           <FormField
             key={name}
-            control={form.control as Control<TFieldValues>}
+            control={form.control}
             name={name}
             render={({ field }) => (
               <FormItem>
@@ -49,7 +61,7 @@ export function BulkInputFormItems<
                   </FormDescription>
                 )}
                 <FormControl>
-                  <Input {...inputProps} {...field} />
+                  {renderComponent({ field })}
                 </FormControl>
                 <FormMessage />
               </FormItem>

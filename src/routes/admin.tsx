@@ -39,7 +39,7 @@ function AdminNavigation() {
       <NavigationMenuList>
         {Object.entries(routes).map(([link, prop]) => {
           return (
-            <NavigationMenuItem>
+            <NavigationMenuItem key={link}>
               <NavigationMenuLink className="nav-link text-sm" asChild>
                 <Link to={link}>
                   {prop.display}

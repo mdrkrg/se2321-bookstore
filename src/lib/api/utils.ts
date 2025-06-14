@@ -118,3 +118,7 @@ export interface ApiResponseBase {
   ok: boolean
   data: Record<string, never>
 }
+
+export type FieldErrorResponse<TRequest extends Record<string, any>> = {
+  [P in keyof TRequest]?: string
+}

@@ -3,7 +3,9 @@ import dayjs from 'dayjs'
 import _, { random, range, sample, sampleSize } from 'lodash'
 import booklist from './booklist.json'
 
-export const testBookList: Book[] = booklist.items
+export const testBookList: Book[] = booklist.items.map(
+  i => ({ ...i, available: true, stock: random(50) }),
+)
 
 const fakeAddressList: Address[] = [
   {

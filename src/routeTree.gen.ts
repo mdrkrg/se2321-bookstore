@@ -29,6 +29,7 @@ import { Route as MeCommentsImport } from './routes/me/comments'
 import { Route as MeAddressImport } from './routes/me/address'
 import { Route as BookBookIdImport } from './routes/book/$bookId'
 import { Route as AdminUsersImport } from './routes/admin/users'
+import { Route as AdminBooksImport } from './routes/admin/books'
 
 // Create/Update Routes
 
@@ -140,6 +141,12 @@ const AdminUsersRoute = AdminUsersImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 
+const AdminBooksRoute = AdminBooksImport.update({
+  id: '/books',
+  path: '/books',
+  getParentRoute: () => AdminRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -192,6 +199,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/signup'
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
+    }
+    '/admin/books': {
+      id: '/admin/books'
+      path: '/books'
+      fullPath: '/admin/books'
+      preLoaderRoute: typeof AdminBooksImport
+      parentRoute: typeof AdminImport
     }
     '/admin/users': {
       id: '/admin/users'
@@ -276,10 +290,12 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AdminRouteChildren {
+  AdminBooksRoute: typeof AdminBooksRoute
   AdminUsersRoute: typeof AdminUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBooksRoute: AdminBooksRoute,
   AdminUsersRoute: AdminUsersRoute,
 }
 
@@ -317,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/signup': typeof SignupRoute
+  '/admin/books': typeof AdminBooksRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
@@ -337,6 +354,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/order': typeof OrderRoute
   '/signup': typeof SignupRoute
+  '/admin/books': typeof AdminBooksRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
@@ -359,6 +377,7 @@ export interface FileRoutesById {
   '/me': typeof MeRouteWithChildren
   '/order': typeof OrderRoute
   '/signup': typeof SignupRoute
+  '/admin/books': typeof AdminBooksRoute
   '/admin/users': typeof AdminUsersRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/me/address': typeof MeAddressRoute
@@ -382,6 +401,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/order'
     | '/signup'
+    | '/admin/books'
     | '/admin/users'
     | '/book/$bookId'
     | '/me/address'
@@ -401,6 +421,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/order'
     | '/signup'
+    | '/admin/books'
     | '/admin/users'
     | '/book/$bookId'
     | '/me/address'
@@ -421,6 +442,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/order'
     | '/signup'
+    | '/admin/books'
     | '/admin/users'
     | '/book/$bookId'
     | '/me/address'
@@ -486,6 +508,7 @@ export const routeTree = rootRoute
     "/admin": {
       "filePath": "admin.tsx",
       "children": [
+        "/admin/books",
         "/admin/users"
       ]
     },
@@ -513,6 +536,10 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/admin/books": {
+      "filePath": "admin/books.tsx",
+      "parent": "/admin"
     },
     "/admin/users": {
       "filePath": "admin/users.tsx",

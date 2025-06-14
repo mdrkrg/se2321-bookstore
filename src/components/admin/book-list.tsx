@@ -1,5 +1,6 @@
-import type { ChangeUserRequest } from '@/lib/models/admin'
-import type { PagedItems, User } from '@/lib/models/user'
+import type { FieldErrorResponse } from '@/lib/api/utils'
+import type { ChangeBookRequest } from '@/lib/models/admin'
+import type { Book, PagedItems } from '@/lib/models/user'
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -24,8 +25,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { changeUser, fetchUserListOptions } from '@/lib/api/admin'
-import { getRoleDisplay } from '@/lib/models/user'
+import { changeBook, fetchAdminBookListOptions } from '@/lib/api/admin'
+import { cn } from '@/lib/utils/cn'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   flexRender,
@@ -36,14 +37,15 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { ArrowUpDown, ArrowUpWideNarrowIcon, MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { Input } from '../ui/input'
+import { ModifyBookForm } from './modify-book'
 
-const columns: ColumnDef<User>[] = [
+const columns: ColumnDef<Book>[] = [
   {
-    accessorKey: 'username',
+    accessorKey: 'title',
     header: ({ column }) => {
       return (
         <Button
@@ -51,17 +53,17 @@ const columns: ColumnDef<User>[] = [
           className="bg-transparent hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          用户名
+          书名
           <ArrowUpDown />
         </Button>
       )
     },
     cell: ({ row }) => {
-      return row.original.username
+      return row.original.title
     },
   },
   {
-    accessorKey: 'email',
+    accessorKey: 'author',
     header: ({ column }) => {
       return (
         <Button
@@ -69,44 +71,90 @@ const columns: ColumnDef<User>[] = [
           className="bg-transparent hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          邮箱
+          作者
           <ArrowUpDown />
         </Button>
       )
     },
     cell: ({ row }) => {
-      return row.original.email
+      return row.original.author
     },
   },
   {
-    accessorKey: 'role',
-    header: '用户类型',
+    accessorKey: 'price',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="bg-transparent hover:bg-transparent"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          价格
+          <ArrowUpDown />
+        </Button>
+      )
+    },
     cell: ({ row }) => {
-      return getRoleDisplay(row.original.role)
+      return row.original.price
+    },
+  },
+  {
+    accessorKey: 'sales',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="bg-transparent hover:bg-transparent"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          销量
+          <ArrowUpDown />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      return row.original.sales
+    },
+  },
+  {
+    accessorKey: 'stock',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          className="bg-transparent hover:bg-transparent"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          库存
+          <ArrowUpDown />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      return row.original.stock
     },
   },
   {
     accessorKey: 'accountNonLocked',
-    header: '是否禁用',
+    header: '是否上架',
     cell: ({ row }) => {
-      return row.original.accountNonLocked ? '否' : '是'
+      return row.original.available ? '是' : '否'
     },
   },
   {
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const role = row.original.role
-      const banned = !row.original.accountNonLocked
+      const available = row.original.available
       const queryClient = useQueryClient()
-      const queryKey = fetchUserListOptions().queryKey
+      const queryKey = fetchAdminBookListOptions().queryKey
 
       const {
-        mutate: mutateUser,
-      } = useMutation<User, any, ChangeUserRequest>({
-        mutationFn: data => changeUser(row.original.id, data),
+        mutate: mutateBook,
+      } = useMutation<Book, Error | FieldErrorResponse<ChangeBookRequest>, ChangeBookRequest>({
+        mutationFn: data => changeBook(row.original.id, data),
         onSuccess(_) {
-          toast(`成功修改了用户${row.original.id}`)
+          toast(`成功修改了商品${row.original.id}`)
           queryClient.invalidateQueries({
             queryKey,
           })
@@ -116,32 +164,18 @@ const columns: ColumnDef<User>[] = [
         },
       })
 
-      function handleBanUser() {
+      function handleDeleteBook() {
         const data = {
-          accountNonLocked: false,
-        } satisfies ChangeUserRequest
-        mutateUser(data)
+          available: false,
+        } satisfies ChangeBookRequest
+        mutateBook(data)
       }
 
-      function handleUnbanUser() {
+      function handleRestockBook() {
         const data = {
-          accountNonLocked: true,
-        } satisfies ChangeUserRequest
-        mutateUser(data)
-      }
-
-      function handleSetAdmin() {
-        const data = {
-          role: 'ADMIN',
-        } satisfies ChangeUserRequest
-        mutateUser(data)
-      }
-
-      function handleUnsetAdmin() {
-        const data = {
-          role: 'USER',
-        } satisfies ChangeUserRequest
-        mutateUser(data)
+          available: true,
+        } satisfies ChangeBookRequest
+        mutateBook(data)
       }
 
       return (
@@ -154,49 +188,26 @@ const columns: ColumnDef<User>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>更多操作</DropdownMenuLabel>
-            {role === 'USER'
+            <DropdownMenuSeparator />
+            {available
               ? (
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation() // stop triggering row onClick
-                      handleSetAdmin()
+                      handleDeleteBook()
                     }}
                   >
-                    设置为管理员
+                    下架
                   </DropdownMenuItem>
                 )
               : (
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleUnsetAdmin()
+                      handleRestockBook()
                     }}
                   >
-                    取消管理员权限
-                  </DropdownMenuItem>
-                )}
-            <DropdownMenuSeparator />
-            {banned
-              ? (
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleUnbanUser()
-                    }}
-                    className="bg-red-300"
-                  >
-                    取消禁用用户
-                  </DropdownMenuItem>
-                )
-              : (
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleBanUser()
-                    }}
-                    className="bg-red-300"
-                  >
-                    禁用用户
+                    上架
                   </DropdownMenuItem>
                 )}
           </DropdownMenuContent>
@@ -206,17 +217,17 @@ const columns: ColumnDef<User>[] = [
   },
 ]
 
-export interface UserListProps extends React.ComponentProps<'div'> {
-  initialUserList: PagedItems<User>
+export interface BookListProps extends React.ComponentProps<'div'> {
+  initialBookList: PagedItems<Book>
 }
 
-export function UserList({ initialUserList }: UserListProps) {
-  const userQueryConfig = fetchUserListOptions()
+export function BookList({ initialBookList }: BookListProps) {
+  const userQueryConfig = fetchAdminBookListOptions()
   const {
-    data: userList,
-  } = useQuery<PagedItems<User>>({
+    data: bookList,
+  } = useQuery<PagedItems<Book>>({
     ...userQueryConfig,
-    initialData: initialUserList,
+    initialData: initialBookList,
     placeholderData: previousData => previousData,
   })
 
@@ -228,7 +239,7 @@ export function UserList({ initialUserList }: UserListProps) {
     = useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const table = useReactTable({
-    data: userList.items,
+    data: bookList.items,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -249,13 +260,13 @@ export function UserList({ initialUserList }: UserListProps) {
   })
   return (
     <div className="w-full">
-      <h1 className="font-bold text-2xl pl-[0.5em] pb-4">管理-用户列表</h1>
+      <h1 className="font-bold text-2xl pl-[0.5em] pb-4">管理-书籍列表</h1>
       <div className="flex items-center pb-4">
         <Input
-          placeholder="搜索用户名"
-          value={(table.getColumn('username')?.getFilterValue() as string) ?? ''}
+          placeholder="搜索标题"
+          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
           onChange={(event) => {
-            table.getColumn('username')?.setFilterValue(event.target.value)
+            table.getColumn('title')?.setFilterValue(event.target.value)
           }}
           className="max-w-sm"
         />
@@ -284,19 +295,44 @@ export function UserList({ initialUserList }: UserListProps) {
             {table.getRowModel().rows?.length
               ? (
                   table.getRowModel().rows.map(row => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell key={cell.id} className="text-center">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
+                    <React.Fragment key={row.id}>
+                      <TableRow
+                        data-state={row.getIsSelected() && 'selected'}
+                        onClick={row.getToggleExpandedHandler()}
+                        className="cursor-pointer"
+                      >
+                        {row.getVisibleCells().map(cell => (
+                          <TableCell key={cell.id} className="text-center">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                      <TableRow>
+                        <TableCell
+                          colSpan={row.getAllCells().length}
+                          className={cn(
+                            row.getIsExpanded() ? '' : 'py-0',
+                            'transition-all animate-duration-600',
+                            'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
+                            'data-[state=open]:animate-in data[state=open]:slide-in-b',
                           )}
+                        >
+                          <ModifyBookForm
+                            book={row.original}
+                            className={cn(
+                              row.getIsExpanded() ? 'max-h-auto' : 'max-h-0',
+                              'transition-all animate-duration-600 overflow-hidden',
+                              'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
+                              'data-[state=open]:animate-in data[state=open]:slide-in-b',
+                            )}
+                            data-state={row.getIsExpanded() ? 'open' : 'closed'}
+                          />
                         </TableCell>
-                      ))}
-                    </TableRow>
+                      </TableRow>
+                    </React.Fragment>
                   ))
                 )
               : (
@@ -305,7 +341,7 @@ export function UserList({ initialUserList }: UserListProps) {
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      指定筛选条件下没有用户。
+                      指定筛选条件下没有订单。
                     </TableCell>
                   </TableRow>
                 )}

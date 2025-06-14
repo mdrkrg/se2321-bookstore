@@ -74,6 +74,7 @@ export interface Book {
   /** Format: int32 */
   sales: number
   stock: number
+  available: boolean
   tags: BookTag[]
 }
 
