@@ -9,6 +9,8 @@ import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,6 +56,8 @@ public interface BookService {
 @Service
 @RequiredArgsConstructor
 class BookServiceImpl implements BookService {
+
+  private final Logger logger = LoggerFactory.getLogger(BookService.class);
 
   @Autowired
   private BookDao dao;
@@ -116,7 +120,8 @@ class BookServiceImpl implements BookService {
   public Book modifyBook(Book book, ModifyBookRequest data) throws RuntimeException {
     try {
       mapper.updateValue(book, data);
-      if (data.getTagIds().isEmpty()) {
+      logger.debug("mapper updated book");
+      if (data.getTagIds() == null || data.getTagIds().isEmpty()) {
         return dao.save(book);
       }
       var tagIds = data.getTagIds().get();

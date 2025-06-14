@@ -23,6 +23,8 @@ public interface OrderDao {
 
   public Order save(Order order);
 
+  public void delete(Order order);
+
   public List<Order> findByCreatorOrderByIdDesc(User creator);
 
   public Page<Order> findByCreatorOrderByIdDesc(User creator, Pageable pageable);
