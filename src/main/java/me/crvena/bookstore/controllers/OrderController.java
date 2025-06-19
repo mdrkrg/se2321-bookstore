@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import me.crvena.bookstore.services.AuthService;
 import me.crvena.bookstore.services.OrderService;
 import me.crvena.bookstore.dtos.ListResponse;
+import me.crvena.bookstore.dtos.OrderDto;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.dtos.OutOfStockErrorResponse;
 import me.crvena.bookstore.exceptions.OutOfStockException;
@@ -38,7 +39,7 @@ public class OrderController {
   @Description("Get order list for current user.")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
-  public ResponseEntity<ListResponse<Order>> getOrderList(
+  public ResponseEntity<ListResponse<OrderDto>> getOrderList(
       @RequestParam(name = "title", required = false) String title,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
@@ -52,23 +53,23 @@ public class OrderController {
     User user = AuthService.getRequestUser();
     // Page<Order> orders = orderService.getOrdersByUser(user, pageable);
     if (title == null || title.isEmpty()) {
-      List<Order> orders = orderService.getOrdersByUserAndCreatedAtBetween(
-          user, createdAtStart, createdAtEnd);
+      List<OrderDto> orders = orderService.getOrdersByUserAndCreatedAtBetween(
+          user, createdAtStart, createdAtEnd).stream().map(OrderDto::of).toList();
       return ResponseEntity.ok(new ListResponse<>(orders));
     }
 
-    List<Order> orders = orderService.getOrdersByUserAndTitleAndCreatedAtBetween(
-        user, title, createdAtStart, createdAtEnd);
+    List<OrderDto> orders = orderService.getOrdersByUserAndTitleAndCreatedAtBetween(
+        user, title, createdAtStart, createdAtEnd).stream().map(OrderDto::of).toList();
     return ResponseEntity.ok(new ListResponse<>(orders));
   }
 
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
-  public ResponseEntity<Order> placeOrder(@Valid @RequestBody OrderRequest orderRequest) {
+  public ResponseEntity<OrderDto> placeOrder(@Valid @RequestBody OrderRequest orderRequest) {
 
     User user = AuthService.getRequestUser();
 
     Order order = orderService.placeOrder(user, orderRequest);
-    return new ResponseEntity<>(order, HttpStatus.CREATED);
+    return new ResponseEntity<>(OrderDto.of(order), HttpStatus.CREATED);
   }
 
   @ExceptionHandler(OutOfStockException.class)

@@ -44,14 +44,12 @@ public class Order extends BaseModel {
   @ManyToOne
   @OnDelete(action = OnDeleteAction.RESTRICT)
   @CreatedBy
-  @JsonIgnore
   @JoinColumn(name = "creator_id", nullable = false)
   private User creator;
 
   @Length(max = ConstraintConst.MAX_NAME_LENGTH)
   String receiver;
 
-  // TODO: regex validation (in DTO?)
   @Length(max = ConstraintConst.MAX_TEL_LENGTH)
   @Pattern(regexp = ConstraintConst.PHONE_REGEX)
   String tel;

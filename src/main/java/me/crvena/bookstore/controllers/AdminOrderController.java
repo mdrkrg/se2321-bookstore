@@ -19,6 +19,7 @@ import me.crvena.bookstore.services.OrderService;
 import me.crvena.bookstore.dao.OrderDao;
 import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.ListResponse;
+import me.crvena.bookstore.dtos.OrderAdminDto;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
 import me.crvena.bookstore.models.Order;
 
@@ -37,7 +38,7 @@ public class AdminOrderController {
    * Show all orders
    */
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<ListResponse<Order>> getOrderList(
+  public ResponseEntity<ListResponse<OrderAdminDto>> getOrderList(
       @RequestParam(name = "title", required = false) String title,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
@@ -50,13 +51,13 @@ public class AdminOrderController {
     }
 
     if (title == null || title.isEmpty()) {
-      List<Order> orders = service.getOrdersByCreatedAtBetween(
-          createdAtStart, createdAtEnd);
+      List<OrderAdminDto> orders = service.getOrdersByCreatedAtBetween(
+          createdAtStart, createdAtEnd).stream().map(OrderAdminDto::of).toList();
       return ResponseEntity.ok(new ListResponse<>(orders));
     }
 
-    List<Order> orders = service.getOrdersByTitleAndCreatedAtBetween(
-        title, createdAtStart, createdAtEnd);
+    List<OrderAdminDto> orders = service.getOrdersByTitleAndCreatedAtBetween(
+        title, createdAtStart, createdAtEnd).stream().map(OrderAdminDto::of).toList();
     return ResponseEntity.ok(new ListResponse<>(orders));
   }
 
@@ -64,21 +65,21 @@ public class AdminOrderController {
    * Show a specific order by their id.
    */
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<Order> findOneUser(@PathVariable("id") Long id) {
+  public ResponseEntity<OrderAdminDto> findOneOrder(@PathVariable("id") Long id) {
     Order order = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Order.class, id));
-    return ResponseEntity.ok(order);
+    return ResponseEntity.ok(OrderAdminDto.of(order));
   }
 
   @RequestMapping(path = "/{id}", method = { RequestMethod.PUT,
       RequestMethod.PATCH }, produces = "application/json")
-  public ResponseEntity<Order> modifyOrder(
+  public ResponseEntity<OrderAdminDto> modifyOrder(
       @PathVariable("id") Long id, @Valid @RequestBody AdminModifyOrderRequest data) {
     Order order = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Order.class, id));
     try {
       order = service.modifyOrder(order, data);
-      return ResponseEntity.ok(order);
+      return ResponseEntity.ok(OrderAdminDto.of(order));
     } catch (RuntimeException e) {
       return ResponseEntity.internalServerError().build();
     }
