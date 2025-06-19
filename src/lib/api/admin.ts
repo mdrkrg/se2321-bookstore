@@ -1,4 +1,4 @@
-import type { ChangeBookRequest, ChangeUserRequest } from '../models/admin'
+import type { AddBookRequest, ChangeBookRequest, ChangeOrderRequest, ChangeUserRequest, OrderAdmin } from '../models/admin'
 import type { Book, PagedItems, User } from '../models/user'
 import axios from 'axios'
 import { endpoints } from '../models/endpoints'
@@ -34,6 +34,14 @@ export function fetchAdminBookListOptions() {
 export async function changeBook(id: number, data: ChangeBookRequest) {
   const rsp = await axios.put<Book>(
     endpoints.admin.book.change(id),
+    data,
+  )
+  return rsp.data
+}
+
+export async function addBook(data: AddBookRequest) {
+  const rsp = await axios.post<Book>(
+    endpoints.admin.book.index,
     data,
   )
   return rsp.data

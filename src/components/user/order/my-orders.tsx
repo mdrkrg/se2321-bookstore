@@ -103,11 +103,9 @@ const columns: ColumnDef<Order>[] = [
   },
   {
     id: 'price',
-    header: '总价',
+    header: '已支付总价',
     cell: ({ row }) => {
-      return toCNYString(row.original.items.reduce((prev, { book, number }) => (
-        book.price * number + prev
-      ), 0))
+      return toCNYString(row.original.totalPaidPrice)
     },
   },
   // custom filter
@@ -192,6 +190,7 @@ export function MyOrders({ initialOrderList }: MyOrdersProps) {
     createdAtStart: date?.from,
     createdAtEnd: date?.to,
   })
+
   const {
     data: orderList,
   } = useQuery<PagedItems<Order>>({

@@ -37,10 +37,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowUpDown, ArrowUpWideNarrowIcon, MoreHorizontal } from 'lucide-react'
+import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { Input } from '../ui/input'
+import { CreateBookPopup } from './create-book'
 import { ModifyBookForm } from './modify-book'
 
 const columns: ColumnDef<Book>[] = [
@@ -222,11 +223,11 @@ export interface BookListProps extends React.ComponentProps<'div'> {
 }
 
 export function BookList({ initialBookList }: BookListProps) {
-  const userQueryConfig = fetchAdminBookListOptions()
+  const queryConfig = fetchAdminBookListOptions()
   const {
     data: bookList,
   } = useQuery<PagedItems<Book>>({
-    ...userQueryConfig,
+    ...queryConfig,
     initialData: initialBookList,
     placeholderData: previousData => previousData,
   })
@@ -270,6 +271,9 @@ export function BookList({ initialBookList }: BookListProps) {
           }}
           className="max-w-sm"
         />
+        <CreateBookPopup>
+          <Button className="ml-auto">创建新书</Button>
+        </CreateBookPopup>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -341,7 +345,7 @@ export function BookList({ initialBookList }: BookListProps) {
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      指定筛选条件下没有订单。
+                      指定筛选条件下没有图书。
                     </TableCell>
                   </TableRow>
                 )}
