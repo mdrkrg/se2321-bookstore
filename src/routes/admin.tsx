@@ -31,6 +31,9 @@ const routes = {
   '/admin/orders': {
     display: '订单管理',
   },
+  '/admin/stats': {
+    display: '消费统计信息',
+  },
 }
 
 function AdminNavigation() {

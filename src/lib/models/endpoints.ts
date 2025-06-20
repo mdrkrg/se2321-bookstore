@@ -58,6 +58,7 @@ export const endpoints = g('/api', {
     user: g('/user', {
       index: '',
       change: (id: string | number) => `/${id}`,
+      stats: '/stats',
     }),
     book: g('/book', {
       index: '',

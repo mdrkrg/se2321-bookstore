@@ -1,9 +1,11 @@
-import type { AddBookRequest, ChangeBookRequest, ChangeOrderRequest, ChangeUserRequest, OrderAdmin } from '../models/admin'
+import type { AddBookRequest, AdminUserStat, ChangeBookRequest, ChangeOrderRequest, ChangeUserRequest, OrderAdmin } from '../models/admin'
 import type { Book, PagedItems, User } from '../models/user'
 import type { FetchOrderRequest } from './order'
+import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { endpoints } from '../models/endpoints'
+import { formatDate } from '../utils/datetime'
 import { $queryOptions } from './utils'
 
 export async function banUser(id: number) {
@@ -84,3 +86,38 @@ export async function changeOrder(id: number, data: ChangeOrderRequest) {
 //     endpoints.admin.order.change(id),
 //   )
 // }
+
+export interface AdminUserStatRequest {
+  pageSize?: number
+  startDate?: Date
+  endDate?: Date
+}
+
+const DEFAULT_SPENDER_SIZE = 10
+
+export async function getUserSpendingStats({
+  pageSize = DEFAULT_SPENDER_SIZE,
+  startDate,
+  endDate,
+}: AdminUserStatRequest) {
+  const rsp = await axios.get<PagedItems<AdminUserStat>>(endpoints.admin.user.stats, {
+    params: {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      pageSize,
+    },
+  })
+  return rsp.data
+}
+
+export function fetchAdminUserStatOptions(params: AdminUserStatRequest = {}) {
+  return queryOptions({
+    queryFn: () => getUserSpendingStats(params),
+    queryKey: [
+      'admin',
+      'user',
+      'stats',
+      params,
+    ],
+  })
+}

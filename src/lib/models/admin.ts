@@ -24,3 +24,8 @@ export interface OrderAdmin extends Order {
 }
 
 export type ChangeOrderRequest = ChangeModelRequest<Order, ['items', 'totalPaidPrice', 'originalPrice']>
+
+export interface AdminUserStat {
+  user: User
+  totalPaidPrice: number
+}
