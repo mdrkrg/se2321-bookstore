@@ -2,11 +2,13 @@
  * Books
  */
 
-import type { Book, BookTag, PagedItems } from '../models/user'
+import type { Book, BookSalesStat, BookTag, PagedItems } from '../models/user'
 import type { CommentRequest } from './comment'
 import type { $MutateOptions, ApiResponseBase } from './utils'
+import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import { endpoints } from '../models/endpoints'
+import { formatDate } from '../utils/datetime'
 import { $mutate, $query, $queryOptions } from './utils'
 
 export const DEFAULT_PAGE_SIZE = 4
@@ -29,6 +31,29 @@ export async function fetchBooks({
       title: title ?? '',
       tagIds: tagIds?.join(',') ?? '',
       pageNumber,
+      pageSize,
+    },
+  })
+  return rsp.data
+}
+
+export interface BookStatRequest {
+  pageSize?: number
+  startDate?: Date
+  endDate?: Date
+}
+
+const DEFAULT_RANK_SIZE = 10
+
+export async function fetchBookRanks({
+  pageSize = DEFAULT_RANK_SIZE,
+  startDate,
+  endDate,
+}: BookStatRequest) {
+  const rsp = await axios.get<PagedItems<BookSalesStat>>(endpoints.book.rank, {
+    params: {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
       pageSize,
     },
   })
@@ -68,10 +93,10 @@ export function useBooks() {
     })
   }
 
-  function top() {
-    return $query<Book[]>({
-      url: endpoints.books.rank,
-      key: ['bookRank'],
+  function fetchRankOptions(params: BookStatRequest) {
+    return queryOptions({
+      queryFn: () => fetchBookRanks(params),
+      queryKey: ['book', 'rank', params],
     })
   }
 
@@ -84,6 +109,7 @@ export function useBooks() {
 
   return {
     fetchBookOptions,
+    fetchRankOptions,
     search,
     top,
     tags,

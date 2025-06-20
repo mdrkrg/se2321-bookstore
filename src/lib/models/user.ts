@@ -147,3 +147,8 @@ export interface OutOfStockErrorResponse {
   message: string
   outOfStockItems: OutOfStockDetail[]
 }
+
+export interface BookSalesStat {
+  book: Book
+  number: number
+}
