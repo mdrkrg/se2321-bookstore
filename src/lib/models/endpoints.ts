@@ -63,6 +63,10 @@ export const endpoints = g('/api', {
       index: '',
       change: (id: string | number) => `/${id}`,
     }),
+    order: g('/order', {
+      index: '',
+      change: (id: string | number) => `/${id}`,
+    }),
   }),
   comment: g('/comment', {
     index: (id: string | number) => `/${id}`,

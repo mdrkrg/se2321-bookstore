@@ -89,8 +89,10 @@ export interface Order {
   address: string
   tel: string
   /** Format: date-time */
-  // createdAt: string
+  createdAt: string
   items: OrderItem[]
+  totalPaidPrice: number
+  originalPrice: number
 }
 
 export interface OrderItem {

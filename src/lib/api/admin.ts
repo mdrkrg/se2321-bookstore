@@ -1,6 +1,8 @@
 import type { AddBookRequest, ChangeBookRequest, ChangeOrderRequest, ChangeUserRequest, OrderAdmin } from '../models/admin'
 import type { Book, PagedItems, User } from '../models/user'
+import type { FetchOrderRequest } from './order'
 import axios from 'axios'
+import dayjs from 'dayjs'
 import { endpoints } from '../models/endpoints'
 import { $queryOptions } from './utils'
 
@@ -46,3 +48,39 @@ export async function addBook(data: AddBookRequest) {
   )
   return rsp.data
 }
+
+export function fetchAdminOrderListOptions(params: FetchOrderRequest = {}) {
+  const query = {
+    title: params.title ?? '',
+    createdAtStart: params.createdAtStart
+      ? dayjs(params.createdAtStart).format('YYYY-MM-DD')
+      : '',
+    createdAtEnd: params.createdAtEnd
+      ? dayjs(params.createdAtEnd).format('YYYY-MM-DD')
+      : '',
+  }
+  return $queryOptions<PagedItems<OrderAdmin>>({
+    url: endpoints.admin.order.index,
+    key: [
+      'admin',
+      'order',
+      'list',
+      query,
+    ],
+    query,
+  })
+}
+
+export async function changeOrder(id: number, data: ChangeOrderRequest) {
+  const rsp = await axios.put<OrderAdmin>(
+    endpoints.admin.order.change(id),
+    data,
+  )
+  return rsp.data
+}
+
+// export async function deleteOrder(id: number) {
+//   await axios.delete(
+//     endpoints.admin.order.change(id),
+//   )
+// }
