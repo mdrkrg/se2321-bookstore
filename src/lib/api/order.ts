@@ -3,6 +3,7 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query'
+import type { SortingState } from '@tanstack/react-table'
 import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
 import dayjs from 'dayjs'
@@ -15,6 +16,9 @@ export interface FetchOrderRequest {
   title?: string
   createdAtStart?: Date
   createdAtEnd?: Date
+  page?: number
+  size?: number
+  sort?: SortingState
 }
 
 export function useOrder() {

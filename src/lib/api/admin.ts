@@ -3,10 +3,9 @@ import type { Book, PagedItems, User } from '../models/user'
 import type { FetchOrderRequest } from './order'
 import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
-import dayjs from 'dayjs'
 import { endpoints } from '../models/endpoints'
 import { formatDate } from '../utils/datetime'
-import { $queryOptions } from './utils'
+import { $queryOptions, getSortParam } from './utils'
 
 export async function banUser(id: number) {
   const rsp = await axios.delete<User>(endpoints.admin.user.change(id))
@@ -51,25 +50,40 @@ export async function addBook(data: AddBookRequest) {
   return rsp.data
 }
 
-export function fetchAdminOrderListOptions(params: FetchOrderRequest = {}) {
-  const query = {
-    title: params.title ?? '',
-    createdAtStart: params.createdAtStart
-      ? dayjs(params.createdAtStart).format('YYYY-MM-DD')
-      : '',
-    createdAtEnd: params.createdAtEnd
-      ? dayjs(params.createdAtEnd).format('YYYY-MM-DD')
-      : '',
-  }
-  return $queryOptions<PagedItems<OrderAdmin>>({
-    url: endpoints.admin.order.index,
-    key: [
+export async function getAdminOrderList({
+  title,
+  createdAtStart,
+  createdAtEnd,
+  page = 0,
+  size = 10,
+  sort,
+}: FetchOrderRequest) {
+  const sortParam = getSortParam(sort)
+  const rsp = await axios.get<PagedItems<OrderAdmin>>(endpoints.admin.order.index, {
+    params: {
+      title,
+      createdAtStart: formatDate(createdAtStart),
+      createdAtEnd: formatDate(createdAtEnd),
+      page,
+      size,
+      sort: sortParam,
+    },
+  })
+  return rsp.data
+}
+
+export function fetchAdminOrderListOptions(params: FetchOrderRequest = {
+  page: 0,
+  size: 10,
+}) {
+  return queryOptions<PagedItems<OrderAdmin>>({
+    queryFn: () => getAdminOrderList(params),
+    queryKey: [
       'admin',
       'order',
       'list',
-      query,
+      params,
     ],
-    query,
   })
 }
 

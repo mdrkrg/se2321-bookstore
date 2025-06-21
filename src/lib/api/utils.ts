@@ -1,4 +1,5 @@
 import type { QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
+import type { SortingState } from '@tanstack/react-table'
 import { queryOptions as _queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 
 export async function $fetch<T>(
@@ -121,4 +122,8 @@ export interface ApiResponseBase {
 
 export type FieldErrorResponse<TRequest extends Record<string, any>> = {
   [P in keyof TRequest]?: string
+}
+
+export function getSortParam(sort: SortingState | undefined) {
+  return sort?.map(s => `${s.id},${s.desc ? 'desc' : 'asc'}`).join(',') || null
 }
