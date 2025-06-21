@@ -6,9 +6,11 @@ import type { UseQueryOptions } from '@tanstack/react-query'
 import type { SortingState } from '@tanstack/react-table'
 import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
 import type { $MutateOptions, ApiResponseBase } from './utils'
-import dayjs from 'dayjs'
+import { queryOptions } from '@tanstack/react-query'
+import axios from 'axios'
 import { endpoints } from '../models/endpoints'
-import { $fetch, $mutate, $queryOptions } from './utils'
+import { formatDate } from '../utils/datetime'
+import { $fetch, $mutate, $queryOptions, getSortParam } from './utils'
 
 export type OrderRequest = OrderInfo
 
@@ -21,28 +23,40 @@ export interface FetchOrderRequest {
   sort?: SortingState
 }
 
+export async function getMyOrderList({
+  title,
+  createdAtStart,
+  createdAtEnd,
+  page = 0,
+  size = 10,
+  sort,
+}: FetchOrderRequest) {
+  const sortParam = getSortParam(sort)
+  const rsp = await axios.get<PagedItems<Order>>(endpoints.order.index, {
+    params: {
+      title,
+      createdAtStart: formatDate(createdAtStart),
+      createdAtEnd: formatDate(createdAtEnd),
+      page,
+      size,
+      sort: sortParam,
+    },
+  })
+  return rsp.data
+}
+
 export function useOrder() {
-  function fetchOrderOptions(params: FetchOrderRequest = {}, options?: UseQueryOptions) {
-    const query = {
-      title: params.title ?? '',
-      createdAtStart: params.createdAtStart
-        ? dayjs(params.createdAtStart).format('YYYY-MM-DD')
-        : '',
-      createdAtEnd: params.createdAtEnd
-        ? dayjs(params.createdAtEnd).format('YYYY-MM-DD')
-        : '',
-    }
-    return $queryOptions<PagedItems<Order>>({
-      url: endpoints.order.index,
-      // key: ['order', pageIndex],
-      key: [
+  function fetchOrderOptions(params: FetchOrderRequest = {
+    page: 0,
+    size: 10,
+  }) {
+    return queryOptions({
+      queryFn: () => getMyOrderList(params),
+      queryKey: [
         'order',
-        query.title || 'no-title',
-        query.createdAtStart || 'no-start',
-        query.createdAtEnd || 'no-end',
+        'list',
+        params,
       ],
-      query,
-      ...options,
     })
   }
 

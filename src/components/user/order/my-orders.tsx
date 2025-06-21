@@ -3,10 +3,13 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   ExpandedState,
+  PaginationState,
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table'
 import type { DateRange } from 'react-day-picker'
+import { DataTablePagination } from '@/components/table/data-table-pagination'
+import { getDisableSortingHeader, getSortingHeader } from '@/components/table/headers'
 import { Button } from '@/components/ui/button'
 import { DatePickerWithRange } from '@/components/ui/date-picker-with-range'
 import {
@@ -18,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { SkeletonRows } from '@/components/ui/skeleton-rows'
 import {
   Table,
   TableBody,
@@ -40,7 +44,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { addDays } from 'date-fns'
-import { ArrowUpDown, ArrowUpWideNarrowIcon, MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { useDebounceValue } from 'usehooks-ts'
@@ -49,54 +53,21 @@ import { OrderExpandDetail } from './order-expand-detail'
 const columns: ColumnDef<Order>[] = [
   {
     accessorKey: 'address',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          收货地址
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('收货地址'),
     cell: ({ row }) => {
       return row.original.address
     },
   },
   {
     accessorKey: 'receiver',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          收货人
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('收件人'),
     cell: ({ row }) => {
       return row.original.receiver
     },
   },
   {
     accessorKey: 'tel',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          联系电话
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('联系电话'),
     cell: ({ row }) => {
       return row.original.tel
     },
@@ -108,27 +79,11 @@ const columns: ColumnDef<Order>[] = [
       return toCNYString(row.original.totalPaidPrice)
     },
   },
-  // custom filter
-  // FIXME: value is always "item"
-  // ref: https://tanstack.com/table/v8/docs/guide/column-filtering
-  // filterFn: (row, value: string) => {
-  //   const book: Book = row.original.item
-  //   return book.title.includes(value)
-  // },
   {
     id: 'actions',
     enableHiding: false,
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(false)}
-        >
-          <ArrowUpWideNarrowIcon />
-        </Button>
-      )
-    },
+    enableSorting: false,
+    header: getDisableSortingHeader(),
     cell: ({ row }) => {
       const orderId = row.original.id
 
@@ -185,30 +140,44 @@ export function MyOrders({ initialOrderList }: MyOrdersProps) {
   const [filterTitle, setFilterTitle] = useState('')
   const [debouncedFilterTitle] = useDebounceValue(filterTitle, 500)
 
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [sorting, setSorting] = useState<SortingState>([])
+
   const ordersQueryConfig = useOrder().fetchOrderOptions({
     title: debouncedFilterTitle,
     createdAtStart: date?.from,
     createdAtEnd: date?.to,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
+    sort: sorting,
   })
 
   const {
     data: orderList,
-  } = useQuery<PagedItems<Order>>({
+    isLoading,
+    isFetching,
+    isPending,
+  } = useQuery({
     ...ordersQueryConfig,
     initialData: initialOrderList,
     placeholderData: previousData => previousData,
   })
 
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    [],
-  )
+  function showSkeleton() {
+    return isLoading || isFetching || isPending
+  }
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility]
     = React.useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const table = useReactTable({
     data: orderList.items,
     columns,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -218,14 +187,20 @@ export function MyOrders({ initialOrderList }: MyOrdersProps) {
     onColumnVisibilityChange: setColumnVisibility,
     getRowCanExpand: _ => true,
     getExpandedRowModel: getExpandedRowModel(),
+    manualPagination: true,
+    manualSorting: true,
+    pageCount: orderList?.totalPages ?? -1,
+    rowCount: orderList?.total,
     state: {
       columnFilters,
       columnVisibility,
       expanded,
       sorting,
+      pagination,
     },
     onExpandedChange: setExpanded,
   })
+
   return (
     <div className="w-full">
       <h1 className="font-bold text-2xl pl-[0.5em] pb-4">订单</h1>
@@ -237,6 +212,7 @@ export function MyOrders({ initialOrderList }: MyOrdersProps) {
           placeholder="筛选书名"
           value={filterTitle}
           onChange={event => setFilterTitle(event.target.value)}
+          className="max-w-sm"
         />
       </div>
       <div className="flex items-center pb-4">
@@ -270,79 +246,72 @@ export function MyOrders({ initialOrderList }: MyOrdersProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length
+            {showSkeleton()
               ? (
-                  table.getRowModel().rows.map(row => (
-                    <React.Fragment key={row.id}>
-                      <TableRow
-                        onClick={row.getToggleExpandedHandler()}
-                        className="cursor-pointer"
-                      >
-                        {row.getVisibleCells().map(cell => (
-                          <TableCell key={cell.id} className="text-center">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                      <TableRow>
-                        <TableCell
-                          colSpan={row.getAllCells().length}
-                          className={cn(
-                            row.getIsExpanded() ? '' : 'py-0',
-                            'transition-all animate-duration-600',
-                            'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
-                            'data-[state=open]:animate-in data[state=open]:slide-in-b',
-                          )}
+                  <SkeletonRows
+                    length={pagination.pageSize}
+                    columns={columns}
+                    className="h-6 w-full"
+                  />
+                )
+              : table.getRowModel().rows?.length
+                ? (
+                    table.getRowModel().rows.map(row => (
+                      <React.Fragment key={row.id}>
+                        <TableRow
+                          onClick={row.getToggleExpandedHandler()}
+                          className="cursor-pointer"
                         >
-                          <OrderExpandDetail
-                            itemList={row.original.items}
+                          {row.getVisibleCells().map(cell => (
+                            <TableCell key={cell.id} className="text-center">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell
+                            colSpan={row.getAllCells().length}
                             className={cn(
-                              row.getIsExpanded() ? 'max-h-auto' : 'max-h-0',
-                              'transition-all animate-duration-600 overflow-hidden',
+                              row.getIsExpanded() ? '' : 'py-0',
+                              'transition-all animate-duration-600',
                               'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
                               'data-[state=open]:animate-in data[state=open]:slide-in-b',
                             )}
-                            state={row.getIsExpanded() ? 'open' : 'closed'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  ))
-                )
-              : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      指定筛选条件下没有订单。
-                    </TableCell>
-                  </TableRow>
-                )}
+                          >
+                            <OrderExpandDetail
+                              itemList={row.original.items}
+                              className={cn(
+                                row.getIsExpanded() ? 'max-h-auto' : 'max-h-0',
+                                'transition-all animate-duration-600 overflow-hidden',
+                                'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
+                                'data-[state=open]:animate-in data[state=open]:slide-in-b',
+                              )}
+                              state={row.getIsExpanded() ? 'open' : 'closed'}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))
+                  )
+                : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        指定筛选条件下没有订单。
+                      </TableCell>
+                    </TableRow>
+                  )}
           </TableBody>
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+          <DataTablePagination table={table} />
         </div>
       </div>
     </div>

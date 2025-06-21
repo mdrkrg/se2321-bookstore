@@ -76,7 +76,7 @@ export function fetchAdminOrderListOptions(params: FetchOrderRequest = {
   page: 0,
   size: 10,
 }) {
-  return queryOptions<PagedItems<OrderAdmin>>({
+  return queryOptions({
     queryFn: () => getAdminOrderList(params),
     queryKey: [
       'admin',

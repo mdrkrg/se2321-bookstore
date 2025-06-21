@@ -45,7 +45,7 @@ export function DataTablePagination<TData>({
   const pageIndex = table.getState().pagination.pageIndex
   const pageCount = table.getPageCount()
 
-  // Don't render pagination if there's only one page or less.
+  // Don't render when only one page or less
   if (pageCount <= 1) {
     return null
   }

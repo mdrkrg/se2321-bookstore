@@ -57,10 +57,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { addDays } from 'date-fns'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { useDebounceValue } from 'usehooks-ts'
-import { DataTablePagination } from '../ui/data-table-pagination'
+import { DataTablePagination } from '../table/data-table-pagination'
+import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
 import { DatePickerWithRange } from '../ui/date-picker-with-range'
 import { Input } from '../ui/input'
 import { SkeletonRows } from '../ui/skeleton-rows'
@@ -70,74 +71,28 @@ import { ModifyOrderForm } from './modify-order'
 const columns: ColumnDef<OrderAdmin>[] = [
   {
     accessorKey: 'creator.username',
-    // header: '创建者',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          // TODO: sort
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          创建者
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('创建者'),
     cell: ({ row }) => {
       return row.original.creator.username
     },
   },
   {
     accessorKey: 'address',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          收货地址
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('收货地址'),
     cell: ({ row }) => {
       return row.original.address
     },
   },
   {
     accessorKey: 'receiver',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          收货人
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('收件人'),
     cell: ({ row }) => {
       return row.original.receiver
     },
   },
   {
     accessorKey: 'tel',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          联系电话
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('联系电话'),
     cell: ({ row }) => {
       return row.original.tel
     },
@@ -152,6 +107,8 @@ const columns: ColumnDef<OrderAdmin>[] = [
   {
     id: 'actions',
     enableHiding: false,
+    enableSorting: false,
+    header: getDisableSortingHeader(),
     cell: ({ row }) => {
       // const queryClient = useQueryClient()
       // const queryKey = fetchAdminOrderListOptions().queryKey
@@ -240,7 +197,7 @@ export function OrderList({ initialOrderList }: OrderListProps) {
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   })
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -258,15 +215,17 @@ export function OrderList({ initialOrderList }: OrderListProps) {
     isLoading,
     isFetching,
     isPending,
-  } = useQuery<PagedItems<OrderAdmin>>({
+  } = useQuery({
     ...queryConfig,
     initialData: initialOrderList,
     placeholderData: previousData => previousData,
   })
 
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    [],
-  )
+  function showSkeleton() {
+    return isLoading || isFetching || isPending
+  }
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility]
     = useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
@@ -304,10 +263,6 @@ export function OrderList({ initialOrderList }: OrderListProps) {
     setExpanded(row.getIsExpanded() ? {} : { [row.id]: true })
   }
 
-  function showSkeleton() {
-    return isLoading || isFetching || isPending
-  }
-
   return (
     <div className="w-full">
       <h1 className="font-bold text-2xl pl-[0.5em] pb-4">管理-订单列表</h1>
@@ -319,6 +274,7 @@ export function OrderList({ initialOrderList }: OrderListProps) {
           placeholder="筛选书名"
           value={filterTitle}
           onChange={event => setFilterTitle(event.target.value)}
+          className="max-w-sm"
         />
       </div>
       <div className="rounded-md border">
