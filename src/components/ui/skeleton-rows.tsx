@@ -17,14 +17,12 @@ export function SkeletonRows<T>({
 }: SkeletonRowsProps<T>) {
   return range(length).map((_, i) => (
     <TableRow key={`skeleton-${i}`}>
-      {columns.map(column => (
-        <TableCell
-          key={(column.id || (column as any).accessorKey) as string}
-          className="text-center"
-        >
-          <Skeleton className={cn("mx-auto rounded-md", className)} />
-        </TableCell>
-      ))}
+      <TableCell
+        colSpan={columns.length}
+        className="text-center"
+      >
+        <Skeleton className={cn("mx-auto rounded-md", className)} />
+      </TableCell>
     </TableRow>
   ))
 }

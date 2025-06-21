@@ -5,6 +5,7 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   ExpandedState,
+  PaginationState,
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table'
@@ -37,100 +38,49 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { Input } from '../ui/input'
 import { CreateBookPopup } from './create-book'
 import { ModifyBookForm } from './modify-book'
+import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
+import { useDebounceValue } from 'usehooks-ts'
+import { DataTablePagination } from '../table/data-table-pagination'
+import { SkeletonRows } from '../ui/skeleton-rows'
 
 const columns: ColumnDef<Book>[] = [
   {
     accessorKey: 'title',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          书名
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('书名'),
     cell: ({ row }) => {
       return row.original.title
     },
   },
   {
     accessorKey: 'author',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          作者
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('作者'),
     cell: ({ row }) => {
       return row.original.author
     },
   },
   {
     accessorKey: 'price',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          价格
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('价格'),
     cell: ({ row }) => {
       return row.original.price
     },
   },
   {
     accessorKey: 'sales',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          销量
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('销量'),
     cell: ({ row }) => {
       return row.original.sales
     },
   },
   {
     accessorKey: 'stock',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          库存
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('库存'),
     cell: ({ row }) => {
       return row.original.stock
     },
@@ -145,10 +95,11 @@ const columns: ColumnDef<Book>[] = [
   {
     id: 'actions',
     enableHiding: false,
+    header: getDisableSortingHeader(),
     cell: ({ row }) => {
       const available = row.original.available
       const queryClient = useQueryClient()
-      const queryKey = fetchAdminBookListOptions().queryKey
+      const queryKey = ['admin', 'book', 'list']
 
       const {
         mutate: mutateBook,
@@ -223,25 +174,45 @@ export interface BookListProps extends React.ComponentProps<'div'> {
 }
 
 export function BookList({ initialBookList }: BookListProps) {
-  const queryConfig = fetchAdminBookListOptions()
+  const [filterTitle, setFilterTitle] = useState('')
+  const [debouncedFilterTitle] = useDebounceValue(filterTitle, 500)
+
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [sorting, setSorting] = useState<SortingState>([])
+
+  const queryConfig = fetchAdminBookListOptions({
+    title: debouncedFilterTitle,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
+    sort: sorting,
+  })
+
   const {
     data: bookList,
-  } = useQuery<PagedItems<Book>>({
+    isLoading,
+    isFetching,
+    isPending,
+  } = useQuery({
     ...queryConfig,
     initialData: initialBookList,
     placeholderData: previousData => previousData,
   })
 
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    [],
-  )
+  function showSkeleton() {
+    return isLoading || isFetching || isPending
+  }
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility]
     = useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const table = useReactTable({
-    data: bookList.items,
+    data: bookList?.items ?? [],
     columns,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -251,24 +222,28 @@ export function BookList({ initialBookList }: BookListProps) {
     onColumnVisibilityChange: setColumnVisibility,
     getRowCanExpand: _ => true,
     getExpandedRowModel: getExpandedRowModel(),
+    manualPagination: true,
+    manualSorting: true,
+    pageCount: bookList?.totalPages ?? -1,
+    rowCount: bookList?.total,
     state: {
       columnFilters,
       columnVisibility,
       expanded,
       sorting,
+      pagination,
     },
     onExpandedChange: setExpanded,
   })
+
   return (
     <div className="w-full">
       <h1 className="font-bold text-2xl pl-[0.5em] pb-4">管理-书籍列表</h1>
       <div className="flex items-center pb-4">
         <Input
           placeholder="搜索标题"
-          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-          onChange={(event) => {
-            table.getColumn('title')?.setFilterValue(event.target.value)
-          }}
+          value={filterTitle}
+          onChange={event => setFilterTitle(event.target.value)}
           className="max-w-sm"
         />
         <CreateBookPopup>
@@ -296,7 +271,15 @@ export function BookList({ initialBookList }: BookListProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length
+            {showSkeleton()
+              ? (
+                  <SkeletonRows
+                    length={pagination.pageSize}
+                    columns={columns}
+                    className="h-6 w-full"
+                  />
+                )
+              : table.getRowModel().rows?.length
               ? (
                   table.getRowModel().rows.map(row => (
                     <React.Fragment key={row.id}>
@@ -354,22 +337,7 @@ export function BookList({ initialBookList }: BookListProps) {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+          <DataTablePagination table={table} />
         </div>
       </div>
     </div>

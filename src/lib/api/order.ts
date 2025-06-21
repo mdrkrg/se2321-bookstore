@@ -3,9 +3,8 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query'
-import type { SortingState } from '@tanstack/react-table'
 import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
-import type { $MutateOptions, ApiResponseBase } from './utils'
+import type { $MutateOptions, ApiResponseBase, PageRequest } from './utils'
 import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import { endpoints } from '../models/endpoints'
@@ -14,13 +13,10 @@ import { $fetch, $mutate, $queryOptions, getSortParam } from './utils'
 
 export type OrderRequest = OrderInfo
 
-export interface FetchOrderRequest {
+export interface FetchOrderRequest extends PageRequest {
   title?: string
   createdAtStart?: Date
   createdAtEnd?: Date
-  page?: number
-  size?: number
-  sort?: SortingState
 }
 
 export async function getMyOrderList({

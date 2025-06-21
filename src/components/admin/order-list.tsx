@@ -271,7 +271,7 @@ export function OrderList({ initialOrderList }: OrderListProps) {
       </div>
       <div className="flex items-center pb-4">
         <Input
-          placeholder="筛选书名"
+          placeholder="筛选标题"
           value={filterTitle}
           onChange={event => setFilterTitle(event.target.value)}
           className="max-w-sm"

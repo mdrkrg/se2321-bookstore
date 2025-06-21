@@ -5,7 +5,7 @@ import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import { endpoints } from '../models/endpoints'
 import { formatDate } from '../utils/datetime'
-import { $queryOptions, getSortParam } from './utils'
+import { $queryOptions, getSortParam, PageRequest } from './utils'
 
 export async function banUser(id: number) {
   const rsp = await axios.delete<User>(endpoints.admin.user.change(id))
@@ -20,6 +20,10 @@ export async function changeUser(id: number, data: ChangeUserRequest) {
   return rsp.data
 }
 
+interface FetchAdminBookListRequest extends PageRequest {
+  title?: string
+}
+
 export function fetchUserListOptions() {
   return $queryOptions<PagedItems<User>>({
     url: endpoints.admin.user.index,
@@ -27,10 +31,31 @@ export function fetchUserListOptions() {
   })
 }
 
-export function fetchAdminBookListOptions() {
-  return $queryOptions<PagedItems<Book>>({
-    url: endpoints.admin.book.index,
-    key: ['admin', 'book'],
+export async function getAdminBookList({
+  title,
+  page = 0,
+  size = 10,
+  sort,
+}: FetchOrderRequest) {
+  const sortParam = getSortParam(sort)
+  const rsp = await axios.get<PagedItems<Book>>(endpoints.admin.book.index, {
+    params: {
+      title,
+      page,
+      size,
+      sort: sortParam,
+    },
+  })
+  return rsp.data
+}
+
+export function fetchAdminBookListOptions(params: FetchAdminBookListRequest = {
+  page: 0,
+  size: 10,
+}) {
+  return queryOptions({
+    queryFn: () => getAdminBookList(params),
+    queryKey: ['admin', 'book', 'list', params],
   })
 }
 

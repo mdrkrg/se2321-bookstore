@@ -127,3 +127,9 @@ export type FieldErrorResponse<TRequest extends Record<string, any>> = {
 export function getSortParam(sort: SortingState | undefined) {
   return sort?.map(s => `${s.id},${s.desc ? 'desc' : 'asc'}`).join(',') || null
 }
+
+export interface PageRequest {
+  page?: number
+  size?: number
+  sort?: SortingState
+}
