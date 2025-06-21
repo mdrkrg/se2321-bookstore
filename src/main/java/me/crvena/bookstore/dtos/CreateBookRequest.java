@@ -30,8 +30,8 @@ public class CreateBookRequest {
   @Min(0)
   private BigDecimal price = BigDecimal.ZERO;
 
-  @URL
-  private String cover = null;
+  // @URL
+  // private String cover = null;
 
   @Min(0)
   private Long stock = Long.valueOf(0);

@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import me.crvena.bookstore.services.BookService;
@@ -66,19 +68,23 @@ public class AdminBookController {
   }
 
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
-  public ResponseEntity<Book> createBook(@Valid @RequestBody CreateBookRequest data) {
-    return ResponseEntity.ok(service.createBook(data));
+  public ResponseEntity<Book> createBook(
+      @Valid @RequestPart("data") CreateBookRequest data,
+      @RequestParam(value = "coverFile", required = false) MultipartFile coverFile) {
+    return ResponseEntity.ok(service.createBook(data, coverFile));
   }
 
   @RequestMapping(path = "/{id}", method = { RequestMethod.PUT, RequestMethod.PATCH }, produces = "application/json")
   public ResponseEntity<Book> modifyBook(
-      @PathVariable("id") Long id, @Valid @RequestBody ModifyBookRequest data) {
+      @PathVariable("id") Long id,
+      @Valid @RequestPart("data") ModifyBookRequest data,
+      @RequestParam(value = "newCoverFile", required = false) MultipartFile newCoverFile) {
     logger.info("modifying book: " + id);
     logger.debug(data.toString());
     Book book = dao.findById(id).orElseThrow(
         () -> new ResourceDoesNotExist(Book.class, id));
     try {
-      book = service.modifyBook(book, data);
+      book = service.modifyBook(book, data, newCoverFile);
       return ResponseEntity.ok(book);
     } catch (RuntimeException e) {
       logger.error("Error in modifyBook: " + e.getMessage());

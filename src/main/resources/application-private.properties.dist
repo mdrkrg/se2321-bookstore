@@ -2,3 +2,5 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/bookstoredb
 spring.datasource.username=username
 spring.datasource.password=password
 url.frontend=http://localhost:5173
+s3.access-key-id=your-access-key
+s3.secret-access-key=your-secret-key

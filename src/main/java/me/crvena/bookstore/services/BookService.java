@@ -2,6 +2,7 @@ package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.models.*;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,10 +45,10 @@ public interface BookService {
 
   public Book removeBookTag(Long bookId, Long tagId);
 
-  public Book modifyBook(Book book, ModifyBookRequest data)
+  public Book modifyBook(Book book, ModifyBookRequest data, MultipartFile newCoverFile)
       throws RuntimeException;
 
-  public Book createBook(CreateBookRequest data)
+  public Book createBook(CreateBookRequest data, MultipartFile newCoverFile)
       throws RuntimeException, ResourceAlreadyExist;
 
   public Book changeAvailable(Book book, Boolean available);
@@ -67,6 +69,9 @@ class BookServiceImpl implements BookService {
 
   @Autowired
   private OrderItemDao orderItemDao;
+
+  @Autowired
+  private FileStorageService fileStorageService;
 
   @Autowired
   private ObjectMapper mapper;
@@ -93,19 +98,28 @@ class BookServiceImpl implements BookService {
   }
 
   @Transactional
-  public Book createBook(CreateBookRequest data) throws RuntimeException, ResourceAlreadyExist {
+  public Book createBook(CreateBookRequest data, MultipartFile coverFile)
+      throws RuntimeException, ResourceAlreadyExist {
     if (dao.existsByTitleAndAuthor(data.getTitle(), data.getAuthor())) {
       throw new ResourceAlreadyExist("book already exist");
     }
+
     Book book = Book.builder()
         .id(null)
         .title(data.getTitle())
         .author(data.getAuthor())
         .description(data.getDescription())
         .price(data.getPrice())
-        .cover(data.getCover())
         .stock(data.getStock())
         .build();
+    if (coverFile != null && !coverFile.isEmpty()) {
+      try {
+        String coverUrl = fileStorageService.uploadFile(coverFile);
+        book.setCover(coverUrl);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to upload new cover image", e);
+      }
+    }
 
     var tagIds = data.getTagIds();
     for (var tagId : tagIds) {
@@ -117,13 +131,28 @@ class BookServiceImpl implements BookService {
   }
 
   @Transactional
-  public Book modifyBook(Book book, ModifyBookRequest data) throws RuntimeException {
+  public Book modifyBook(Book book, ModifyBookRequest data, MultipartFile newCoverFile) throws RuntimeException {
+
+    String oldCoverUrl = book.getCover();
+    String newCoverUrl = oldCoverUrl;
+    if (newCoverFile != null && !newCoverFile.isEmpty()) {
+      try {
+        newCoverUrl = fileStorageService.uploadFile(newCoverFile);
+        book.setCover(newCoverUrl);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to upload new cover image", e);
+      }
+    }
+
     try {
       mapper.updateValue(book, data);
       logger.debug("mapper updated book");
-      if (data.getTagIds() == null || data.getTagIds().isEmpty()) {
-        return dao.save(book);
-      }
+    } catch (JsonMappingException e) {
+      throw new RuntimeException(e.getMessage());
+    }
+
+    if (data.getTagIds() != null && data.getTagIds().isPresent()) {
+      // set tags
       var tagIds = data.getTagIds().get();
       Set<Tag> tags = new HashSet<>();
       for (var tagId : tagIds) {
@@ -132,10 +161,18 @@ class BookServiceImpl implements BookService {
         tags.add(tag);
       }
       book.setTags(tags);
-      return dao.save(book);
-    } catch (JsonMappingException e) {
-      throw new RuntimeException(e.getMessage());
     }
+
+    // save
+    Book updatedBook = dao.save(book);
+
+    // clean old cover
+    boolean coverHasChanged = oldCoverUrl != null && !oldCoverUrl.equals(newCoverUrl);
+    if (coverHasChanged) {
+      fileStorageService.deleteFile(oldCoverUrl);
+    }
+
+    return updatedBook;
   }
 
   @Transactional

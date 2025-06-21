@@ -91,6 +91,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/curuser").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN") // Secure SnapAdmin
+            .requestMatchers("/api/files/upload").hasRole("ADMIN")
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated())
         .formLogin(form -> form.disable())
