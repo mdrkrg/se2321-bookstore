@@ -1,5 +1,5 @@
 import type { FieldErrorResponse } from '@/lib/api/utils'
-import type { AddBookRequest } from '@/lib/models/admin'
+import type { AddBookRequest, AddBookWithFileRequest } from '@/lib/models/admin'
 import type { Book } from '@/lib/models/user'
 import type { FormItems } from '../layouts/form'
 import {
@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/dialog'
 import { addBook, fetchAdminBookListOptions } from '@/lib/api/admin'
 import { objectEntries } from '@/lib/utils/typing'
+import { COVER_VALIDATOR } from '@/lib/utils/validate'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -22,8 +22,10 @@ import { z } from 'zod'
 import { BulkFormItems } from '../layouts/form'
 import { Button } from '../ui/button'
 import { Form } from '../ui/form'
+import { ImageUploadPreview } from '../ui/image-upload'
 import { Input } from '../ui/input'
 import { NumberInput } from '../ui/number-input'
+import { ScrollArea } from '../ui/scroll-area'
 import { Textarea } from '../ui/textarea'
 
 const formSchema = z.object({
@@ -32,8 +34,9 @@ const formSchema = z.object({
   description: z.string(),
   price: z.coerce.number().min(0),
   stock: z.coerce.number().min(0),
-  cover: z.string().url(),
+  // cover: z.string().url(),
   available: z.boolean(),
+  coverFile: COVER_VALIDATOR,
 })
 
 type FormSchema = z.infer<typeof formSchema>
@@ -74,10 +77,16 @@ const formItems: FormItems<FormSchema> = {
       <NumberInput {...field} min={0} />
     ),
   },
-  cover: {
+  // cover: {
+  //   formLabel: '封面',
+  //   render: ({ field }) => (
+  //     <Input type="url" placeholder="请输入封面链接" {...field} />
+  //   ),
+  // },
+  coverFile: {
     formLabel: '封面',
     render: ({ field }) => (
-      <Input type="url" placeholder="请输入封面链接" {...field} />
+      <ImageUploadPreview field={field} />
     ),
   },
 }
@@ -93,8 +102,9 @@ export function CreateBookForm({
       description: '',
       price: 0,
       stock: 0,
-      cover: '',
+      // cover: '',
       available: true,
+      coverFile: undefined,
     },
   })
 
@@ -103,7 +113,7 @@ export function CreateBookForm({
 
   const {
     mutate: addMutateBook,
-  } = useMutation<Book, Error | FieldErrorResponse<AddBookRequest>, AddBookRequest>({
+  } = useMutation<Book, Error | FieldErrorResponse<AddBookRequest>, AddBookWithFileRequest>({
     mutationFn: data => addBook(data),
     mutationKey: ['create', 'book'],
     onSuccess(book) {
@@ -128,7 +138,11 @@ export function CreateBookForm({
   })
 
   function submit(data: z.infer<typeof formSchema>) {
-    addMutateBook(data)
+    const { coverFile, ...bookData } = data
+    addMutateBook({
+      data: bookData,
+      coverFile,
+    })
   }
 
   return (

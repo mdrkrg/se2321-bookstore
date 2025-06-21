@@ -1,11 +1,12 @@
-import type { AddBookRequest, AdminUserStat, ChangeBookRequest, ChangeOrderRequest, ChangeUserRequest, OrderAdmin } from '../models/admin'
+import type { AddBookWithFileRequest, AdminUserStat, ChangeBookWithFileRequest, ChangeOrderRequest, ChangeUserRequest, OrderAdmin } from '../models/admin'
 import type { Book, PagedItems, User } from '../models/user'
 import type { FetchOrderRequest } from './order'
+import type { PageRequest } from './utils'
 import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
 import { endpoints } from '../models/endpoints'
 import { formatDate } from '../utils/datetime'
-import { $queryOptions, getSortParam, PageRequest } from './utils'
+import { getSortParam } from './utils'
 
 export async function banUser(id: number) {
   const rsp = await axios.delete<User>(endpoints.admin.user.change(id))
@@ -84,18 +85,40 @@ export function fetchAdminBookListOptions(params: FetchAdminBookListRequest = {
   })
 }
 
-export async function changeBook(id: number, data: ChangeBookRequest) {
+export async function changeBook(
+  id: number,
+  { data, newCoverFile }: ChangeBookWithFileRequest,
+) {
+  const formData = new FormData()
+  const dataBlob = new Blob([JSON.stringify(data)], {
+    type: 'application/json',
+  })
+  formData.append('data', dataBlob)
+  if (newCoverFile) {
+    formData.append('newCoverFile', newCoverFile)
+  }
   const rsp = await axios.put<Book>(
     endpoints.admin.book.change(id),
-    data,
+    formData,
   )
   return rsp.data
 }
 
-export async function addBook(data: AddBookRequest) {
+export async function addBook({
+  data,
+  coverFile,
+}: AddBookWithFileRequest) {
+  const formData = new FormData()
+  const dataBlob = new Blob([JSON.stringify(data)], {
+    type: 'application/json',
+  })
+  formData.append('data', dataBlob)
+  if (coverFile) {
+    formData.append('coverFile', coverFile)
+  }
   const rsp = await axios.post<Book>(
     endpoints.admin.book.index,
-    data,
+    formData,
   )
   return rsp.data
 }

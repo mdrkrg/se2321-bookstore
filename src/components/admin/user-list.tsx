@@ -37,14 +37,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
-import { Input } from '../ui/input'
-import { DataTablePagination } from '../table/data-table-pagination'
-import { SkeletonRows } from '../ui/skeleton-rows'
-import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
 import { useDebounceValue } from 'usehooks-ts'
+import { DataTablePagination } from '../table/data-table-pagination'
+import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
+import { Input } from '../ui/input'
+import { SkeletonRows } from '../ui/skeleton-rows'
 
 const columns: ColumnDef<User>[] = [
   {
@@ -294,34 +294,34 @@ export function UserList({ initialUserList }: UserListProps) {
                     className="h-6 w-full"
                   />
                 )
-              :table.getRowModel().rows?.length
-              ? (
-                  table.getRowModel().rows.map(row => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell key={cell.id} className="text-center">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
+              : table.getRowModel().rows?.length
+                ? (
+                    table.getRowModel().rows.map(row => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                      >
+                        {row.getVisibleCells().map(cell => (
+                          <TableCell key={cell.id} className="text-center">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  )
+                : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        指定筛选条件下没有用户。
+                      </TableCell>
                     </TableRow>
-                  ))
-                )
-              : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      指定筛选条件下没有用户。
-                    </TableCell>
-                  </TableRow>
-                )}
+                  )}
           </TableBody>
         </Table>
       </div>

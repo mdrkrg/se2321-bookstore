@@ -85,18 +85,20 @@ export function DataTablePagination<TData>({
         {/* Page Number Buttons */}
         {paginationItems.map((item, index) => (
           <PaginationItem key={index}>
-            {typeof item === 'number' ? (
-              <PaginationLink
-                // 1-based
-                onClick={() => handleIndexClick(item - 1)}
-                isActive={pageIndex === item - 1}
-                className="cursor-pointer"
-              >
-                {item}
-              </PaginationLink>
-            ) : (
-              <PaginationEllipsis />
-            )}
+            {typeof item === 'number'
+              ? (
+                  <PaginationLink
+                    // 1-based
+                    onClick={() => handleIndexClick(item - 1)}
+                    isActive={pageIndex === item - 1}
+                    className="cursor-pointer"
+                  >
+                    {item}
+                  </PaginationLink>
+                )
+              : (
+                  <PaginationEllipsis />
+                )}
           </PaginationItem>
         ))}
         <PaginationItem>

@@ -68,3 +68,14 @@ export function getNameValidator(calling?: string) {
 }
 
 export const EMAIL_VALIDATOR = z.string().email('请输入正确的邮箱地址')
+
+export const MAX_COVER_SIZE = 5 * 1024 * 1024 // 5MB
+export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
+export const COVER_VALIDATOR = z.instanceof(File)
+  .refine(file => file.size <= MAX_COVER_SIZE, `图片大小不能超过 5MB`)
+  .refine(
+    file => ACCEPTED_IMAGE_TYPES.includes(file.type),
+    '只支持 .jpg, .jpeg, .png 和 .webp格式',
+  )
+  .optional()

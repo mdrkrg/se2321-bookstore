@@ -15,9 +15,19 @@ type ChangeModelRequest<T extends Record<any, any>, Omitted extends Array<keyof 
 
 export type ChangeUserRequest = ChangeModelRequest<User, ['username']>
 
-export type ChangeBookRequest = ChangeModelRequest<Book, ['tags']>
+export type ChangeBookRequest = ChangeModelRequest<Book, ['tags', 'cover']>
 
-export type AddBookRequest = ChangeModelRequest<Book, ['tags', 'sales']>
+export interface ChangeBookWithFileRequest {
+  data: ChangeBookRequest
+  newCoverFile?: File
+}
+
+export type AddBookRequest = ChangeModelRequest<Book, ['tags', 'sales', 'cover']>
+
+export interface AddBookWithFileRequest {
+  data: AddBookRequest
+  coverFile?: File
+}
 
 export interface OrderAdmin extends Order {
   creator: User

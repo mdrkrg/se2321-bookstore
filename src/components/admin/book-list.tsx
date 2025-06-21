@@ -42,13 +42,13 @@ import {
 import { MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
-import { Input } from '../ui/input'
-import { CreateBookPopup } from './create-book'
-import { ModifyBookForm } from './modify-book'
-import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
 import { useDebounceValue } from 'usehooks-ts'
 import { DataTablePagination } from '../table/data-table-pagination'
+import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
+import { Input } from '../ui/input'
 import { SkeletonRows } from '../ui/skeleton-rows'
+import { CreateBookPopup } from './create-book'
+import { ModifyBookForm } from './modify-book'
 
 const columns: ColumnDef<Book>[] = [
   {
@@ -105,7 +105,7 @@ const columns: ColumnDef<Book>[] = [
       const {
         mutate: mutateBook,
       } = useMutation<Book, Error | FieldErrorResponse<ChangeBookRequest>, ChangeBookRequest>({
-        mutationFn: data => changeBook(row.original.id, data),
+        mutationFn: data => changeBook(row.original.id, { data }),
         onSuccess(_) {
           toast(`成功修改了商品${row.original.id}`)
           queryClient.invalidateQueries({
@@ -285,58 +285,58 @@ export function BookList({ initialBookList }: BookListProps) {
                   />
                 )
               : table.getRowModel().rows?.length
-              ? (
-                  table.getRowModel().rows.map(row => (
-                    <React.Fragment key={row.id}>
-                      <TableRow
-                        data-state={row.getIsSelected() && 'selected'}
-                        onClick={() => handleExpandOneRow(row)}
-                        className="cursor-pointer"
-                      >
-                        {row.getVisibleCells().map(cell => (
-                          <TableCell key={cell.id} className="text-center">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                      <TableRow>
-                        <TableCell
-                          colSpan={row.getAllCells().length}
-                          className={cn(
-                            row.getIsExpanded() ? '' : 'py-0',
-                            'transition-all animate-duration-600',
-                            'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
-                            'data-[state=open]:animate-in data[state=open]:slide-in-b',
-                          )}
+                ? (
+                    table.getRowModel().rows.map(row => (
+                      <React.Fragment key={row.id}>
+                        <TableRow
+                          data-state={row.getIsSelected() && 'selected'}
+                          onClick={() => handleExpandOneRow(row)}
+                          className="cursor-pointer"
                         >
-                          <ModifyBookForm
-                            book={row.original}
+                          {row.getVisibleCells().map(cell => (
+                            <TableCell key={cell.id} className="text-center">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                        <TableRow>
+                          <TableCell
+                            colSpan={row.getAllCells().length}
                             className={cn(
-                              row.getIsExpanded() ? 'max-h-auto' : 'max-h-0',
-                              'transition-all animate-duration-600 overflow-hidden',
+                              row.getIsExpanded() ? '' : 'py-0',
+                              'transition-all animate-duration-600',
                               'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
                               'data-[state=open]:animate-in data[state=open]:slide-in-b',
                             )}
-                            data-state={row.getIsExpanded() ? 'open' : 'closed'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    </React.Fragment>
-                  ))
-                )
-              : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      指定筛选条件下没有图书。
-                    </TableCell>
-                  </TableRow>
-                )}
+                          >
+                            <ModifyBookForm
+                              book={row.original}
+                              className={cn(
+                                row.getIsExpanded() ? 'max-h-auto' : 'max-h-0',
+                                'transition-all animate-duration-600 overflow-hidden',
+                                'data-[state=closed]:animate-out data[state=closed]:slide-out-t',
+                                'data-[state=open]:animate-in data[state=open]:slide-in-b',
+                              )}
+                              data-state={row.getIsExpanded() ? 'open' : 'closed'}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))
+                  )
+                : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        指定筛选条件下没有图书。
+                      </TableCell>
+                    </TableRow>
+                  )}
           </TableBody>
         </Table>
       </div>
