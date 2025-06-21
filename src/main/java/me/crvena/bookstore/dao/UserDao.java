@@ -19,6 +19,10 @@ public interface UserDao {
 
   List<User> findAll();
 
+  Page<User> findAll(Pageable pageable);
+
+  Page<User> findByUsernameIgnoreCaseContaining(String username, Pageable pageable);
+
   Optional<User> findById(Long id);
 
   Optional<User> findByUsername(String username);

@@ -15,6 +15,9 @@ import me.crvena.bookstore.models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
+  Page<User> findByUsernameIgnoreCaseContaining(String username, Pageable pageable);
+
   Optional<User> findByUsername(String username);
 
   boolean existsByUsername(String username);

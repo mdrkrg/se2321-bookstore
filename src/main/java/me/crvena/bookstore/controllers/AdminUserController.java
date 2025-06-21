@@ -6,8 +6,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,9 +58,21 @@ public class AdminUserController {
    * Show all users
    */
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<ListResponse<User>> findAll() {
-    // TODO: paging
-    return ResponseEntity.ok(new ListResponse<>(dao.findAll()));
+  public ResponseEntity<ListResponse<User>> findAll(
+      @RequestParam(name = "username", required = false) String username,
+      Pageable pageable) {
+
+    Sort clientSort = pageable.getSort();
+    Sort secondarySort = Sort.by("id").ascending();
+    Sort finalSort = clientSort.and(secondarySort);
+    Pageable finalPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
+    Page<User> userPage;
+    if (username == null || username.isEmpty()) {
+      userPage = dao.findAll(finalPageable);
+    } else {
+      userPage = dao.findByUsernameIgnoreCaseContaining(username, finalPageable);
+    }
+    return ResponseEntity.ok(ListResponse.of(userPage));
   }
 
   @RequestMapping(path = "/stats", method = RequestMethod.GET, produces = "application/json")
