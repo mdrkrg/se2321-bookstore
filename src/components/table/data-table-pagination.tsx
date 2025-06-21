@@ -52,12 +52,27 @@ export function DataTablePagination<TData>({
 
   const paginationItems = generatePagination(pageIndex + 1, pageCount)
 
+  function handlePreviousClick() {
+    table.getIsSomeRowsExpanded() && table.resetExpanded()
+    table.previousPage()
+  }
+
+  function handleNextClick() {
+    table.getIsSomeRowsExpanded() && table.resetExpanded()
+    table.nextPage()
+  }
+
+  function handleIndexClick(index: number) {
+    table.getIsSomeRowsExpanded() && table.resetExpanded()
+    table.setPageIndex(index)
+  }
+
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => table.previousPage()}
+            onClick={handlePreviousClick}
             aria-disabled={!table.getCanPreviousPage()}
             // Add classes to visually disable and manage cursor
             className={
@@ -73,7 +88,7 @@ export function DataTablePagination<TData>({
             {typeof item === 'number' ? (
               <PaginationLink
                 // 1-based
-                onClick={() => table.setPageIndex(item - 1)}
+                onClick={() => handleIndexClick(item - 1)}
                 isActive={pageIndex === item - 1}
                 className="cursor-pointer"
               >
@@ -86,7 +101,7 @@ export function DataTablePagination<TData>({
         ))}
         <PaginationItem>
           <PaginationNext
-            onClick={() => table.nextPage()}
+            onClick={handleNextClick}
             aria-disabled={!table.getCanNextPage()}
             className={
               !table.getCanNextPage()

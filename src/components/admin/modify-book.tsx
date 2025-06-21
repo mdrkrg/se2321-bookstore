@@ -17,6 +17,8 @@ import { NumberInput } from '../ui/number-input'
 import { Textarea } from '../ui/textarea'
 
 const formSchema = z.object({
+  title: z.string().nonempty(),
+  author: z.string().nonempty(),
   description: z.string(),
   price: z.coerce.number().min(0),
   stock: z.coerce.number().min(0),
@@ -28,6 +30,18 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>
 
 const formItems: FormItems<FormSchema> = {
+  title: {
+    formLabel: '标题',
+    render: ({ field }) => (
+      <Input {...field} />
+    ),
+  },
+  author: {
+    formLabel: '作者',
+    render: ({ field }) => (
+      <Input {...field} />
+    ),
+  },
   description: {
     formLabel: '简介',
     render: ({ field }) => (
@@ -77,6 +91,8 @@ export function ModifyBookForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: book.title || '',
+      author: book.author || '',
       description: book.description || '',
       price: book.price ?? undefined,
       stock: book.stock ?? undefined,
@@ -87,7 +103,7 @@ export function ModifyBookForm({
   })
 
   const queryClient = useQueryClient()
-  const queryKey = fetchAdminBookListOptions().queryKey
+  const queryKey = ['admin', 'book', 'list']
 
   const {
     mutate: mutateBook,

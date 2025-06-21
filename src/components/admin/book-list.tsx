@@ -6,6 +6,7 @@ import type {
   ColumnFiltersState,
   ExpandedState,
   PaginationState,
+  Row,
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table'
@@ -236,6 +237,10 @@ export function BookList({ initialBookList }: BookListProps) {
     onExpandedChange: setExpanded,
   })
 
+  function handleExpandOneRow(row: Row<Book>) {
+    setExpanded(row.getIsExpanded() ? {} : { [row.id]: true })
+  }
+
   return (
     <div className="w-full">
       <h1 className="font-bold text-2xl pl-[0.5em] pb-4">管理-书籍列表</h1>
@@ -285,7 +290,7 @@ export function BookList({ initialBookList }: BookListProps) {
                     <React.Fragment key={row.id}>
                       <TableRow
                         data-state={row.getIsSelected() && 'selected'}
-                        onClick={row.getToggleExpandedHandler()}
+                        onClick={() => handleExpandOneRow(row)}
                         className="cursor-pointer"
                       >
                         {row.getVisibleCells().map(cell => (

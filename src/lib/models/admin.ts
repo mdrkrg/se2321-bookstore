@@ -15,7 +15,7 @@ type ChangeModelRequest<T extends Record<any, any>, Omitted extends Array<keyof 
 
 export type ChangeUserRequest = ChangeModelRequest<User, ['username']>
 
-export type ChangeBookRequest = ChangeModelRequest<Book, ['title', 'author', 'tags']>
+export type ChangeBookRequest = ChangeModelRequest<Book, ['tags']>
 
 export type AddBookRequest = ChangeModelRequest<Book, ['tags', 'sales']>
 
