@@ -4,6 +4,7 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   ExpandedState,
+  PaginationState,
   SortingState,
   VisibilityState,
 } from '@tanstack/react-table'
@@ -40,40 +41,22 @@ import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { Input } from '../ui/input'
+import { DataTablePagination } from '../table/data-table-pagination'
+import { SkeletonRows } from '../ui/skeleton-rows'
+import { getDisableSortingHeader, getSortingHeader } from '../table/headers'
+import { useDebounceValue } from 'usehooks-ts'
 
 const columns: ColumnDef<User>[] = [
   {
     accessorKey: 'username',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          用户名
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('用户名'),
     cell: ({ row }) => {
       return row.original.username
     },
   },
   {
     accessorKey: 'email',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          className="bg-transparent hover:bg-transparent"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          邮箱
-          <ArrowUpDown />
-        </Button>
-      )
-    },
+    header: getSortingHeader('邮箱'),
     cell: ({ row }) => {
       return row.original.email
     },
@@ -95,6 +78,7 @@ const columns: ColumnDef<User>[] = [
   {
     id: 'actions',
     enableHiding: false,
+    header: getDisableSortingHeader(),
     cell: ({ row }) => {
       const role = row.original.role
       const banned = !row.original.accountNonLocked
@@ -211,25 +195,43 @@ export interface UserListProps extends React.ComponentProps<'div'> {
 }
 
 export function UserList({ initialUserList }: UserListProps) {
-  const userQueryConfig = fetchUserListOptions()
+  const [filterUsername, setFilterUsername] = useState('')
+  const [debouncedFilterUsername] = useDebounceValue(filterUsername, 500)
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+  const [sorting, setSorting] = useState<SortingState>([])
+
+  const userQueryConfig = fetchUserListOptions({
+    username: debouncedFilterUsername,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
+    sort: sorting,
+  })
   const {
     data: userList,
-  } = useQuery<PagedItems<User>>({
+    isLoading,
+    isFetching,
+    isPending,
+  } = useQuery({
     ...userQueryConfig,
     initialData: initialUserList,
     placeholderData: previousData => previousData,
   })
 
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
-    [],
-  )
+  function showSkeleton() {
+    return isLoading || isFetching || isPending
+  }
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility]
     = useState<VisibilityState>({})
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const table = useReactTable({
     data: userList.items,
     columns,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -239,11 +241,16 @@ export function UserList({ initialUserList }: UserListProps) {
     onColumnVisibilityChange: setColumnVisibility,
     getRowCanExpand: _ => true,
     getExpandedRowModel: getExpandedRowModel(),
+    manualPagination: true,
+    manualSorting: true,
+    pageCount: userList?.totalPages ?? -1,
+    rowCount: userList?.total,
     state: {
       columnFilters,
       columnVisibility,
       expanded,
       sorting,
+      pagination,
     },
     onExpandedChange: setExpanded,
   })
@@ -253,10 +260,8 @@ export function UserList({ initialUserList }: UserListProps) {
       <div className="flex items-center pb-4">
         <Input
           placeholder="搜索用户名"
-          value={(table.getColumn('username')?.getFilterValue() as string) ?? ''}
-          onChange={(event) => {
-            table.getColumn('username')?.setFilterValue(event.target.value)
-          }}
+          value={filterUsername}
+          onChange={event => setFilterUsername(event.target.value)}
           className="max-w-sm"
         />
       </div>
@@ -281,7 +286,15 @@ export function UserList({ initialUserList }: UserListProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length
+            {showSkeleton()
+              ? (
+                  <SkeletonRows
+                    length={pagination.pageSize}
+                    columns={columns}
+                    className="h-6 w-full"
+                  />
+                )
+              :table.getRowModel().rows?.length
               ? (
                   table.getRowModel().rows.map(row => (
                     <TableRow
@@ -314,22 +327,7 @@ export function UserList({ initialUserList }: UserListProps) {
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+          <DataTablePagination table={table} />
         </div>
       </div>
     </div>

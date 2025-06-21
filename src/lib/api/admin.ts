@@ -24,10 +24,35 @@ interface FetchAdminBookListRequest extends PageRequest {
   title?: string
 }
 
-export function fetchUserListOptions() {
-  return $queryOptions<PagedItems<User>>({
-    url: endpoints.admin.user.index,
-    key: ['admin', 'user'],
+interface FetchAdminUserListRequest extends PageRequest {
+  username?: string
+}
+
+export async function getAdminUserList({
+  username,
+  page = 0,
+  size = 10,
+  sort,
+}: FetchAdminUserListRequest) {
+  const sortParam = getSortParam(sort)
+  const rsp = await axios.get<PagedItems<User>>(endpoints.admin.user.index, {
+    params: {
+      username,
+      page,
+      size,
+      sort: sortParam,
+    },
+  })
+  return rsp.data
+}
+
+export function fetchUserListOptions(params: FetchAdminUserListRequest = {
+  page: 0,
+  size: 10,
+}) {
+  return queryOptions({
+    queryFn: () => getAdminUserList(params),
+    queryKey: ['admin', 'user', 'list', params],
   })
 }
 
