@@ -6,6 +6,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -37,12 +41,21 @@ public class AdminBookController {
   private BookService service;
 
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<ListResponse<Book>> findAll() {
-    // TODO: paged
-    var books = dao.findAll(Sort.by("id"));
-    List<Book> bookList = new ArrayList<>();
-    books.iterator().forEachRemaining(bookList::add);
-    return ResponseEntity.ok(new ListResponse<>(bookList));
+  public ResponseEntity<ListResponse<Book>> findAll(
+      @RequestParam(name = "title", required = false) String title,
+      Pageable pageable) {
+    Sort clientSort = pageable.getSort();
+    Sort secondarySort = Sort.by("id").ascending();
+    Sort finalSort = clientSort.and(secondarySort);
+    Pageable finalPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
+    Page<Book> bookPage;
+
+    if (title == null || title.isEmpty()) {
+      bookPage = dao.findAll(finalPageable);
+    } else {
+      bookPage = dao.findByTitleIgnoreCaseContaining(title, finalPageable);
+    }
+    return ResponseEntity.ok(ListResponse.of(bookPage));
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")

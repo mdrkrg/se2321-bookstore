@@ -31,6 +31,8 @@ public interface BookRepository extends PagingAndSortingRepository<Book, Long>, 
 
   Optional<Book> findByTitleAndAuthor(String title, String author);
 
+  Page<Book> findByTitleIgnoreCaseContaining(String partialTitle, Pageable pageable);
+
   List<Book> findByAvailableAndTitleIgnoreCaseContaining(boolean available, String partialTitle);
 
   Page<Book> findByAvailableAndTitleIgnoreCaseContaining(boolean available, String partialTitle,

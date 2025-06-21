@@ -42,6 +42,8 @@ public interface BookDao {
 
   public Optional<Book> findByTitleAndAuthor(String title, String author);
 
+  public Page<Book> findByTitleIgnoreCaseContaining(String partialTitle, Pageable pageable);
+
   public List<Book> findByAvailableAndTitleIgnoreCaseContaining(boolean available, String partialTitle);
 
   public Page<Book> findByAvailableAndTitleIgnoreCaseContaining(boolean available, String partialTitle,
