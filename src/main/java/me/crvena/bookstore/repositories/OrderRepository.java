@@ -23,7 +23,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
       Instant createdAtStart, Instant createdAtEnd);
 
-  Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+  Page<Order> findByCreatedAtBetween(
       Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
 
   List<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
@@ -95,7 +95,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       @Param("createdAtEnd") Instant createdAtEnd);
 
   @Query(FILTER_TITLE_DATE_QUERY)
-  Page<Order> findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
+  Page<Order> findByTitleIgnoreCaseAndCreatedAtBetween(
       @Param("bookTitle") String bookTitle,
       @Param("createdAtStart") Instant createdAtStart,
       @Param("createdAtEnd") Instant createdAtEnd,

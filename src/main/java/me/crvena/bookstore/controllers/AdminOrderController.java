@@ -3,7 +3,11 @@ package me.crvena.bookstore.controllers;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +32,8 @@ import me.crvena.bookstore.models.Order;
 @RequestMapping("/api/admin/order")
 public class AdminOrderController {
 
+  private Logger logger = LoggerFactory.getLogger(AdminOrderController.class);
+
   @Autowired
   private OrderDao dao;
 
@@ -41,24 +47,38 @@ public class AdminOrderController {
   public ResponseEntity<ListResponse<OrderAdminDto>> getOrderList(
       @RequestParam(name = "title", required = false) String title,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
-      @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
+      @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd,
+      Pageable pageable) {
     // TODO: paging
+    logger.info(pageable.toString());
     if (createdAtStart == null) {
       createdAtStart = LocalDate.EPOCH;
     }
     if (createdAtEnd == null) {
       createdAtEnd = LocalDate.now();
     }
+    Page<Order> orderPage;
 
     if (title == null || title.isEmpty()) {
-      List<OrderAdminDto> orders = service.getOrdersByCreatedAtBetween(
-          createdAtStart, createdAtEnd).stream().map(OrderAdminDto::of).toList();
-      return ResponseEntity.ok(new ListResponse<>(orders));
+      orderPage = service.getOrdersByCreatedAtBetween(
+          createdAtStart, createdAtEnd, pageable);
+    } else {
+      orderPage = service.getOrdersByTitleAndCreatedAtBetween(
+          title, createdAtStart, createdAtEnd, pageable);
     }
 
-    List<OrderAdminDto> orders = service.getOrdersByTitleAndCreatedAtBetween(
-        title, createdAtStart, createdAtEnd).stream().map(OrderAdminDto::of).toList();
-    return ResponseEntity.ok(new ListResponse<>(orders));
+    Page<OrderAdminDto> dtoPage = orderPage.map(OrderAdminDto::of);
+    return ResponseEntity.ok(ListResponse.of(dtoPage));
+    // if (title == null || title.isEmpty()) {
+    // List<OrderAdminDto> orders = service.getOrdersByCreatedAtBetween(
+    // createdAtStart, createdAtEnd).stream().map(OrderAdminDto::of).toList();
+    // return ResponseEntity.ok(new ListResponse<>(orders));
+    // }
+
+    // List<OrderAdminDto> orders = service.getOrdersByTitleAndCreatedAtBetween(
+    // title, createdAtStart,
+    // createdAtEnd).stream().map(OrderAdminDto::of).toList();
+    // return ResponseEntity.ok(new ListResponse<>(orders));
   }
 
   /**

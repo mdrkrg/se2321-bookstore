@@ -32,13 +32,13 @@ public interface OrderDao {
   public List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
       Instant createdAtStart, Instant createdAtEnd);
 
-  public Page<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(
+  public Page<Order> findByCreatedAtBetween(
       Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
 
   public List<Order> findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
       String title, Instant createdAtStart, Instant createdAtEnd);
 
-  public Page<Order> findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
+  public Page<Order> findByTitleIgnoreCaseAndCreatedAtBetween(
       String title, Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
 
   public List<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
@@ -77,6 +77,13 @@ class OrderDaoImpl implements OrderDao {
   @Delegate
   @Autowired
   private final OrderRepository repo;
+
+  @Override
+  public Page<Order> findByCreatedAtBetween(
+      Instant createdAtStart, Instant createdAtEnd, Pageable pageable) {
+    return repo.findByCreatedAtBetween(
+        createdAtStart, createdAtEnd, pageable);
+  }
 
   @Override
   public Order save(Order order) {

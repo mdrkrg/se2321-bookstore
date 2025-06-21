@@ -44,8 +44,14 @@ public interface OrderService {
   public List<Order> getOrdersByCreatedAtBetween(
       LocalDate createdAtStart, LocalDate createdAtEnd);
 
+  public Page<Order> getOrdersByCreatedAtBetween(
+      LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable);
+
   public List<Order> getOrdersByTitleAndCreatedAtBetween(
       String title, LocalDate createdAtStart, LocalDate createdAtEnd);
+
+  public Page<Order> getOrdersByTitleAndCreatedAtBetween(
+      String title, LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable);
 
   public List<Order> getOrdersByUserAndCreatedAtBetween(
       User user, LocalDate createdAtStart, LocalDate createdAtEnd);
@@ -124,12 +130,28 @@ class OrderServiceImpl implements OrderService {
         startInstant, endInstant);
   }
 
+  public Page<Order> getOrdersByCreatedAtBetween(
+      LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable) {
+    Instant startInstant = createdAtStart.atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+    return dao.findByCreatedAtBetween(
+        startInstant, endInstant, pageable);
+  }
+
   public List<Order> getOrdersByTitleAndCreatedAtBetween(
       String title, LocalDate createdAtStart, LocalDate createdAtEnd) {
     Instant startInstant = createdAtStart.atStartOfDay().toInstant(ZoneOffset.UTC);
     Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
     return dao.findByTitleIgnoreCaseAndCreatedAtBetweenOrderByCreatedAtDesc(
         title, startInstant, endInstant);
+  }
+
+  public Page<Order> getOrdersByTitleAndCreatedAtBetween(
+      String title, LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable) {
+    Instant startInstant = createdAtStart.atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+    return dao.findByTitleIgnoreCaseAndCreatedAtBetween(
+        title, startInstant, endInstant, pageable);
   }
 
   public List<Order> getOrdersByUserAndCreatedAtBetween(
