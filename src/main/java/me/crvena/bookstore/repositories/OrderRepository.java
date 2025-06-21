@@ -29,7 +29,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   List<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
       User creator, Instant createdAtStart, Instant createdAtEnd);
 
-  Page<Order> findByCreatorAndCreatedAtBetweenOrderByCreatedAtDesc(
+  Page<Order> findByCreatorAndCreatedAtBetween(
       User creator, Instant createdAtStart, Instant createdAtEnd, Pageable pageable);
 
   static final String FILTER_CREATOR_TITLE_QUERY = """
@@ -39,10 +39,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       JOIN i.book b
       WHERE o.creator = :creator
         AND LOWER(b.title) LIKE LOWER(CONCAT('%', :bookTitle, '%'))
-      ORDER BY o.createdAt DESC
       """;
 
-  @Query(FILTER_CREATOR_TITLE_QUERY)
+  @Query(FILTER_CREATOR_TITLE_QUERY + """
+        ORDER BY o.createdAt DESC
+      """)
   List<Order> findByCreatorAndBookTitle(
       @Param("creator") User creator, @Param("bookTitle") String bookTitle);
 
@@ -60,10 +61,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       WHERE o.creator = :creator
         AND LOWER(b.title) LIKE LOWER(CONCAT('%', :bookTitle, '%'))
         AND o.createdAt BETWEEN :createdAtStart AND :createdAtEnd
-      ORDER BY o.createdAt DESC
       """;
 
-  @Query(FILTER_CREATOR_TITLE_DATE_QUERY)
+  @Query(FILTER_CREATOR_TITLE_DATE_QUERY + """
+      ORDER BY o.createdAt DESC
+      """)
   List<Order> findByCreatorAndBookTitleAndCreatedAtBetween(
       @Param("creator") User creator,
       @Param("bookTitle") String bookTitle,

@@ -56,8 +56,14 @@ public interface OrderService {
   public List<Order> getOrdersByUserAndCreatedAtBetween(
       User user, LocalDate createdAtStart, LocalDate createdAtEnd);
 
+  public Page<Order> getOrdersByUserAndCreatedAtBetween(
+      User user, LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable);
+
   public List<Order> getOrdersByUserAndTitleAndCreatedAtBetween(
       User user, String title, LocalDate createdAtStart, LocalDate createdAtEnd);
+
+  public Page<Order> getOrdersByUserAndTitleAndCreatedAtBetween(
+      User user, String title, LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable);
 
   /**
    * Places order
@@ -162,6 +168,14 @@ class OrderServiceImpl implements OrderService {
         user, startInstant, endInstant);
   }
 
+  public Page<Order> getOrdersByUserAndCreatedAtBetween(
+      User user, LocalDate createdAtStart, LocalDate createdAtEnd, Pageable pageable) {
+    Instant startInstant = createdAtStart.atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+    return dao.findByCreatorAndCreatedAtBetween(
+        user, startInstant, endInstant, pageable);
+  }
+
   public List<Order> getOrdersByUserAndTitleAndCreatedAtBetween(
       User user,
       String title,
@@ -171,6 +185,18 @@ class OrderServiceImpl implements OrderService {
     Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
     return dao.findByCreatorAndBookTitleAndCreatedAtBetween(
         user, title, startInstant, endInstant);
+  }
+
+  public Page<Order> getOrdersByUserAndTitleAndCreatedAtBetween(
+      User user,
+      String title,
+      LocalDate createdAtStart,
+      LocalDate createdAtEnd,
+      Pageable pageable) {
+    Instant startInstant = createdAtStart.atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
+    Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+    return dao.findByCreatorAndBookTitleAndCreatedAtBetween(
+        user, title, startInstant, endInstant, pageable);
   }
 
   /**

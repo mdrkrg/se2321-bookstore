@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -49,22 +51,25 @@ public class AdminOrderController {
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd,
       Pageable pageable) {
-    // TODO: paging
-    logger.info(pageable.toString());
+    logger.debug(pageable.toString());
     if (createdAtStart == null) {
       createdAtStart = LocalDate.EPOCH;
     }
     if (createdAtEnd == null) {
       createdAtEnd = LocalDate.now();
     }
+    Sort clientSort = pageable.getSort();
+    Sort secondarySort = Sort.by("createdAt").descending();
+    Sort finalSort = clientSort.and(secondarySort);
+    Pageable finalPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
     Page<Order> orderPage;
 
     if (title == null || title.isEmpty()) {
       orderPage = service.getOrdersByCreatedAtBetween(
-          createdAtStart, createdAtEnd, pageable);
+          createdAtStart, createdAtEnd, finalPageable);
     } else {
       orderPage = service.getOrdersByTitleAndCreatedAtBetween(
-          title, createdAtStart, createdAtEnd, pageable);
+          title, createdAtStart, createdAtEnd, finalPageable);
     }
 
     Page<OrderAdminDto> dtoPage = orderPage.map(OrderAdminDto::of);

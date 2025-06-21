@@ -1,11 +1,14 @@
 package me.crvena.bookstore.controllers;
 
 import java.time.LocalDate;
-import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -33,16 +36,19 @@ import me.crvena.bookstore.models.User;
 @RequestMapping("/api/order")
 public class OrderController {
 
+  private Logger logger = LoggerFactory.getLogger(OrderController.class);
+
   @Autowired
   private OrderService orderService;
 
   @Description("Get order list for current user.")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  // public ResponseEntity<Page<Order>> getOrderList(Pageable pageable) {
   public ResponseEntity<ListResponse<OrderDto>> getOrderList(
       @RequestParam(name = "title", required = false) String title,
       @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtStart", required = false) LocalDate createdAtStart,
-      @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd) {
+      @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(name = "createdAtEnd", required = false) LocalDate createdAtEnd,
+      Pageable pageable) {
+    logger.debug(pageable.toString());
     if (createdAtStart == null) {
       createdAtStart = LocalDate.EPOCH;
     }
@@ -50,17 +56,23 @@ public class OrderController {
       createdAtEnd = LocalDate.now();
     }
 
+    Sort clientSort = pageable.getSort();
+    Sort secondarySort = Sort.by("createdAt").descending();
+    Sort finalSort = clientSort.and(secondarySort);
+    Pageable finalPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
+    Page<Order> orderPage;
+
     User user = AuthService.getRequestUser();
-    // Page<Order> orders = orderService.getOrdersByUser(user, pageable);
     if (title == null || title.isEmpty()) {
-      List<OrderDto> orders = orderService.getOrdersByUserAndCreatedAtBetween(
-          user, createdAtStart, createdAtEnd).stream().map(OrderDto::of).toList();
-      return ResponseEntity.ok(new ListResponse<>(orders));
+      orderPage = orderService.getOrdersByUserAndCreatedAtBetween(
+          user, createdAtStart, createdAtEnd, finalPageable);
+    } else {
+      orderPage = orderService.getOrdersByUserAndTitleAndCreatedAtBetween(
+          user, title, createdAtStart, createdAtEnd, finalPageable);
     }
 
-    List<OrderDto> orders = orderService.getOrdersByUserAndTitleAndCreatedAtBetween(
-        user, title, createdAtStart, createdAtEnd).stream().map(OrderDto::of).toList();
-    return ResponseEntity.ok(new ListResponse<>(orders));
+    Page<OrderDto> dtoPage = orderPage.map(OrderDto::of);
+    return ResponseEntity.ok(ListResponse.of(dtoPage));
   }
 
   @RequestMapping(method = RequestMethod.POST, produces = "application/json")
