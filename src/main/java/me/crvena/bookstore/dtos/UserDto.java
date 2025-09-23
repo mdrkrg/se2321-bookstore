@@ -24,6 +24,9 @@ public class UserDto {
 
   private UserInfo userInfo;
 
+  @Builder.Default
+  private Long loginMillis = Long.valueOf(0);
+
   public static UserDto buildFromUser(User user) {
     return UserDto.builder()
         .id(user.getId())

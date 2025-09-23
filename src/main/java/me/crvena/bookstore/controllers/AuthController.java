@@ -26,6 +26,7 @@ import me.crvena.bookstore.dtos.UserDto;
 import me.crvena.bookstore.exceptions.FieldsConflictException;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.services.AuthService;
+import me.crvena.bookstore.services.SessionTimerService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,6 +35,9 @@ public class AuthController {
 
   @Autowired
   private final AuthService authService;
+
+  @Autowired
+  private final SessionTimerService sessionTimerService;
 
   @PostMapping("/signup")
   public ResponseEntity<UserDto> signup(
@@ -86,11 +90,17 @@ public class AuthController {
     return ResponseEntity.ok(UserDto.buildFromUser(user));
   }
 
+  /**
+   * Timer is started at login, we get interval here.
+   *
+   * @see me.crvena.bookstore.event.AuthenticationSuccessListener
+   */
   @GetMapping("/logout")
   public ResponseEntity<UserDto> logout(
       HttpServletResponse response,
       HttpServletRequest httpRequest) {
+    var interval = sessionTimerService.getInterval();
     authService.logout(httpRequest, response);
-    return ResponseEntity.ok(UserDto.builder().build());
+    return ResponseEntity.ok(UserDto.builder().loginMillis(interval.toMillis()).build());
   }
 }
