@@ -2,13 +2,17 @@ package me.crvena.bookstore.dtos;
 
 import java.math.BigDecimal;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import me.crvena.bookstore.enums.Role;
 import me.crvena.bookstore.models.User;
 import me.crvena.bookstore.models.UserInfo;
 
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class UserDto {
 

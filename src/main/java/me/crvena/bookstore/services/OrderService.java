@@ -3,10 +3,12 @@ package me.crvena.bookstore.services;
 import me.crvena.bookstore.dao.BookDao;
 import me.crvena.bookstore.dao.CartItemDao;
 import me.crvena.bookstore.dao.OrderDao;
+import me.crvena.bookstore.dao.UserDao;
 import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.dtos.OutOfStockErrorResponse.OutOfStockDetail;
 import me.crvena.bookstore.models.*;
+import me.crvena.bookstore.repositories.UserRepository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -41,6 +43,8 @@ public interface OrderService {
 
   public List<Order> getOrdersByUser(User user);
 
+  public List<Order> getOrdersByUserId(Long userId);
+
   public List<Order> getOrdersByCreatedAtBetween(
       LocalDate createdAtStart, LocalDate createdAtEnd);
 
@@ -72,6 +76,14 @@ public interface OrderService {
    */
   @Transactional
   public Order placeOrder(User user, OrderRequest orderRequest);
+
+  /**
+   * Places order (message streaming)
+   *
+   * @throws CartItemDoesNotExistException
+   */
+  @Transactional
+  public Order placeOrder(Long userId, OrderRequest orderRequest);
 
   public Order modifyOrder(Order order, AdminModifyOrderRequest data);
 
@@ -118,6 +130,9 @@ class OrderServiceImpl implements OrderService {
   private final OrderDao dao;
 
   @Autowired
+  private final UserDao userDao;
+
+  @Autowired
   private ObjectMapper mapper;
 
   public Page<Order> getOrdersByUser(User user, Pageable pageable) {
@@ -126,6 +141,10 @@ class OrderServiceImpl implements OrderService {
 
   public List<Order> getOrdersByUser(User user) {
     return dao.findByCreatorOrderByIdDesc(user);
+  }
+
+  public List<Order> getOrdersByUserId(Long userId) {
+    return dao.findByCreatorIdOrderByIdDesc(userId);
   }
 
   public List<Order> getOrdersByCreatedAtBetween(
@@ -197,6 +216,18 @@ class OrderServiceImpl implements OrderService {
     Instant endInstant = createdAtEnd.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
     return dao.findByCreatorAndBookTitleAndCreatedAtBetween(
         user, title, startInstant, endInstant, pageable);
+  }
+
+  /**
+   * Places order (message streaming)
+   *
+   * @throws CartItemDoesNotExistException
+   */
+  @Transactional
+  public Order placeOrder(Long userId, OrderRequest orderRequest) {
+    // User existance is ensured
+    var user = userDao.findById(userId).get();
+    return placeOrder(user, orderRequest);
   }
 
   /**

@@ -2,6 +2,7 @@ package me.crvena.bookstore.controllers;
 
 import java.time.LocalDate;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,7 @@ import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.dtos.OrderDto;
 import me.crvena.bookstore.dtos.OrderRequest;
 import me.crvena.bookstore.dtos.OutOfStockErrorResponse;
+import me.crvena.bookstore.dtos.PlaceOrderWrapper;
 import me.crvena.bookstore.exceptions.OutOfStockException;
 import me.crvena.bookstore.models.Order;
 import me.crvena.bookstore.models.User;
@@ -37,6 +40,9 @@ import me.crvena.bookstore.models.User;
 public class OrderController {
 
   private Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+  @Autowired
+  private ReplyingKafkaTemplate<String, Object, Object> kafka;
 
   @Autowired
   private OrderService orderService;
@@ -82,6 +88,29 @@ public class OrderController {
 
     Order order = orderService.placeOrder(user, orderRequest);
     return new ResponseEntity<>(OrderDto.of(order), HttpStatus.CREATED);
+  }
+
+  @RequestMapping(path = "/message", method = RequestMethod.POST, produces = "application/json")
+  public ResponseEntity<OrderDto> placeOrderMessage(@Valid @RequestBody OrderRequest orderRequest) {
+
+    User user = AuthService.getRequestUser();
+
+    final var wrapper = PlaceOrderWrapper
+        .builder()
+        .userId(user.getId())
+        .orderRequest(orderRequest)
+        .build();
+    ProducerRecord<String, Object> message = new ProducerRecord<>("order_placed", wrapper);
+
+    var future = kafka.sendAndReceive(message);
+    try {
+      // Block and wait for the result for a maximum of 15 seconds
+      var result = future.get().value();
+      return new ResponseEntity<>((OrderDto) result, HttpStatus.CREATED);
+
+    } catch (Exception e) {
+      throw new InternalError(e);
+    }
   }
 
   @ExceptionHandler(OutOfStockException.class)

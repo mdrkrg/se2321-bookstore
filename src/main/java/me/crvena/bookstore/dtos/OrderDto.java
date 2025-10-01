@@ -2,14 +2,14 @@ package me.crvena.bookstore.dtos;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import me.crvena.bookstore.models.Order;
-import me.crvena.bookstore.models.OrderItem;
 
 @Builder
 @Data
@@ -21,7 +21,7 @@ public class OrderDto {
   String tel;
   String address;
   Instant createdAt;
-  Set<OrderItem> items;
+  List<OrderItemDto> items;
   BigDecimal totalPaidPrice;
   BigDecimal originalPrice;
 
@@ -32,7 +32,7 @@ public class OrderDto {
         .tel(order.getTel())
         .address(order.getAddress())
         .createdAt(order.getCreatedAt())
-        .items(order.getItems())
+        .items(OrderItemDto.ofItems(order.getItems().stream()))
         .totalPaidPrice(order.getTotalPaidPrice())
         .originalPrice(order.getOriginalPrice())
         .build();

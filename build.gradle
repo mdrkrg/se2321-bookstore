@@ -8,6 +8,11 @@ buildscript {
 plugins {
   id 'java'
   id 'eclipse'
+  id 'org.jetbrains.kotlin.jvm' version '2.2.20'
+  id 'org.jetbrains.kotlin.plugin.spring' version '2.2.20'
+  // id 'org.jetbrains.kotlin.kapt' version '2.2.20'
+  id 'org.jetbrains.kotlin.plugin.lombok' version '2.2.20'
+  id 'io.freefair.lombok' version '8.14.2'
   id 'org.springframework.boot' version '3.4.0'
   id 'io.spring.dependency-management' version '1.1.7'
   id 'org.asciidoctor.jvm.convert' version '3.3.2'
@@ -48,7 +53,9 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:11.8.0'
   implementation 'org.flywaydb:flyway-database-postgresql'
   implementation 'commons-io:commons-io:2.20.0'
+  implementation 'org.springframework.kafka:spring-kafka:3.3.10'
   // implementation 'org.springframework.data:spring-data-rest-hal-explorer'
+  implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
   implementation 'software.amazon.awssdk:s3:2.31.68'
   // implementation 'tech.ailef:snap-admin:0.2.3' // WARN: requires NoArgsConstructor
   compileOnly 'org.projectlombok:lombok'

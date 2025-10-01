@@ -81,7 +81,7 @@ public class Book extends BaseModel {
   @ColumnDefault("0")
   private Long stock = Long.valueOf(0);
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
   // @JsonManagedReference // avoid loop
   @ToString.Exclude
