@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -80,8 +83,15 @@ class OrderDaoImpl implements OrderDao {
   @Autowired
   private final OrderRepository repo;
 
+  @Value("${hw2.order-dao-exception-enabled:false}")
+  private Boolean exception;
+
   @Override
+  @Transactional(propagation = Propagation.REQUIRED)
   public Order save(Order order) {
+    if (exception) {
+      throw new RuntimeException("OrderDao exception");
+    }
     return repo.save(order);
   }
 }

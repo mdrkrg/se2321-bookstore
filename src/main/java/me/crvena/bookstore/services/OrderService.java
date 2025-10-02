@@ -3,6 +3,7 @@ package me.crvena.bookstore.services;
 import me.crvena.bookstore.dao.BookDao;
 import me.crvena.bookstore.dao.CartItemDao;
 import me.crvena.bookstore.dao.OrderDao;
+import me.crvena.bookstore.dao.OrderItemDao;
 import me.crvena.bookstore.dao.UserDao;
 import me.crvena.bookstore.dtos.AdminModifyOrderRequest;
 import me.crvena.bookstore.dtos.OrderRequest;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -130,10 +132,19 @@ class OrderServiceImpl implements OrderService {
   private final OrderDao dao;
 
   @Autowired
+  private final OrderItemDao orderItemDao;
+
+  @Autowired
   private final UserDao userDao;
 
   @Autowired
   private ObjectMapper mapper;
+
+  @Value("${hw2.first-exception-enabled:false}")
+  private Boolean firstExceptionEnabled;
+
+  @Value("${hw2.second-exception-enabled:false}")
+  private Boolean secondExceptionEnabled;
 
   public Page<Order> getOrdersByUser(User user, Pageable pageable) {
     return dao.findByCreatorOrderByIdDesc(user, pageable);
@@ -272,10 +283,30 @@ class OrderServiceImpl implements OrderService {
           outOfStockDetails);
     }
 
+    // Database modification starts here
+
     Order order = OrderService.createFromOrderRequest(
         user, orderRequest, validCartItems);
 
+    if (firstExceptionEnabled) {
+      throw new RuntimeException("First exception");
+    }
+
     dao.save(order);
+
+    // Since we removed cascade = CascadeType.ALL, we need to manually save them
+
+    try {
+      for (OrderItem item: order.getItems()) {
+        orderItemDao.save(item);
+      }
+    } catch (RuntimeException e) {
+      System.out.println(e.getMessage());
+    }
+
+    if (secondExceptionEnabled) {
+      throw new RuntimeException("Second exception");
+    }
 
     // decrease stock, increase sales for each book
     List<Book> booksToUpdate = new ArrayList<>();

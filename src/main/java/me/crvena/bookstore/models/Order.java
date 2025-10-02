@@ -36,7 +36,8 @@ public class Order extends BaseModel {
   @NonNull
   @ToString.Exclude
   @JsonManagedReference // avoid loop
-  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  // @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(mappedBy = "order", orphanRemoval = true, fetch = FetchType.EAGER)
   private Set<OrderItem> items;
 
   @NonNull
