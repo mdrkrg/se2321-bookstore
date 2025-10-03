@@ -1,4 +1,5 @@
-import type { Address, OrderItem, OutOfStockErrorResponse } from '@/lib/models/user'
+import type { OrderRequest } from '@/lib/api/order'
+import type { Address, OrderAccepted, OrderItem, OutOfStockErrorResponse } from '@/lib/models/user'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -9,10 +10,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { NumberInput } from '@/components/ui/number-input'
-import { changeCartItem, placeOrder } from '@/lib/api/order'
+import { changeCartItem, placeOrderAsync, waitForOrderResultEvent } from '@/lib/api/order'
 import { cn } from '@/lib/utils/cn'
 import { fetchFakeAddress } from '@/lib/utils/dummy'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -45,6 +47,42 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
   })
   const router = useRouter()
 
+  const {
+    mutate: mutatePlaceOrder,
+  } = useMutation<OrderAccepted, OutOfStockErrorResponse, OrderRequest>({
+    mutationFn: data => placeOrderAsync(data),
+    async onSuccess(rsp) {
+      toast(rsp.message)
+      try {
+        const result = await waitForOrderResultEvent(rsp.messageId)
+        if (result.success) {
+          toast(`已创建订单 ID ${result.order?.id}`)
+          setTimeout(() => {
+            router.navigate({ to: '/order' })
+          }, 200)
+        }
+        else {
+          toast('创建订单出错', {
+            description: result.error,
+          })
+        }
+      }
+      catch {
+        toast('获取订单消息出错')
+      }
+    },
+    onError(error) {
+      toast('出错：', {
+        description: `${error.message}:`,
+      })
+      error.outOfStockItems.forEach((detail) => {
+        form.setError(`items`, {
+          message: `“${detail.title}”的库存不足。可用：${detail.available}，请求：${detail.requested}`,
+        })
+      })
+    },
+  })
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const address = addressList.find(addr =>
       String(addr.id) === data.addressId) as Address
@@ -53,33 +91,7 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
       items: data.items,
       ...addressData,
     }
-    placeOrder(submittedData).then(() => {
-      toast('已创建订单：', {
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">
-              {JSON.stringify(submittedData, null, 2)}
-            </code>
-          </pre>
-        ),
-        className: 'w-max!',
-        duration: 5000,
-      })
-      setTimeout(() => {
-        router.navigate({ to: '/order' })
-      }, 200)
-    }).catch((err) => {
-      return err.json()
-    }).then((errRsp: OutOfStockErrorResponse) => {
-      toast('出错：', {
-        description: `${errRsp.message}:`,
-      })
-      errRsp.outOfStockItems.forEach((detail) => {
-        form.setError(`items`, {
-          message: `“${detail.title}”的库存不足。可用：${detail.available}，请求：${detail.requested}`,
-        })
-      })
-    })
+    mutatePlaceOrder(submittedData)
   }
 
   function updateQuantity(orderItemId: number, newQuantity: number) {

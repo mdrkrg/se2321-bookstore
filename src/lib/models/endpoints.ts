@@ -82,6 +82,10 @@ export const endpoints = g('/api', {
   order: g('/order', {
     index: '',
     detail: (id: string | number) => `/${id}`,
+    message: '/message',
+  }),
+  orderResult: g('/order-result', {
+    id: (messageId: string | number) => `/${messageId}`,
   }),
   book: g('/book', {
     index: '', // search for books

@@ -3,7 +3,14 @@
  */
 
 import type { UseQueryOptions } from '@tanstack/react-query'
-import type { CartItem, Order, OrderInfo, PagedItems } from '../models/user'
+import type {
+  CartItem,
+  Order,
+  OrderAccepted,
+  OrderInfo,
+  OrderResult,
+  PagedItems,
+} from '../models/user'
 import type { $MutateOptions, ApiResponseBase, PageRequest } from './utils'
 import { queryOptions } from '@tanstack/react-query'
 import axios from 'axios'
@@ -79,6 +86,42 @@ export function placeOrder(order: OrderRequest) {
     headers: {
       'Content-Type': 'application/json',
     },
+  })
+}
+
+/**
+ * Async message queue version of place order.
+ */
+export async function placeOrderAsync(order: OrderRequest) {
+  const rsp = await axios.post<OrderAccepted>(
+    endpoints.order.message,
+    order,
+  )
+  return rsp.data
+}
+
+export function waitForOrderResultEvent(messageId: string): Promise<OrderResult> {
+  return new Promise((resolve, reject) => {
+    const eventSource = new EventSource(endpoints.orderResult.id(messageId))
+
+    eventSource.onmessage = (event: MessageEvent) => {
+      try {
+        const result: OrderResult = JSON.parse(event.data)
+        eventSource.close()
+        resolve(result)
+      }
+      catch (error) {
+        console.error('Failed to parse order result JSON:', error)
+        eventSource.close()
+        reject(new Error('解析服务器订单结果失败'))
+      }
+    }
+
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error)
+      eventSource.close()
+      reject(new Error('SSE 连接失败'))
+    }
   })
 }
 

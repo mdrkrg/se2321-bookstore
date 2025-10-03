@@ -95,6 +95,17 @@ export interface Order {
   originalPrice: number
 }
 
+export interface OrderAccepted {
+  messageId: string
+  message: string
+}
+
+export interface OrderResult {
+  order?: Order
+  error?: string
+  success: boolean
+}
+
 export interface OrderItem {
   /** Format: int64 */
   id: number
