@@ -22,17 +22,17 @@ class KafkaTopicConfig(
         )
 
     @Bean
-    fun orderPlacedTopic(): NewTopic =
+    fun orderReceivedTopic(): NewTopic =
         TopicBuilder
-            .name("order_placed")
+            .name("order_received")
             .partitions(10)
             .replicas(1)
             .build()
 
     @Bean
-    fun orderSuccessTopic(): NewTopic =
+    fun orderResultTopic(): NewTopic =
         TopicBuilder
-            .name("order_success")
+            .name("order_result")
             .partitions(10)
             .replicas(1)
             .build()

@@ -57,6 +57,7 @@ dependencies {
   // implementation 'org.springframework.data:spring-data-rest-hal-explorer'
   implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
   implementation 'software.amazon.awssdk:s3:2.31.68'
+  implementation 'com.google.guava:guava:33.4.8-jre'
   // implementation 'tech.ailef:snap-admin:0.2.3' // WARN: requires NoArgsConstructor
   compileOnly 'org.projectlombok:lombok'
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
