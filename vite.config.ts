@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_PUBLIC_API_BASE,
           changeOrigin: true,
           secure: false,
+          ws: true,
         },
       },
     },

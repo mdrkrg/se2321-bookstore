@@ -10,12 +10,25 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { NumberInput } from '@/components/ui/number-input'
-import { changeCartItem, placeOrderAsync, waitForOrderResultEvent } from '@/lib/api/order'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  changeCartItem,
+  placeOrderAsync,
+  waitForOrderResultEvent,
+  waitForOrderResultWs,
+} from '@/lib/api/order'
 import { cn } from '@/lib/utils/cn'
 import { fetchFakeAddress } from '@/lib/utils/dummy'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -36,7 +49,18 @@ const FormSchema = z.object({
   })),
 })
 
+function getOrderResultFn(protocol: 'ws' | 'sse') {
+  switch (protocol) {
+    case 'sse':
+      return waitForOrderResultEvent
+    case 'ws':
+    default:
+      return waitForOrderResultWs
+  }
+}
+
 export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
+  const [messageProtocol, setMessageProtocol] = useState<'ws' | 'sse'>('ws')
   const addressList = fetchFakeAddress()
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -50,11 +74,11 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
   const {
     mutate: mutatePlaceOrder,
   } = useMutation<OrderAccepted, OutOfStockErrorResponse, OrderRequest>({
-    mutationFn: data => placeOrderAsync(data),
+    mutationFn: data => placeOrderAsync(data, messageProtocol),
     async onSuccess(rsp) {
       toast(rsp.message)
       try {
-        const result = await waitForOrderResultEvent(rsp.messageId)
+        const result = await (getOrderResultFn(messageProtocol))(rsp.messageId)
         if (result.success) {
           toast(`已创建订单 ID ${result.order?.id}`)
           setTimeout(() => {
@@ -101,6 +125,21 @@ export function ConfirmOrder({ className, orderList }: ConfirmOrderProps) {
 
   return (
     <Form {...form}>
+      <div className="flex pb-4">
+        <span className="mr-8 my-auto">通信方式</span>
+        <Select
+          value={messageProtocol}
+          onValueChange={value => setMessageProtocol(value as 'ws' | 'sse')}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="通信方式" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="sse">SSE</SelectItem>
+            <SelectItem value="ws">Web Socket</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn('w-full space-y-6', className)}

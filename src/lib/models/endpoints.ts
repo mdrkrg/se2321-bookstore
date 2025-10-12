@@ -82,10 +82,12 @@ export const endpoints = g('/api', {
   order: g('/order', {
     index: '',
     detail: (id: string | number) => `/${id}`,
-    message: '/message',
+    ws: '/message/ws',
+    sse: '/message/sse',
   }),
   orderResult: g('/order-result', {
-    id: (messageId: string | number) => `/${messageId}`,
+    sse: (messageId: string | number) => `/sse/${messageId}`,
+    ws: (messageId: string | number) => `/ws/${messageId}`,
   }),
   book: g('/book', {
     index: '', // search for books

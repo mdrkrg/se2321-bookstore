@@ -92,35 +92,54 @@ export function placeOrder(order: OrderRequest) {
 /**
  * Async message queue version of place order.
  */
-export async function placeOrderAsync(order: OrderRequest) {
+export async function placeOrderAsync(order: OrderRequest, protocol: 'ws' | 'sse') {
+  const endpoint = protocol === 'ws' ? endpoints.order.ws : endpoints.order.sse
   const rsp = await axios.post<OrderAccepted>(
-    endpoints.order.message,
+    endpoint,
     order,
   )
   return rsp.data
 }
 
+function onMessageBuilder(client: WebSocket | EventSource, resolve: (value: OrderResult | PromiseLike<OrderResult>) => void, reject: (reason?: any) => void) {
+  return (event: MessageEvent) => {
+    try {
+      const result: OrderResult = JSON.parse(event.data)
+      client.close()
+      resolve(result)
+    }
+    catch (error) {
+      console.error('Failed to parse order result JSON:', error)
+      client.close()
+      reject(new Error('解析服务器订单结果失败'))
+    }
+  }
+}
+
 export function waitForOrderResultEvent(messageId: string): Promise<OrderResult> {
   return new Promise((resolve, reject) => {
-    const eventSource = new EventSource(endpoints.orderResult.id(messageId))
+    const eventSource = new EventSource(endpoints.orderResult.sse(messageId))
 
-    eventSource.onmessage = (event: MessageEvent) => {
-      try {
-        const result: OrderResult = JSON.parse(event.data)
-        eventSource.close()
-        resolve(result)
-      }
-      catch (error) {
-        console.error('Failed to parse order result JSON:', error)
-        eventSource.close()
-        reject(new Error('解析服务器订单结果失败'))
-      }
-    }
+    eventSource.onmessage = onMessageBuilder(eventSource, resolve, reject)
 
     eventSource.onerror = (error) => {
       console.error('EventSource failed:', error)
       eventSource.close()
       reject(new Error('SSE 连接失败'))
+    }
+  })
+}
+
+export function waitForOrderResultWs(messageId: string): Promise<OrderResult> {
+  return new Promise((resolve, reject) => {
+    const client = new WebSocket(endpoints.orderResult.ws(messageId))
+
+    client.onmessage = onMessageBuilder(client, resolve, reject)
+
+    client.onerror = (error) => {
+      console.error('WebSocket failed:', error)
+      client.close()
+      reject(new Error('WS 连接失败'))
     }
   })
 }
