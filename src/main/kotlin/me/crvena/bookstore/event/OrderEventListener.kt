@@ -9,6 +9,7 @@ import me.crvena.bookstore.exceptions.ResourceDoesNotExist
 import me.crvena.bookstore.models.Order
 import me.crvena.bookstore.services.OrderNotificationService
 import me.crvena.bookstore.services.OrderService
+import me.crvena.bookstore.services.OrderWebSocketHandler
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,14 +26,11 @@ import org.springframework.stereotype.Component
 ) {
     val logger: Logger = LoggerFactory.getLogger(OrderReceivedListener::class.toString())
 
-    @KafkaListener(topics = ["order_received"])
-    fun listen(record: ConsumerRecord<String, PlaceOrderWrapper>) {
-        val input = record.value()
-        logger.info("Listener received: $input")
+    private fun processMessage(message: PlaceOrderWrapper): OrderResult {
+        logger.info("Listener received: $message")
         var result: OrderResult
-        val messageId: String = record.key()
         try {
-            val order = orderService.placeOrder(input.userId, input.orderRequest)
+            val order = orderService.placeOrder(message.userId, message.orderRequest)
             logger.info("Order created: $order")
             val dto = OrderDto.of(order)
             result = OrderResult(true, dto, null)
@@ -43,19 +41,45 @@ import org.springframework.stereotype.Component
         } catch (e: OutOfStockException) {
             result = OrderResult(false, null, e.toString())
         }
-        kafka.send("order_result", messageId, result)
+        return result
+    }
+
+    @KafkaListener(topics = ["order_received_sse"])
+    fun listenSse(record: ConsumerRecord<String, PlaceOrderWrapper>) {
+        val message = record.value()
+        val messageId: String = record.key()
+        val result = processMessage(message)
+        kafka.send("order_result_sse", messageId, result)
+    }
+
+    @KafkaListener(topics = ["order_received_ws"])
+    fun listenWs(record: ConsumerRecord<String, PlaceOrderWrapper>) {
+        val message = record.value()
+        val messageId: String = record.key()
+        val result = processMessage(message)
+        kafka.send("order_result_ws", messageId, result)
     }
 }
 
 @Component class OrderResultListener(
-    val service: OrderNotificationService,
+    val sseService: OrderNotificationService,
+    val wsService: OrderWebSocketHandler,
 ) {
     val logger: Logger = LoggerFactory.getLogger(OrderResultListener::class.toString())
 
-    @KafkaListener(topics = ["order_result"])
-    fun listen(record: ConsumerRecord<String, OrderResult>) {
+    @KafkaListener(topics = ["order_result_sse"])
+    fun listenSse(record: ConsumerRecord<String, OrderResult>) {
         val order = record.value()
-        logger.info("Listener received: $order")
-        service.sendNotification(record.key(), order)
+        val messageId = record.key()
+        logger.info("Listener received from messageId $messageId: $order")
+        sseService.sendNotification(messageId, order)
+    }
+
+    @KafkaListener(topics = ["order_result_ws"])
+    fun listenWs(record: ConsumerRecord<String, OrderResult>) {
+        val order = record.value()
+        val messageId = record.key()
+        logger.info("Listener received from messageId $messageId: $order")
+        wsService.sendNotification(messageId, order)
     }
 }

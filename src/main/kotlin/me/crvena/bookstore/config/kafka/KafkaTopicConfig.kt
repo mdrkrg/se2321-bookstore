@@ -22,17 +22,33 @@ class KafkaTopicConfig(
         )
 
     @Bean
-    fun orderReceivedTopic(): NewTopic =
+    fun orderReceivedWsTopic(): NewTopic =
         TopicBuilder
-            .name("order_received")
+            .name("order_received_ws")
             .partitions(10)
             .replicas(1)
             .build()
 
     @Bean
-    fun orderResultTopic(): NewTopic =
+    fun orderReceivedSseTopic(): NewTopic =
         TopicBuilder
-            .name("order_result")
+            .name("order_received_sse")
+            .partitions(10)
+            .replicas(1)
+            .build()
+
+    @Bean
+    fun orderResultWsTopic(): NewTopic =
+        TopicBuilder
+            .name("order_result_ws")
+            .partitions(10)
+            .replicas(1)
+            .build()
+
+    @Bean
+    fun orderResultSseTopic(): NewTopic =
+        TopicBuilder
+            .name("order_result_sse")
             .partitions(10)
             .replicas(1)
             .build()

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 @RestController
-@RequestMapping("/api/order-result")
+@RequestMapping("/api/order-result/sse")
 public class OrderNotificationController(
     val notificationService: OrderNotificationService,
 ) {

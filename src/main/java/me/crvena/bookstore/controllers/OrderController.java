@@ -90,12 +90,8 @@ public class OrderController {
     return new ResponseEntity<>(OrderDto.of(order), HttpStatus.CREATED);
   }
 
-  @RequestMapping(path = "/message", method = RequestMethod.POST, produces = "application/json")
-  public ResponseEntity<OrderAccepted> placeOrderMessage(@Valid @RequestBody OrderRequest orderRequest) {
-
+  private PlaceOrderWrapper processOrderRequest(OrderRequest orderRequest) {
     User user = AuthService.getRequestUser();
-
-    var result = new OrderAccepted("Your order is under processing");
 
     final var wrapper = PlaceOrderWrapper
         .builder()
@@ -103,7 +99,29 @@ public class OrderController {
         .orderRequest(orderRequest)
         .build();
 
-    kafkaTemplate.send("order_received", result.messageId(), wrapper);
+    return wrapper;
+  }
+
+  @RequestMapping(path = "/message/ws", method = RequestMethod.POST, produces = "application/json")
+  public ResponseEntity<OrderAccepted> placeOrderWs(@Valid @RequestBody OrderRequest orderRequest) {
+
+    final var wrapper = processOrderRequest(orderRequest);
+
+    var result = new OrderAccepted("Your order is under processing");
+
+    kafkaTemplate.send("order_received_ws", result.messageId(), wrapper);
+
+    return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
+  }
+
+  @RequestMapping(path = "/message/sse", method = RequestMethod.POST, produces = "application/json")
+  public ResponseEntity<OrderAccepted> placeOrderSse(@Valid @RequestBody OrderRequest orderRequest) {
+
+    final var wrapper = processOrderRequest(orderRequest);
+
+    var result = new OrderAccepted("Your order is under processing");
+
+    kafkaTemplate.send("order_received_sse", result.messageId(), wrapper);
 
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
