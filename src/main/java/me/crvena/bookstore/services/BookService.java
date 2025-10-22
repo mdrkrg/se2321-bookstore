@@ -110,7 +110,8 @@ class BookServiceImpl implements BookService {
         .author(data.getAuthor())
         .description(data.getDescription())
         .price(data.getPrice())
-        .stock(data.getStock())
+        // WARN:
+        .inventory(BookInventory.builder().stock(data.getStock()).build())
         .build();
     if (coverFile != null && !coverFile.isEmpty()) {
       try {

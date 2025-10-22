@@ -29,6 +29,7 @@ public class BookDto {
   List<TagDto> tags;
 
   public static BookDto of(Book book) {
+    final var inventory = book.getInventory();
     return BookDto.builder()
         .id(book.getId())
         .title(book.getTitle())
@@ -37,8 +38,8 @@ public class BookDto {
         .price(book.getPrice())
         .available(book.getAvailable())
         .cover(book.getCover())
-        .sales(book.getSales())
-        .stock(book.getStock())
+        .sales(inventory.getSales())
+        .stock(inventory.getStock())
         .tags(TagDto.ofTags(book.getTags().stream()))
         .build();
   }

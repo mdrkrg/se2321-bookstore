@@ -1,6 +1,7 @@
 package me.crvena.bookstore.services;
 
 import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dao.BookInventoryDao;
 import me.crvena.bookstore.dao.CartItemDao;
 import me.crvena.bookstore.dao.OrderDao;
 import me.crvena.bookstore.dao.UserDao;
@@ -125,6 +126,9 @@ class OrderServiceImpl implements OrderService {
 
   @Autowired
   private final BookDao bookDao;
+
+  @Autowired
+  private final BookInventoryDao bookInventoryDao;
 
   @Autowired
   private final OrderDao dao;
@@ -253,13 +257,14 @@ class OrderServiceImpl implements OrderService {
       }
 
       var book = item.getBook();
+      var inventory = book.getInventory();
 
-      if (book.getStock() < item.getNumber()) {
+      if (inventory.getStock() < item.getNumber()) {
         outOfStockDetails.add(OutOfStockDetail.builder()
             .cartItemId(item.getId())
             .title(book.getTitle())
             .requested(item.getNumber())
-            .available(book.getStock())
+            .available(inventory.getStock())
             .build());
       } else {
         validCartItems.put(item, requestItem.getPaidPrice());
@@ -278,7 +283,7 @@ class OrderServiceImpl implements OrderService {
     dao.save(order);
 
     // decrease stock, increase sales for each book
-    List<Book> booksToUpdate = new ArrayList<>();
+    List<BookInventory> inventoriesToUpdate = new ArrayList<>();
     for (OrderItem orderItem : order.getItems()) {
       Book orderedBook = orderItem.getBook();
       Long quantity = orderItem.getNumber();
@@ -286,24 +291,26 @@ class OrderServiceImpl implements OrderService {
       Book currentBook = bookDao.findById(orderedBook.getId()).orElseThrow(
           () -> new ResourceDoesNotExist(Book.class, orderedBook.getId()) // Should not happen
       );
-      if (currentBook.getStock() < quantity) {
+      // TODO: prefetch?
+      var inventory = currentBook.getInventory();
+      if (inventory.getStock() < quantity) {
         throw new OutOfStockException(
             String.format(
                 "Stock for book: '%s' was modified during making order. Available: %d, Requested: %d",
                 currentBook.getTitle(),
-                currentBook.getStock(),
+                inventory.getStock(),
                 quantity),
             new OutOfStockDetail(
                 null,
                 currentBook.getTitle(),
                 quantity,
-                currentBook.getStock()));
+                inventory.getStock()));
       }
-      currentBook.beOrdered(quantity);
-      booksToUpdate.add(currentBook);
+      inventory.beOrdered(quantity);
+      inventoriesToUpdate.add(inventory);
     }
 
-    bookDao.saveAll(booksToUpdate);
+    bookInventoryDao.saveAll(inventoriesToUpdate);
     cartItemDao.deleteAll(validCartItems.keySet());
 
     return order;

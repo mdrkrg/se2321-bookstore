@@ -11,6 +11,11 @@ import me.crvena.bookstore.models.Book;
 @Builder
 @AllArgsConstructor
 public class BookSalesStat implements Serializable {
-  private Book book;
+  private BookDto book;
   private Long number;
+
+  public BookSalesStat(Book book, Long number) {
+    this.book = BookDto.of(book);
+    this.number = number;
+  }
 }

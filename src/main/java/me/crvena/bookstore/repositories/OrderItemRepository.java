@@ -41,9 +41,9 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
    * @param pageable pagination
    */
   @Query("""
-      SELECT new me.crvena.bookstore.dtos.BookSalesStat(b, b.sales)
-      FROM Book b
-      ORDER BY b.sales DESC
+      SELECT new me.crvena.bookstore.dtos.BookSalesStat(b, i.sales)
+      FROM Book b JOIN b.inventory i
+      ORDER BY i.sales DESC
       """)
   Page<BookSalesStat> findBestSellingBooks(Pageable pageable);
 }

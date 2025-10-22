@@ -21,6 +21,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dtos.BookDto;
 import me.crvena.bookstore.dtos.BookSalesStat;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.exceptions.ResourceDoesNotExist;
@@ -38,7 +39,7 @@ public class BookController {
   private BookService service;
 
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<ListResponse<Book>> findAll(
+  public ResponseEntity<ListResponse<BookDto>> findAll(
       @RequestParam @Valid @Min(0) @NotNull Integer pageNumber,
       @RequestParam @Valid @Min(1) @NotNull Integer pageSize,
       // public ResponseEntity<ListResponse<Book>> findAll(
@@ -52,28 +53,40 @@ public class BookController {
       return ResponseEntity.ok(
           ListResponse.of(
               dao.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
-                  true, title, tagIds, pageable)));
+                  true, title, tagIds, pageable)
+                  .map(book -> {
+                    return BookDto.of(book);
+                  })));
     } else if (titleProvided && !tagsProvided) {
       return ResponseEntity.ok(
           ListResponse.of(
               dao.findByAvailableAndTitleIgnoreCaseContaining(
-                  true, title, pageable)));
+                  true, title, pageable)
+                  .map(book -> {
+                    return BookDto.of(book);
+                  })));
     } else if (!titleProvided && tagsProvided) {
       return ResponseEntity.ok(
           ListResponse.of(
-              dao.findByAvailableAndTags_IdIn(true, tagIds, pageable)));
+              dao.findByAvailableAndTags_IdIn(true, tagIds, pageable)
+                  .map(book -> {
+                    return BookDto.of(book);
+                  })));
     } else {
       return ResponseEntity.ok(
           ListResponse.of(
-              dao.findByAvailable(true, pageable)));
+              dao.findByAvailable(true, pageable)
+                  .map(book -> {
+                    return BookDto.of(book);
+                  })));
     }
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<Book> findOneBook(@PathVariable("id") Long id) {
+  public ResponseEntity<BookDto> findOneBook(@PathVariable("id") Long id) {
     Book book = dao.findByIdAndAvailable(id, true).orElseThrow(
         () -> new ResourceDoesNotExist(Book.class, id));
-    return ResponseEntity.ok(book);
+    return ResponseEntity.ok(BookDto.of(book));
   }
 
   @GetMapping(path = "/rank", produces = "application/json")
@@ -82,7 +95,7 @@ public class BookController {
       @RequestParam(defaultValue = "10") @Valid @Min(1) Integer pageSize) {
 
     Pageable pageable = PageRequest.of(
-        pageNumber, pageSize, Sort.by(Direction.DESC, "sales"));
+        pageNumber, pageSize, Sort.by(Direction.DESC, "inventory.sales"));
     return ResponseEntity.ok(ListResponse.of(service.getTopSellingBooks(pageable)));
   }
 

@@ -10,6 +10,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
@@ -69,17 +70,10 @@ public class Book extends BaseModel {
   @URL
   private String cover = null;
 
-  @Builder.Default
-  @NotNull
-  @NonNull
-  @ColumnDefault("0")
-  private Long sales = Long.valueOf(0);
-
-  @Builder.Default
-  @NotNull
-  @NonNull
-  @ColumnDefault("0")
-  private Long stock = Long.valueOf(0);
+  @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @PrimaryKeyJoinColumn
+  @JsonIgnore
+  private BookInventory inventory;
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
@@ -100,14 +94,5 @@ public class Book extends BaseModel {
   public void removeTag(Tag tag) {
     this.tags.remove(tag);
     // tag.getBookSet().remove(this); // bidirectional link
-  }
-
-  /**
-   * Caller should check book's stock before calling
-   */
-  public Book beOrdered(Long quantity) throws RuntimeException {
-    stock -= quantity;
-    sales += quantity;
-    return this;
   }
 }
