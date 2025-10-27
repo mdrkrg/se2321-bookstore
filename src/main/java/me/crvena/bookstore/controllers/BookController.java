@@ -42,44 +42,12 @@ public class BookController {
   public ResponseEntity<ListResponse<BookDto>> findAll(
       @RequestParam @Valid @Min(0) @NotNull Integer pageNumber,
       @RequestParam @Valid @Min(1) @NotNull Integer pageSize,
-      // public ResponseEntity<ListResponse<Book>> findAll(
       @RequestParam(name = "title", required = false) String title,
       @RequestParam(name = "tagIds", required = false) @Valid List<Long> tagIds) {
-    // TODO: too complicated logic
     Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("id"));
-    var titleProvided = title != null && !title.isEmpty();
-    var tagsProvided = tagIds != null && !tagIds.isEmpty();
-    if (titleProvided && tagsProvided) {
-      return ResponseEntity.ok(
-          ListResponse.of(
-              dao.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
-                  true, title, tagIds, pageable)
-                  .map(book -> {
-                    return BookDto.of(book);
-                  })));
-    } else if (titleProvided && !tagsProvided) {
-      return ResponseEntity.ok(
-          ListResponse.of(
-              dao.findByAvailableAndTitleIgnoreCaseContaining(
-                  true, title, pageable)
-                  .map(book -> {
-                    return BookDto.of(book);
-                  })));
-    } else if (!titleProvided && tagsProvided) {
-      return ResponseEntity.ok(
-          ListResponse.of(
-              dao.findByAvailableAndTags_IdIn(true, tagIds, pageable)
-                  .map(book -> {
-                    return BookDto.of(book);
-                  })));
-    } else {
-      return ResponseEntity.ok(
-          ListResponse.of(
-              dao.findByAvailable(true, pageable)
-                  .map(book -> {
-                    return BookDto.of(book);
-                  })));
-    }
+    var result = service.findBooksByTitleAndTags(title, tagIds, pageable);
+    return ResponseEntity.ok(
+        ListResponse.of(result.map(BookDto::of)));
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")

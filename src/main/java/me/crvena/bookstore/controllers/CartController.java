@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.rest.core.annotation.Description;
-import org.springframework.data.rest.core.annotation.RestResource;
+// import org.springframework.data.rest.core.annotation.Description;
+// import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +31,8 @@ public class CartController {
   @Autowired
   private CartService cartService;
 
-  @Description("Get cart for current user.")
-  @RestResource(rel = "cart")
+  // @Description("Get cart for current user.")
+  // @RestResource(rel = "cart")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   // public ResponseEntity<PagedModel<EntityModel<CartItem>>> findAll(Pageable
   // pageable) {

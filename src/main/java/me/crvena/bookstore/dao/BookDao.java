@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import me.crvena.bookstore.models.Book;
 import me.crvena.bookstore.models.Tag;
+import me.crvena.bookstore.repositories.BookInventoryRepository;
 import me.crvena.bookstore.repositories.BookRepository;
 
 public interface BookDao {
@@ -68,9 +71,27 @@ public interface BookDao {
 @RequiredArgsConstructor
 class BookDaoImpl implements BookDao {
 
+  private void populateInventory(Page<Book> bookPage) {
+    bookPage.forEach(book -> {
+      var inventory = inventoryRepo.findById(book.getId()).get();
+      book.setInventory(inventory);
+    });
+  }
+
+  private void populateInventory(Optional<Book> book) {
+    if (book.isEmpty() || book.get().getInventory() != null) {
+      return;
+    }
+    var inventory = inventoryRepo.findById(book.get().getId()).get();
+    book.get().setInventory(inventory);
+  }
+
   @Delegate
   @Autowired
   private final BookRepository repo;
+
+  @Autowired
+  private final BookInventoryRepository inventoryRepo;
 
   // override conflict
   @Override
@@ -81,5 +102,33 @@ class BookDaoImpl implements BookDao {
   @Override
   public Book save(Book book) {
     return repo.save(book);
+  }
+
+  @Override
+  public Page<Book> findAll(Pageable pageable) {
+    var bookPage = repo.findAll(pageable);
+    populateInventory(bookPage);
+    return bookPage;
+  }
+
+  @Override
+  public Page<Book> findByAvailable(boolean available, Pageable pageable) {
+    var bookPage = repo.findByAvailable(available, pageable);
+    populateInventory(bookPage);
+    return bookPage;
+  }
+
+  @Override
+  public Page<Book> findByTitleIgnoreCaseContaining(String partialTitle, Pageable pageable) {
+    var bookPage = repo.findByTitleIgnoreCaseContaining(partialTitle, pageable);
+    populateInventory(bookPage);
+    return bookPage;
+  }
+
+  @Override
+  public Optional<Book> findByIdAndAvailable(Long id, boolean available) {
+    var book = repo.findByIdAndAvailable(id, available);
+    populateInventory(book);
+    return book;
   }
 }

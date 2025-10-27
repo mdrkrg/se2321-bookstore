@@ -8,11 +8,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,18 +45,28 @@ public interface BookService {
 
   public Page<BookSalesStat> getTopSellingBooks(Pageable pageable);
 
+  @Caching(evict = { @CacheEvict(value = "books", allEntries = true) }, put = {
+      @CachePut(value = "book", key = "#bookId") })
   public Book addBookTag(Long bookId, Long tagId);
 
+  @Caching(evict = { @CacheEvict(value = "books", allEntries = true) }, put = {
+      @CachePut(value = "book", key = "#bookId") })
   public Book removeBookTag(Long bookId, Long tagId);
 
+  @Caching(evict = { @CacheEvict(value = "books", allEntries = true) }, put = {
+      @CachePut(value = "book", key = "#book.id") })
   public Book modifyBook(Book book, ModifyBookRequest data, MultipartFile newCoverFile)
       throws RuntimeException;
 
+  @CacheEvict(value = "books", allEntries = true)
   public Book createBook(CreateBookRequest data, MultipartFile newCoverFile)
       throws RuntimeException, ResourceAlreadyExist;
 
+  @Caching(evict = { @CacheEvict(value = "books", allEntries = true) }, put = {
+      @CachePut(value = "book", key = "#book.id") })
   public Book changeAvailable(Book book, Boolean available);
 
+  public Page<Book> findBooksByTitleAndTags(String title, List<Long> tagIds, Pageable pageable);
 }
 
 @Service
@@ -152,6 +166,14 @@ class BookServiceImpl implements BookService {
       throw new RuntimeException(e.getMessage());
     }
 
+    var inventory = book.getInventory();
+    if (data.getSales() != null && data.getSales().isPresent()) {
+      inventory.setSales(data.getSales().get());
+    }
+    if (data.getStock() != null && data.getStock().isPresent()) {
+      inventory.setStock(data.getStock().get());
+    }
+
     if (data.getTagIds() != null && data.getTagIds().isPresent()) {
       // set tags
       var tagIds = data.getTagIds().get();
@@ -180,5 +202,24 @@ class BookServiceImpl implements BookService {
   public Book changeAvailable(Book book, Boolean available) {
     book.setAvailable(available);
     return dao.save(book);
+  }
+
+  public Page<Book> findBooksByTitleAndTags(String title, List<Long> tagIds, Pageable pageable) {
+    // TODO: too complicated logic
+    var titleProvided = title != null && !title.isEmpty();
+    var tagsProvided = tagIds != null && !tagIds.isEmpty();
+    Page<Book> bookPage;
+    if (titleProvided && tagsProvided) {
+      bookPage = dao.findByAvailableAndTitleIgnoreCaseContainingAndTags_IdIn(
+          true, title, tagIds, pageable);
+    } else if (titleProvided && !tagsProvided) {
+      bookPage = dao.findByAvailableAndTitleIgnoreCaseContaining(
+          true, title, pageable);
+    } else if (!titleProvided && tagsProvided) {
+      bookPage = dao.findByAvailableAndTags_IdIn(true, tagIds, pageable);
+    } else {
+      bookPage = dao.findByAvailable(true, pageable);
+    }
+    return bookPage;
   }
 }

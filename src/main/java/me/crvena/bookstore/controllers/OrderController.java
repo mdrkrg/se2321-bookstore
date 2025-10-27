@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.rest.core.annotation.Description;
+// import org.springframework.data.rest.core.annotation.Description;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +47,7 @@ public class OrderController {
   @Autowired
   private OrderService orderService;
 
-  @Description("Get order list for current user.")
+  // @Description("Get order list for current user.")
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
   public ResponseEntity<ListResponse<OrderDto>> getOrderList(
       @RequestParam(name = "title", required = false) String title,

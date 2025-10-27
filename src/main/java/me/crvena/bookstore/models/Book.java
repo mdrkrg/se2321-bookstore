@@ -18,6 +18,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import me.crvena.bookstore.constants.ConstraintConst;
+import org.springframework.data.redis.core.RedisHash;
 
 @Data
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
@@ -26,6 +27,7 @@ import me.crvena.bookstore.constants.ConstraintConst;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
+@RedisHash("Book")
 @Table(indexes = {
     @Index(columnList = "title"),
     @Index(columnList = "author"),
@@ -82,8 +84,9 @@ public class Book extends BaseModel {
   @Builder.Default
   private Set<Tag> tags = new HashSet<>();
 
-  public List<Tag> getTags() {
-    return tags.stream().collect(Collectors.toList());
+  @PostLoad
+  public void postLoad() {
+    this.tags = new HashSet<>(this.tags);
   }
 
   public void addTag(Tag tag) {

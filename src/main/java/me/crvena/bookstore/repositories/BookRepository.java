@@ -5,14 +5,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import me.crvena.bookstore.models.Book;
 import me.crvena.bookstore.models.Tag;
 
@@ -23,8 +30,10 @@ public interface BookRepository extends PagingAndSortingRepository<Book, Long>, 
 
   List<Book> findByAvailable(boolean available);
 
+  @Cacheable(value = "books")
   Page<Book> findByAvailable(boolean available, Pageable pageable);
 
+  @Cacheable(value = "book", key = "#id", unless = "#result == null")
   Optional<Book> findByIdAndAvailable(Long id, boolean available);
 
   Optional<Book> findByTitle(String title);
@@ -51,4 +60,28 @@ public interface BookRepository extends PagingAndSortingRepository<Book, Long>, 
   boolean existsByTitleAndAuthor(String title, String author);
 
   List<Book> findByTagsIn(@Param("tags") Set<Tag> tags);
+}
+
+@Repository
+@Primary
+@RequiredArgsConstructor
+class CachingBookRepository implements BookRepository {
+
+  @Delegate
+  @Qualifier("bookRepository")
+  @Autowired
+  private final BookRepository repo;
+  private final Logger logger = LoggerFactory.getLogger(CachingBookRepository.class);
+
+  @Override
+  public Page<Book> findByAvailable(boolean available, Pageable pageable) {
+    logger.info("CACHE MISS! Fetching books from the database.");
+    return repo.findByAvailable(available, pageable);
+  }
+
+  @Override
+  public Optional<Book> findByIdAndAvailable(Long id, boolean available) {
+    logger.info("CACHE MISS! Fetching book #{} from the database.", id);
+    return repo.findByIdAndAvailable(id, available);
+  }
 }

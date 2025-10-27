@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import me.crvena.bookstore.services.BookService;
 import me.crvena.bookstore.dao.BookDao;
+import me.crvena.bookstore.dtos.BookDto;
 import me.crvena.bookstore.dtos.CreateBookRequest;
 import me.crvena.bookstore.dtos.ListResponse;
 import me.crvena.bookstore.dtos.ModifyBookRequest;
@@ -43,7 +44,7 @@ public class AdminBookController {
   private BookService service;
 
   @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-  public ResponseEntity<ListResponse<Book>> findAll(
+  public ResponseEntity<ListResponse<BookDto>> findAll(
       @RequestParam(name = "title", required = false) String title,
       Pageable pageable) {
     Sort clientSort = pageable.getSort();
@@ -57,7 +58,7 @@ public class AdminBookController {
     } else {
       bookPage = dao.findByTitleIgnoreCaseContaining(title, finalPageable);
     }
-    return ResponseEntity.ok(ListResponse.of(bookPage));
+    return ResponseEntity.ok(ListResponse.of(bookPage.map(BookDto::of)));
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
