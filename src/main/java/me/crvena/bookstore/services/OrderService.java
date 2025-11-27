@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -137,7 +139,12 @@ class OrderServiceImpl implements OrderService {
   private final UserDao userDao;
 
   @Autowired
+  private final CalcPriceService calcPriceService;
+
+  @Autowired
   private ObjectMapper mapper;
+
+  Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
   public Page<Order> getOrdersByUser(User user, Pageable pageable) {
     return dao.findByCreatorOrderByIdDesc(user, pageable);
@@ -282,11 +289,17 @@ class OrderServiceImpl implements OrderService {
 
     dao.save(order);
 
+    // Calculate price
+
+    var totalPrice = BigDecimal.ZERO;
+
     // decrease stock, increase sales for each book
     List<BookInventory> inventoriesToUpdate = new ArrayList<>();
     for (OrderItem orderItem : order.getItems()) {
       Book orderedBook = orderItem.getBook();
       Long quantity = orderItem.getNumber();
+      totalPrice = totalPrice.add(
+          calcPriceService.calc(orderItem.getNumber(), orderedBook.getPrice()));
       // check stock again for concurrent issue
       Book currentBook = bookDao.findById(orderedBook.getId()).orElseThrow(
           () -> new ResourceDoesNotExist(Book.class, orderedBook.getId()) // Should not happen
@@ -312,6 +325,8 @@ class OrderServiceImpl implements OrderService {
 
     bookInventoryDao.saveAll(inventoriesToUpdate);
     cartItemDao.deleteAll(validCartItems.keySet());
+
+    logger.info("Total price: {}", totalPrice);
 
     return order;
   }
