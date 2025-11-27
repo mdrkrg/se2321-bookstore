@@ -5,8 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +25,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
 
@@ -117,5 +125,95 @@ class FileStorageServiceImpl implements FileStorageService {
     }
     // fallback, removes the '/'
     return path.substring(1);
+  }
+}
+
+@RequiredArgsConstructor
+@Service
+@Primary
+class MongoFileStorageServiceImpl implements FileStorageService {
+
+  private static final Logger logger = LoggerFactory.getLogger(MongoFileStorageServiceImpl.class);
+
+  @Autowired
+  private final RestClient client;
+
+  @Value("${service.external.cover-api.external-url}")
+  private String externalUrl;
+
+  @Value("${service.external.cover-api.internal-url}")
+  private String internalUrl;
+
+  private String getExternalFileUri(String filename) {
+    // WARN: should use some library to concat uri
+    return externalUrl + filename;
+  }
+
+  public String uploadFile(MultipartFile file) throws IOException {
+    logger.info("Uploading file " + file.getOriginalFilename());
+
+    try {
+      String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+      String filename = UUID.randomUUID().toString() + "." + extension;
+
+      MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+      body.add("filename", filename);
+      ByteArrayResource fileResource = new ByteArrayResource(file.getBytes()) {
+        @Override
+        public String getFilename() {
+          return file.getOriginalFilename();
+        }
+      };
+
+      body.add("file", fileResource);
+
+      client.post()
+          .uri(internalUrl)
+          .contentType(MediaType.MULTIPART_FORM_DATA)
+          .body(body)
+          .retrieve()
+          .toBodilessEntity();
+
+      logger.info("Successfully uploaded file {} to API", filename);
+
+      // WARN: should use some library to concat uri
+      return getExternalFileUri(filename);
+
+    } catch (RestClientException e) {
+      logger.error("Error uploading file to image API: {}", e.getMessage(), e);
+      throw new RuntimeException("Failed to upload file to image API", e);
+    }
+  }
+
+  public void deleteFile(String fileUrl) {
+    if (!StringUtils.hasText(fileUrl)) {
+      return;
+    }
+
+    String filename;
+    try {
+      var uri = new URI(fileUrl);
+      filename = FilenameUtils.getName(uri.getPath());
+    } catch (URISyntaxException e) {
+      return;
+    }
+
+    try {
+
+      logger.info("Attempting to delete file with url: {}", fileUrl);
+
+      client.delete()
+          .uri(getExternalFileUri(filename))
+          .retrieve()
+          .toBodilessEntity();
+
+      logger.info("Successfully deleted file {}", fileUrl);
+
+    } catch (RestClientException e) {
+      logger.error("Error while deleting file: {}", e.getMessage(), e);
+    } catch (Exception e) {
+      logger.error("An unexpected error occurred during file deletion for URL {}: {}", fileUrl, e.getMessage());
+    }
   }
 }
