@@ -60,6 +60,8 @@ public interface BookRepository extends PagingAndSortingRepository<Book, Long>, 
   boolean existsByTitleAndAuthor(String title, String author);
 
   List<Book> findByTagsIn(@Param("tags") Set<Tag> tags);
+
+  List<Book> findByTags_NameIn(@Param("tags") Set<String> tagNames);
 }
 
 @Repository
