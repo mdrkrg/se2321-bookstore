@@ -14,7 +14,7 @@ plugins {
     // kotlin("kapt") version "2.2.20"
     kotlin("plugin.lombok") version "2.2.20"
     id("io.freefair.lombok") version "8.14.2"
-    id("org.springframework.boot") version "3.4.0"
+    id("org.springframework.boot") version "3.5.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.asciidoctor.jvm.convert") version "3.3.2"
     id("org.flywaydb.flyway") version "11.8.0"
@@ -50,6 +50,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     // implementation("org.springframework.boot:spring-boot-starter-data-rest")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-graphql")
+    implementation("com.graphql-java:graphql-java-extended-scalars:24.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.19.2")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")

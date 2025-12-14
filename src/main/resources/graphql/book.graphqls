@@ -1,0 +1,29 @@
+scalar Long
+scalar BigDecimal
+
+type Tag {
+  id: ID
+  name: String
+}
+
+type Book {
+  id: ID!
+  title: String
+  author: String
+  description: String
+  price: BigDecimal
+  available: Boolean
+  cover: String
+  sales: Long
+  stock: Long
+  tags: [Tag]
+}
+
+type Query {
+  """
+  Search books by title.
+  The 'available' filter is applied implicitly (always true).
+  Returns a paginated list of books.
+  """
+  searchBooks(title: String!, page: Int = 0, size: Int = 10): [Book]
+}
